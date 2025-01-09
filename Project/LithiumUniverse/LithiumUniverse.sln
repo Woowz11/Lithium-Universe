@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LithiumUniverse", "LithiumUniverse.vcxproj", "{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Alpha|x64 = Alpha|x64
+		Alpha|x86 = Alpha|x86
+		Dev|x64 = Dev|x64
+		Dev|x86 = Dev|x86
+		ForTesters|x64 = ForTesters|x64
+		ForTesters|x86 = ForTesters|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+		WIP|x64 = WIP|x64
+		WIP|x86 = WIP|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Alpha|x64.ActiveCfg = Alpha|x64
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Alpha|x64.Build.0 = Alpha|x64
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Alpha|x86.ActiveCfg = Alpha|Win32
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Alpha|x86.Build.0 = Alpha|Win32
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Dev|x64.ActiveCfg = Dev|x64
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Dev|x64.Build.0 = Dev|x64
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Dev|x86.ActiveCfg = Dev|Win32
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Dev|x86.Build.0 = Dev|Win32
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.ForTesters|x64.ActiveCfg = ForTesters|x64
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.ForTesters|x64.Build.0 = ForTesters|x64
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.ForTesters|x86.ActiveCfg = ForTesters|Win32
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.ForTesters|x86.Build.0 = ForTesters|Win32
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Release|x64.ActiveCfg = Release|x64
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Release|x64.Build.0 = Release|x64
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Release|x86.ActiveCfg = Release|Win32
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.Release|x86.Build.0 = Release|Win32
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.WIP|x64.ActiveCfg = Debug|x64
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.WIP|x64.Build.0 = Debug|x64
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.WIP|x86.ActiveCfg = Debug|Win32
+		{34FFC709-26D4-4FD1-A28D-DA241C8E2B80}.WIP|x86.Build.0 = Debug|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {43E190DC-1C4F-456C-B4FC-069A64C1C7D5}
+	EndGlobalSection
+EndGlobal
