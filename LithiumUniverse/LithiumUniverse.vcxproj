@@ -136,6 +136,7 @@
     <ClCompile Include="BaseConstants.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="GlobalRender.cpp" />
+    <ClCompile Include="InstallVulkan.cpp" />
     <ClCompile Include="LibControl.cpp" />
     <ClCompile Include="LithiumUniverse.cpp" />
     <ClCompile Include="LUWindow.cpp" />
@@ -145,6 +146,7 @@
     <ClInclude Include="BaseConstants.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="GlobalRender.h" />
+    <ClInclude Include="InstallVulkan.h" />
     <ClInclude Include="LibControl.h" />
     <ClInclude Include="LithiumUniverse.h" />
     <ClInclude Include="LUWindow.h" />

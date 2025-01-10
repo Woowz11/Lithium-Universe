@@ -1,6 +1,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include "GlobalRender.h";
+#include "InstallVulkan.h";
 
 int Initializate_GLFW() {
 	return glfwInit();
@@ -17,5 +17,8 @@ uint32_t Initializate_Vulkan() {
 }
 
 void Terminate_Vulkan() {
+	if (GetVulkanDebug()) {
+		DestroyErrorVulkanHook(GetVulkan(),GetDebugMessanger(),nullptr);
+	}
 	vkDestroyInstance(GetVulkan(), nullptr);
 }

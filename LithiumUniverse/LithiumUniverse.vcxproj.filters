@@ -44,6 +44,9 @@
     <ClCompile Include="BaseConstants.cpp">
       <Filter>Scripts</Filter>
     </ClCompile>
+    <ClCompile Include="InstallVulkan.cpp">
+      <Filter>Scripts\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -55,7 +58,7 @@
     <ClInclude Include="Console.h">
       <Filter>Scripts\Logger</Filter>
     </ClInclude>
-    <ClInclude Include="GlobalRender.h">
+    <ClInclude Include="InstallVulkan.h">
       <Filter>Scripts\Render</Filter>
     </ClInclude>
     <ClInclude Include="LibControl.h">
@@ -63,6 +66,9 @@
     </ClInclude>
     <ClInclude Include="BaseConstants.h">
       <Filter>Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalRender.h">
+      <Filter>Scripts\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
