@@ -15,6 +15,9 @@
     <Filter Include="Scripts\Logger">
       <UniqueIdentifier>{82f66982-6840-48a0-b8ce-fd42b269c66f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts\Render">
+      <UniqueIdentifier>{8a2610af-4d65-45ce-a2d2-777c89785f71}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Start.cpp">
@@ -29,6 +32,9 @@
     <ClCompile Include="Console.cpp">
       <Filter>Scripts\Logger</Filter>
     </ClCompile>
+    <ClCompile Include="GlobalRender.cpp">
+      <Filter>Scripts\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -39,6 +45,9 @@
     </ClInclude>
     <ClInclude Include="Console.h">
       <Filter>Scripts\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalRender.h">
+      <Filter>Scripts\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
