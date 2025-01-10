@@ -1,6 +1,6 @@
-#include <iostream>
+#include "LithiumUniverse.h"
 
 int main(int argc, char* argv[]) {
-	std::cout << "pipi kaka vsem privet!";
-	return EXIT_SUCCESS;
+	Start();
+	return 0;
 }

@@ -9,10 +9,36 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Scripts\Window">
+      <UniqueIdentifier>{a211c9d7-f4bb-489e-a712-622c3f6b4327}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripts\Logger">
+      <UniqueIdentifier>{82f66982-6840-48a0-b8ce-fd42b269c66f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Start.cpp">
       <Filter>Scripts</Filter>
     </ClCompile>
+    <ClCompile Include="LithiumUniverse.cpp">
+      <Filter>Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="LUWindow.cpp">
+      <Filter>Scripts\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Console.cpp">
+      <Filter>Scripts\Logger</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LithiumUniverse.h">
+      <Filter>Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="LUWindow.h">
+      <Filter>Scripts\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="Console.h">
+      <Filter>Scripts\Logger</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
