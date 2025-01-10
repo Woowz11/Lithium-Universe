@@ -129,7 +129,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BaseConstants.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="LithiumUniverse.cpp" />
     <ClCompile Include="LUWindow.cpp" />

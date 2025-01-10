@@ -29,9 +29,6 @@
     <ClCompile Include="Console.cpp">
       <Filter>Scripts\Logger</Filter>
     </ClCompile>
-    <ClCompile Include="BaseConstants.cpp">
-      <Filter>Scripts</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">

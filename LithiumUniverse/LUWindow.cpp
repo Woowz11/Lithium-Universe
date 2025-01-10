@@ -45,9 +45,9 @@ int WINAPI GameWindow(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int cmdshow
 	id = CreateWindowEx(
 		WS_EX_CLIENTEDGE,
 		GameWindowClass,
-		L"LithiumUniverse",
+		L"LithiumUniverse (0.0.0b)",
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, 240, 120,
+		CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
 		NULL, NULL, inst, NULL
 	);
 
@@ -60,6 +60,8 @@ int WINAPI GameWindow(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int cmdshow
 	ShowWindow(id, cmdshow);
 	UpdateWindow(id);
 
+	Print("Window created!");
+
 	while (GetMessage(&msg, NULL, 0, 0) > 0) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
@@ -68,6 +70,6 @@ int WINAPI GameWindow(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int cmdshow
 	return msg.wParam;
 }
 
-int GameWindowUpdate() {
+int CreateGameWindow() {
 	return GameWindow(GetModuleHandle(NULL), NULL, GetCommandLineA(), SW_SHOW);
 }

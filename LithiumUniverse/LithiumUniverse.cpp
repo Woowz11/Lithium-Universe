@@ -1,11 +1,10 @@
 #include "LUWindow.h"
 #include "Console.h"
 
-void Start() {
-	GameWindowUpdate();
-	Print("kyki");
+void GlobalUpdate() {
+	Print("UPDATE");
 }
 
-void Update() {
-	//GameWindowUpdate();
+void Start() {
+	CreateGameWindow();
 }
