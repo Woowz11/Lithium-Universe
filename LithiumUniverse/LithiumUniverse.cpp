@@ -1,5 +1,11 @@
 #include "LUWindow.h"
+#include "Console.h"
 
 void Start() {
-	CreateMainWindow();
+	GameWindowUpdate();
+	Print("kyki");
+}
+
+void Update() {
+	//GameWindowUpdate();
 }

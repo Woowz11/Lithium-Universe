@@ -1,0 +1,1 @@
+const char* GameVersion = "0.0.0a";
