@@ -8,10 +8,10 @@
  */
 const int GameVersionMajor = 0;
 const int GameVersionMinor = 1;
-const int GameVersionPatch = 10;
+const int GameVersionPatch = 11;
 
 std::string GetGameVersionPatchWithLetters() {
-    const std::string alphabet = "abcdefghijklmnopqrstuvwxyz";
+    const std::string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string result;
 
     int base = static_cast<int>(alphabet.size());
