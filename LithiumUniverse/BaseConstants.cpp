@@ -1,15 +1,20 @@
 #include "BaseConstants.h";
 #include <string>
 
+/* Обозначения версии (x.y.z) 
+ * x - Номер полной сборки     (публичный релиз)
+ * y - Номер тестовой сборки   (частично играбельное, для теста, друзьям)
+ * z - Номер отладочной сборки (точнее отправки коммита на гит)
+ */
 const int GameVersionMajor = 0;
 const int GameVersionMinor = 0;
-const int GameVersionPatch = 5;
+const int GameVersionPatch = 6;
 
 std::string GetGameVersionPatchWithLetters() {
     const std::string alphabet = "abcdefghijklmnopqrstuvwxyz";
     std::string result;
 
-    int base = alphabet.size();
+    int base = static_cast<int>(alphabet.size());
     int prefix = GameVersionPatch / base;
     int suffixIndex = GameVersionPatch % base;
 
