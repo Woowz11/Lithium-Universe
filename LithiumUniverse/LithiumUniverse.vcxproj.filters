@@ -9,17 +9,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Scripts\Window">
-      <UniqueIdentifier>{a211c9d7-f4bb-489e-a712-622c3f6b4327}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scripts\Logger">
       <UniqueIdentifier>{82f66982-6840-48a0-b8ce-fd42b269c66f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Scripts\Render">
       <UniqueIdentifier>{8a2610af-4d65-45ce-a2d2-777c89785f71}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scripts\LibControl">
-      <UniqueIdentifier>{ca7eb385-68be-46a6-a33f-833249f3062b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -29,46 +23,34 @@
     <ClCompile Include="LithiumUniverse.cpp">
       <Filter>Scripts</Filter>
     </ClCompile>
-    <ClCompile Include="LUWindow.cpp">
-      <Filter>Scripts\Window</Filter>
-    </ClCompile>
     <ClCompile Include="Console.cpp">
       <Filter>Scripts\Logger</Filter>
     </ClCompile>
     <ClCompile Include="GlobalRender.cpp">
       <Filter>Scripts\Render</Filter>
     </ClCompile>
-    <ClCompile Include="LibControl.cpp">
-      <Filter>Scripts\LibControl</Filter>
-    </ClCompile>
     <ClCompile Include="BaseConstants.cpp">
       <Filter>Scripts</Filter>
     </ClCompile>
-    <ClCompile Include="InstallVulkan.cpp">
-      <Filter>Scripts\Render</Filter>
+    <ClCompile Include="GameInstalls.cpp">
+      <Filter>Scripts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
       <Filter>Scripts</Filter>
     </ClInclude>
-    <ClInclude Include="LUWindow.h">
-      <Filter>Scripts\Window</Filter>
-    </ClInclude>
     <ClInclude Include="Console.h">
       <Filter>Scripts\Logger</Filter>
-    </ClInclude>
-    <ClInclude Include="InstallVulkan.h">
-      <Filter>Scripts\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="LibControl.h">
-      <Filter>Scripts\LibControl</Filter>
     </ClInclude>
     <ClInclude Include="BaseConstants.h">
       <Filter>Scripts</Filter>
     </ClInclude>
     <ClInclude Include="GlobalRender.h">
       <Filter>Scripts\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameInstalls.h">
+      <Filter>Scripts</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

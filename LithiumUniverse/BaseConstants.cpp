@@ -3,7 +3,7 @@
 
 const int GameVersionMajor = 0;
 const int GameVersionMinor = 0;
-const int GameVersionPatch = 4;
+const int GameVersionPatch = 5;
 
 std::string GetGameVersionPatchWithLetters() {
     const std::string alphabet = "abcdefghijklmnopqrstuvwxyz";
@@ -15,7 +15,7 @@ std::string GetGameVersionPatchWithLetters() {
 
     result += std::to_string(prefix);
 
-    if (suffixIndex > 0 || GameVersionPatch != 0) {
+    if (suffixIndex > 0) {
         result += alphabet[suffixIndex];
     }
     return result;
