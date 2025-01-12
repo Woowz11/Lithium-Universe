@@ -106,14 +106,14 @@ private:
 			gladGLversionStruct VER = GLVersion;
 			Print("GL (" + std::to_string(VER.major) + "." + std::to_string(VER.minor) + ")");
 		}
-		glViewport(0, 0, START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
+		glEnable(GL_DEPTH_TEST);
 	}
 
 	/* Загрузка всего */
 	void RunAll() {
 		RunGLFW();
 		RunGLAD();
-		InstallRender();
+		InstallRender(START_WINDOW_WIDTH,START_WINDOW_HEIGHT);
 
 		Print("All started, and start Loop()!");
 	}
