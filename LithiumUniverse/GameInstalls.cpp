@@ -61,7 +61,6 @@ private:
 
 	/* Создание окна */
 	void CreateGameWindow() {
-		//glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
 		Window = glfwCreateWindow(START_WINDOW_WIDTH, START_WINDOW_HEIGHT, GetGameTitle().c_str(), NULL, NULL);
 		glfwSetWindowUserPointer(Window, this);
 		if (!Window) {
@@ -137,6 +136,18 @@ private:
 		if (currentTime - LastFPSTimeForSecond >= 0.5f) {
 			LastFPSTimeForSecond = currentTime;
 			glfwSetWindowTitle(Window, GetGameTitle().c_str());
+
+			std::string TESTMESSAGE = "GOVNO $$RKAKA$$_ priv)";
+			PrintBase("overtime", MessageType::Both, SendLogType::Info, TESTMESSAGE);
+			PrintBase("overtime", MessageType::Both, SendLogType::Important, TESTMESSAGE);
+			PrintBase("overtime", MessageType::Both, SendLogType::Warning, TESTMESSAGE);
+			PrintBase("overtime", MessageType::Both, SendLogType::WarningSerious, TESTMESSAGE);
+			PrintBase("overtime", MessageType::Both, SendLogType::Error, TESTMESSAGE);
+			PrintBase("overtime", MessageType::Both, SendLogType::Fatal, TESTMESSAGE);
+			PrintBase("overtime", MessageType::Both, SendLogType::DebugBlue, TESTMESSAGE);
+			PrintBase("overtime", MessageType::Both, SendLogType::DebugRed, TESTMESSAGE);
+			PrintBase("overtime", MessageType::Both, SendLogType::DebugGreen, TESTMESSAGE);
+			PrintBase("overtime", MessageType::Both, SendLogType::DebugYellow, TESTMESSAGE);
 		}
 	}
 

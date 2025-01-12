@@ -9,11 +9,14 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Scripts\Logger">
-      <UniqueIdentifier>{82f66982-6840-48a0-b8ce-fd42b269c66f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scripts\Render">
       <UniqueIdentifier>{8a2610af-4d65-45ce-a2d2-777c89785f71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripts\Foundation">
+      <UniqueIdentifier>{82f66982-6840-48a0-b8ce-fd42b269c66f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NotMy">
+      <UniqueIdentifier>{dea607ac-2b93-45ee-ae82-74bb40ec0de5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -24,7 +27,7 @@
       <Filter>Scripts</Filter>
     </ClCompile>
     <ClCompile Include="Console.cpp">
-      <Filter>Scripts\Logger</Filter>
+      <Filter>Scripts\Foundation</Filter>
     </ClCompile>
     <ClCompile Include="GlobalRender.cpp">
       <Filter>Scripts\Render</Filter>
@@ -35,11 +38,11 @@
     <ClCompile Include="GameInstalls.cpp">
       <Filter>Scripts</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
-      <Filter>Scripts</Filter>
-    </ClCompile>
     <ClCompile Include="Shader.h">
       <Filter>Scripts\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>NotMy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -47,7 +50,7 @@
       <Filter>Scripts</Filter>
     </ClInclude>
     <ClInclude Include="Console.h">
-      <Filter>Scripts\Logger</Filter>
+      <Filter>Scripts\Foundation</Filter>
     </ClInclude>
     <ClInclude Include="BaseConstants.h">
       <Filter>Scripts</Filter>

@@ -9,5 +9,5 @@ uniform float random2;
 
 void main()
 {
-    FragColor = texture(texture1, TexCoord+vec2(random,random2));
+    FragColor = texture(texture1, TexCoord);
 }
