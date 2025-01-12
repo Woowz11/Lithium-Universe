@@ -19,7 +19,7 @@ public:
     unsigned int ID;
     Shader(const char* vertexPath, const char* fragmentPath)
     {
-        Print("Start create shader ( "+ (std::string)vertexPath+" | "+(std::string)fragmentPath+" )!");
+        Print("SHADER", "Start create shader ( $$Y" + (std::string)vertexPath + "$$_ | $$Y" + (std::string)fragmentPath + "$$_ )!");
 
         std::string vertexCode;
         std::string fragmentCode;
@@ -45,7 +45,7 @@ public:
         }
         catch (std::ifstream::failure& e)
         {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << std::endl;
+            Error("SHADER (READING)", e.what());
         }
         const char* vShaderCode = vertexCode.c_str();
         const char* fShaderCode = fragmentCode.c_str();
@@ -145,7 +145,9 @@ private:
             if (!success)
             {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-                std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+                Error("SHADER (COMPILATION)", "Error with shader type: "+type);
+                Error("SHADER (COMPILATION)", infoLog);
+                Error("SHADER (COMPILATION)", "---------------------------------------------------");
             }
         }
         else
@@ -154,7 +156,9 @@ private:
             if (!success)
             {
                 glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-                std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+                Error("SHADER (LINKING)", "Error with shader type: " + type);
+                Error("SHADER (LINKING)", infoLog);
+                Error("SHADER (LINKING)", "---------------------------------------------------");
             }
         }
     }

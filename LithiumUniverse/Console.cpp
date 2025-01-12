@@ -15,28 +15,32 @@ const std::string ColorCodePrefix = "$$";
 
 /* Массив цветовых кодов */
 const std::map<std::string, std::string> ColorCodes = {
-	{ColorCodePrefix + "_","\u001b[37m"     }, /* Белый (ресет) */
-	{ColorCodePrefix + "R","\u001b[31m"     }, /* Красный    */
-	{ColorCodePrefix + "G","\u001b[32m"     }, /* Зелёный    */
-	{ColorCodePrefix + "B","\u001b[34m"     }, /* Синий      */
-	{ColorCodePrefix + "Y","\u001b[33m"     }, /* Жёлтый     */
-	{ColorCodePrefix + "A","\u001b[38;5;14m"}, /* Голубой    */
-	{ColorCodePrefix + "P","\u001b[35m"     }, /* Фиолетовый */
-	{ColorCodePrefix + "L","\u001b[38;5;8m" }  /* Серый      */
+	{ColorCodePrefix + "_","\u001b[37m"       }, /* Белый (ресет) */
+	{ColorCodePrefix + "R","\u001b[31m"       }, /* Тёмн. Красный */
+	{ColorCodePrefix + "G","\u001b[38;5;10m"  }, /* Зелёный       */
+	{ColorCodePrefix + "B","\u001b[34m"       }, /* Синий         */
+	{ColorCodePrefix + "Y","\u001b[38;5;226m" }, /* Жёлтый        */
+	{ColorCodePrefix + "A","\u001b[38;5;14m"  }, /* Голубой       */
+	{ColorCodePrefix + "P","\u001b[35m"       }, /* Фиолетовый    */
+	{ColorCodePrefix + "L","\u001b[38;5;8m"   }, /* Серый         */
+	{ColorCodePrefix + "W","\u001b[38;5;248m" }, /* Светл. Серый  */
+	{ColorCodePrefix + "F","\u001b[38;5;9m"   }, /* Красный       */
+	{ColorCodePrefix + "O","\u001b[38;5;202m" }, /* Оранжевый     */
+	{ColorCodePrefix + "C","\u001b[38;5;11m"  }, /* Светл. Жёлтый */
 };
 
 /* Приставки к типу сообщения (связано с SendLogType) */
 const std::vector<std::string> LogTypePrefixes = {
-	"RII",
-	"RIM",
-	"RWR",
-	"RWS",
+	"WII",
+	"AIM",
+	"CWR",
+	"OWS",
 	"RER",
-	"RFT",
+	"FFT",
 	"RDR",
-	"RDB",
-	"RDG",
-	"RDY"
+	"BDB",
+	"GDG",
+	"YDY"
 };
 
 /* Консоль */
@@ -66,21 +70,24 @@ void CoutWithColors(std::string Message) {
 }
 
 /* Заполнить строку символами */
-std::string FillString(std::string target, char symbol, int length) {
+std::string FillString(std::string target, char symbol, int length, bool ToRight) {
 	if (target.length() >= length) {
 		return target;
 	}
 
 	int fillLength = length - target.length();
 	std::string filledString(fillLength, symbol);
-	return filledString + target;
+	return ToRight? filledString + target : target + filledString;
 }
 
 /* Получить основную часть сообщения */
 std::string GetPrintMessageBaseDecorations(std::string Base, SendLogType SLT, bool ThatForLogs) {
 	std::string Result = MessagesHaveBeenSentBeforeThis?"\n" : "";
 
-	Result += ColorCodePrefix + LogTypePrefixes[SLT] + ColorCodePrefix + "_:";
+	std::string LogTypePrefix = LogTypePrefixes[SLT];
+	std::string FirstChar(1,LogTypePrefix[0]);
+
+	Result += ColorCodePrefix + LogTypePrefix + ColorCodePrefix + "_:";
 
 	/* Время в сообщении */
 	auto now = std::chrono::system_clock::now().time_since_epoch();
@@ -93,11 +100,11 @@ std::string GetPrintMessageBaseDecorations(std::string Base, SendLogType SLT, bo
 	int minutes      = l.tm_min;
 	int hours        = l.tm_hour;
 
-	std::string TimePart = FillString(std::to_string(hours), ' ', 2) + ":" + FillString(std::to_string(minutes), ' ', 2) + ":" + FillString(std::to_string(seconds), ' ', 2) + ":" + FillString(std::to_string(milliseconds), ' ', 3);
+	std::string TimePart = FillString(std::to_string(hours), ' ', 2, true) + ":" + FillString(std::to_string(minutes), '0', 2, true) + ":" + FillString(std::to_string(seconds), '0', 2, true) + ":" + FillString(std::to_string(milliseconds), '0', 3, true);
 
-	Result += "[" + ColorCodePrefix + "L" + TimePart + ColorCodePrefix + "_]";
+	Result += "[" + ColorCodePrefix + FirstChar + TimePart + ColorCodePrefix + "_]";
 
-	Result += "[" + ColorCodePrefix + FillString(Base, ' ', 7) + ColorCodePrefix + "_]";
+	Result += "[" + ColorCodePrefix + FirstChar + FillString(Base, ' ', 7, false) + ColorCodePrefix + "_]";
 
 	return Result+": ";
 }
@@ -131,18 +138,39 @@ void PrintBase(std::string Base,MessageType MT, SendLogType SLT, std::string Mes
 	MessagesHaveBeenSentBeforeThis = true;
 }
 
-void Print(const char* message) {
-	PrintBase("testipyki", Both, Info, (std::string)message);
+/* ==== Отправка сообщений ==== */
+
+/* Отправить обычное сообщение */
+void Print(std::string Base, std::string Message) {
+	PrintBase(Base, Both, SLT_Info, Message);
 }
-void Print(std::string message) {
-	Print(message.c_str());
+
+/* Отправить важное сообщение */
+void PrintImportant(std::string Base, std::string Message) {
+	PrintBase(Base, Both, SLT_Important, Message);
 }
-void Print(double message) {
-	Print(std::to_string(message));
+
+/* Отправить предупреждение */
+void Warn(std::string Base, std::string Message) {
+	PrintBase(Base, Both, SLT_Warning, Message);
 }
-void Print(bool message) {
-	Print(message?"true" : "false");
+
+/* Отправить серьёзное предупреждение */
+void WarnSerious(std::string Base, std::string Message) {
+	PrintBase(Base, Both, SLT_WarningSerious, Message);
 }
+
+/* Отправить ошибку */
+void Error(std::string Base, std::string Message) {
+	PrintBase(Base, Both, SLT_Error, Message);
+}
+
+/* Отправить фатальную ошибку */
+void Fatal(std::string Base, std::string Message) {
+	PrintBase(Base, Both, SLT_Fatal, Message);
+}
+
+/* ==== Работа с консолью ==== */
 
 /* Регистрация консоли */
 void InstallConsole() {

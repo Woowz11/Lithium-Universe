@@ -46,7 +46,7 @@ public:
 
 	void Run() {
 		RunAll();
-		if (Error==SUCCESS) {
+		if (GlobalError==SUCCESS) {
 			Loop();
 		}
 		DestroyAll();
@@ -57,18 +57,18 @@ public:
 	}
 
 private:
-	GameInstallError Error = SUCCESS;
+	GameInstallError GlobalError = SUCCESS;
 
 	/* Создание окна */
 	void CreateGameWindow() {
 		Window = glfwCreateWindow(START_WINDOW_WIDTH, START_WINDOW_HEIGHT, GetGameTitle().c_str(), NULL, NULL);
 		glfwSetWindowUserPointer(Window, this);
 		if (!Window) {
-			Error = GLFW_NOT_CREATE_WINDOW;
+			GlobalError = GLFW_NOT_CREATE_WINDOW;
 			Window = NULL;
 		}
 		else {
-			Print("Window created!");
+			Print("GLFW", "Window created!");
 			glfwMakeContextCurrent(Window);
 			glfwSwapInterval(0);
 			glfwSetFramebufferSizeCallback(Window, WindowSizeChanged);
@@ -84,13 +84,13 @@ private:
 	/* Загрузка GLFW */
 	void RunGLFW() {
 		if (!glfwInit()) {
-			Print("GLFW not loaded!");
-			Error = GLFW_NOT_LOADED;
+			Fatal("GLFW", "GLFW not loaded!");
+			GlobalError = GLFW_NOT_LOADED;
 		}
 		else {
 			int major, minor, revision;
 			glfwGetVersion(&major, &minor, &revision);
-			Print("GLFW (" + std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(revision) + ")");
+			Print("GLFW", "GLFW (" + std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(revision) + ")");
 			CreateGameWindow();
 		}
 	}
@@ -98,12 +98,12 @@ private:
 	/* Загрузка GLAD */
 	void RunGLAD() {
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-			Error = GLAD_NOT_LOADED_GL;
-			Print("GLAD not loaded GL!");
+			GlobalError = GLAD_NOT_LOADED_GL;
+			Fatal("GLAD", "GLAD not loaded GL!");
 		}
 		else {
 			gladGLversionStruct VER = GLVersion;
-			Print("GL (" + std::to_string(VER.major) + "." + std::to_string(VER.minor) + ")");
+			Print("GLAD", "GL (" + std::to_string(VER.major) + "." + std::to_string(VER.minor) + ")");
 		}
 		glEnable(GL_DEPTH_TEST);
 	}
@@ -114,7 +114,7 @@ private:
 		RunGLAD();
 		InstallRender(START_WINDOW_WIDTH,START_WINDOW_HEIGHT);
 
-		Print("All started, and start Loop()!");
+		Print("LU", "All started, and start Loop()!");
 	}
 
 	/* Вычесление FPS */
@@ -136,18 +136,6 @@ private:
 		if (currentTime - LastFPSTimeForSecond >= 0.5f) {
 			LastFPSTimeForSecond = currentTime;
 			glfwSetWindowTitle(Window, GetGameTitle().c_str());
-
-			std::string TESTMESSAGE = "GOVNO $$RKAKA$$_ priv)";
-			PrintBase("overtime", MessageType::Both, SendLogType::Info, TESTMESSAGE);
-			PrintBase("overtime", MessageType::Both, SendLogType::Important, TESTMESSAGE);
-			PrintBase("overtime", MessageType::Both, SendLogType::Warning, TESTMESSAGE);
-			PrintBase("overtime", MessageType::Both, SendLogType::WarningSerious, TESTMESSAGE);
-			PrintBase("overtime", MessageType::Both, SendLogType::Error, TESTMESSAGE);
-			PrintBase("overtime", MessageType::Both, SendLogType::Fatal, TESTMESSAGE);
-			PrintBase("overtime", MessageType::Both, SendLogType::DebugBlue, TESTMESSAGE);
-			PrintBase("overtime", MessageType::Both, SendLogType::DebugRed, TESTMESSAGE);
-			PrintBase("overtime", MessageType::Both, SendLogType::DebugGreen, TESTMESSAGE);
-			PrintBase("overtime", MessageType::Both, SendLogType::DebugYellow, TESTMESSAGE);
 		}
 	}
 
@@ -155,7 +143,6 @@ private:
 	void ProcessInput()
 	{
 		if (glfwGetKey(Window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-			Print("EXIT!");
 			glfwSetWindowShouldClose(Window, true);
 		}
 
@@ -207,8 +194,8 @@ private:
 
 	/* Очистить всё */
 	void DestroyAll() {
-		if (Error != GLFW_NOT_LOADED) {
-			if (Error != GLFW_NOT_CREATE_WINDOW) {
+		if (GlobalError != GLFW_NOT_LOADED) {
+			if (GlobalError != GLFW_NOT_CREATE_WINDOW) {
 				ClearRender();
 			}
 			DestroyGLFW();
@@ -218,17 +205,17 @@ private:
 
 int Run() {
 	GameInstalls game;
-	Print("Run LithiumUniverse (" + GetGameVersion() + (game.DeveloperVersion ? " DEV" : "") + ")!");
+	Print("LU", "Run LithiumUniverse (" + GetGameVersion() + (game.DeveloperVersion ? " $$CDEV$$_" : "") + ")!");
 
 	try {
 		game.Run();
 	}
 	catch (const std::exception& e) {
 		std::string Error = e.what();
-		Print("[TERMINATED ERROR]: " + Error);
-		Print("The game was terminated with an error!");
+		Fatal("LU CRASH", Error);
+		Fatal("LU CRASH", "The game was terminated with an error!");
 		return EXIT_FAILURE;
 	}
-	Print("Game has been exit successfully!");
+	Print("LU", "Game has been exit successfully!");
 	return EXIT_SUCCESS;
 }

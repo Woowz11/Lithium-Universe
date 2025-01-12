@@ -1,29 +1,32 @@
-#include <string>
+п»ї#include <string>
 #pragma once
 
 enum SendLogType {
-	Info = 0,             /* Простое сообщение                    */
-	Important = 1,        /* Важное сообщение                     */
-	Warning = 2,          /* Предупреждение                       */
-	WarningSerious = 3,   /* Серьёзное предупреждение             */
-	Error = 4,            /* Ошибка                               */
-	Fatal = 5,            /* Фатальная ошибка                     */
-	DebugRed = 6,         /* Отладочное помеченное красным цветом */
-	DebugBlue = 8,        /* Отладочное помеченное синим цветом   */
-	DebugGreen = 7,       /* Отладочное помеченное зелёным цветом */
-	DebugYellow = 9       /* Отладочное помеченное жёлтым цветом  */
+	SLT_Info = 0,             /* РџСЂРѕСЃС‚РѕРµ СЃРѕРѕР±С‰РµРЅРёРµ                    */
+	SLT_Important = 1,        /* Р’Р°Р¶РЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ                     */
+	SLT_Warning = 2,          /* РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ                       */
+	SLT_WarningSerious = 3,   /* РЎРµСЂСЊС‘Р·РЅРѕРµ РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ             */
+	SLT_Error = 4,            /* РћС€РёР±РєР°                               */
+	SLT_Fatal = 5,            /* Р¤Р°С‚Р°Р»СЊРЅР°СЏ РѕС€РёР±РєР°                     */
+	SLT_DebugRed = 6,         /* РћС‚Р»Р°РґРѕС‡РЅРѕРµ РїРѕРјРµС‡РµРЅРЅРѕРµ РєСЂР°СЃРЅС‹Рј С†РІРµС‚РѕРј */
+	SLT_DebugBlue = 8,        /* РћС‚Р»Р°РґРѕС‡РЅРѕРµ РїРѕРјРµС‡РµРЅРЅРѕРµ СЃРёРЅРёРј С†РІРµС‚РѕРј   */
+	SLT_DebugGreen = 7,       /* РћС‚Р»Р°РґРѕС‡РЅРѕРµ РїРѕРјРµС‡РµРЅРЅРѕРµ Р·РµР»С‘РЅС‹Рј С†РІРµС‚РѕРј */
+	SLT_DebugYellow = 9       /* РћС‚Р»Р°РґРѕС‡РЅРѕРµ РїРѕРјРµС‡РµРЅРЅРѕРµ Р¶С‘Р»С‚С‹Рј С†РІРµС‚РѕРј  */
 };
 
 enum MessageType {
-	Both = 0,        /* Оба варианта одновременно            */
-	OnlyConsole = 1, /* Отправить сообщение только в консоль */
-	OnlyLog = 2      /* Отправить сообщение только в логи    */
+	Both = 0,        /* РћР±Р° РІР°СЂРёР°РЅС‚Р° РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ            */
+	OnlyConsole = 1, /* РћС‚РїСЂР°РІРёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ С‚РѕР»СЊРєРѕ РІ РєРѕРЅСЃРѕР»СЊ */
+	OnlyLog = 2      /* РћС‚РїСЂР°РІРёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ С‚РѕР»СЊРєРѕ РІ Р»РѕРіРё    */
 };
 
-void InstallConsole();
-
 void PrintBase(std::string Base, MessageType MT, SendLogType SLT, std::string Message);
-void Print(std::string message);
-void Print(const char* message);
-void Print(double message);
-void Print(bool message);
+
+void Print(std::string Base, std::string Message);
+void PrintImportant(std::string Base, std::string Message);
+void Warn(std::string Base, std::string Message);
+void WarnSerious(std::string Base, std::string Message);
+void Error(std::string Base, std::string Message);
+void Fatal(std::string Base, std::string Message);
+
+void InstallConsole();

@@ -8,6 +8,7 @@
 
 #include <iostream>
 
+#include "Console.h";
 #include "Shader.h";
 
 uint32_t START_WINDOW_WIDTH;
