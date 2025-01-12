@@ -19,18 +19,16 @@ Shader ourShader;
 
 unsigned int texture1;
 
-int vertices_length = 6; /* Кол-во строк в vertices */
+int vertices_length = 4; /* Кол-во строк в vertices */
 float vertices[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
 glm::vec2 CameraPosition = glm::vec2(0,0);
-float CameraSpeed = 0.05f;
+float CameraSpeed = 0.001f;
 
 void MoveCamera(float vel_x, float vel_y) {
     CameraPosition = CameraPosition + glm::vec2(-vel_x * CameraSpeed, -vel_y * CameraSpeed);
@@ -111,19 +109,16 @@ void Render() {
     ourShader.setMat4("view", view);
 
     glBindVertexArray(VAO);
-    int total = 1000;
-    for (unsigned int i = 0; i < total; i++)
-    {
-        double randomValue = ((static_cast<double>(rand()) / RAND_MAX) - 0.5f) * 2;
-        double randomValue2 = ((static_cast<double>(rand()) / RAND_MAX) - 0.5f) * 2;
-        glm::mat4 model = glm::mat4(1.0f);
-        float a = ((((sin((float)glfwGetTime()) + 1) / 2)) + 1)/100;
-        model = glm::translate(model, glm::vec3(((float)i / (float)total) * randomValue, ((float)i / (float)total) * randomValue2,0));
-        model = glm::translate(model, glm::vec3(CameraPosition.x, CameraPosition.y, 0));
-        float angle = 45.0f * i;
-        model = glm::rotate(model, glm::radians(angle) * a, glm::vec3(0,0,1));
-        ourShader.setMat4("model", model);
 
-        glDrawArrays(GL_TRIANGLES, 0, vertices_length);
-    }
+    double randomValue = ((static_cast<double>(rand()) / RAND_MAX) - 0.5f) * 2;
+    double randomValue2 = ((static_cast<double>(rand()) / RAND_MAX) - 0.5f) * 2;
+
+    ourShader.setFloat("random", randomValue);
+    ourShader.setFloat("random2", randomValue2);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(CameraPosition.x, CameraPosition.y, 0));
+    ourShader.setMat4("model", model);
+
+    glDrawArrays(GL_QUADS, 0, vertices_length);
 }

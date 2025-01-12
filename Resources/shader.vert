@@ -7,6 +7,8 @@ out vec2 TexCoord;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform float random;
+uniform float random2;
 
 void main()
 {
