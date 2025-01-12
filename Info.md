@@ -2,7 +2,7 @@
 ---
 
 ## Графика
-OpenGL (GLEW)
+OpenGL (GLAD)
 ## Окно
 GLFW
 ## Управление
