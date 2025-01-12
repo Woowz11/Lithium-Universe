@@ -1,7 +1,5 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-//#define GLFW_EXPOSE_NATIVE_WIN32
-//#include <GLFW/glfw3native.h>
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -9,8 +7,6 @@
 #include <glm/gtx/hash.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
 
 #include <stdexcept>
 #include <algorithm>
@@ -27,6 +23,7 @@
 #include <set>
 
 #include "BaseConstants.h";
+#include "GlobalRender.h";
 #include "Console.h";
 
 enum GameInstallError {
@@ -48,6 +45,8 @@ public:
 	const uint32_t START_WINDOW_HEIGHT = 600;
 	GLFWwindow* Window = NULL;
 
+	float FPS = -1;
+
 	void Run() {
 		RunAll();
 		if (Error==SUCCESS) {
@@ -57,7 +56,7 @@ public:
 	}
 
 	std::string GetGameTitle() {
-		return "LithiumUniverse (" + GetGameVersion() + ")";
+		return "LithiumUniverse (" + GetGameVersion() + ") FPS: "+std::to_string(FPS);
 	}
 
 private:
@@ -115,20 +114,37 @@ private:
 	void RunAll() {
 		RunGLFW();
 		RunGLAD();
+		InstallRender();
 
 		Print("All started, and start Loop()!");
+	}
+
+	/* Вычесление FPS */
+	float LastFPSTime = 0.0f;
+	float LastFPSTimeForSecond = 0.0f;
+	void CalculateFPS() {
+		float currentTime = glfwGetTime();
+		float deltaTime = currentTime - LastFPSTime;
+		LastFPSTime = currentTime;
+		if (currentTime - LastFPSTimeForSecond >= 0.5f) {
+			LastFPSTimeForSecond = currentTime;
+			FPS = (1 / deltaTime);
+		}
 	}
 
 	/* Цикл GLFW */
 	void LoopGLFW() {
 		glfwSwapBuffers(Window);
 		glfwPollEvents();
+
+		glfwSetWindowTitle(Window, GetGameTitle().c_str());
 	}
 
 	/* Обработка клавиш */
 	void ProcessInput()
 	{
 		if (glfwGetKey(Window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+			Print("EXIT!");
 			glfwSetWindowShouldClose(Window, true);
 		}
 	}
@@ -138,8 +154,8 @@ private:
 		while (!glfwWindowShouldClose(Window)) {
 			ProcessInput();
 
-			glClearColor(0.2f, 0.0f, 0.0f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
+			Render();
+			CalculateFPS();
 
 			LoopGLFW();
 		}
