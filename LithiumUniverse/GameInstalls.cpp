@@ -84,11 +84,10 @@ namespace std {
 	};
 }
 
-
 struct UniformBufferObject {
-	glm::mat4 model;
+	/*glm::mat4 model;
 	glm::mat4 view;
-	glm::mat4 proj;
+	glm::mat4 proj;*/
 };
 
 class GameInstalls {
@@ -101,8 +100,7 @@ public:
 
 	const int MaxFramesInFlight = 2;
 
-	const std::string TEXTURE_PATH = "F:/Lithium-Universe/Resources/model.png";
-	const std::string MODEL_PATH = "F:/Lithium-Universe/Resources/model.obj";
+	const std::string TEXTURE_PATH = "F:/Lithium-Universe/Resources/test_image.png";
 
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
@@ -662,7 +660,7 @@ private:
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 
 		VkPipelineMultisampleStateCreateInfo multisampling{};
@@ -1063,7 +1061,7 @@ private:
 	}
 
 	/* Создание буфера для индексов */
-	void СreateIndexBuffer() {
+	void CreateIndexBuffer() {
 		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
 		VkBuffer stagingBuffer;
@@ -1136,7 +1134,7 @@ private:
 		}
 	}
 
-	/* ? */
+	/* Изменение геометрии */
 	void UpdateUniformBuffer(uint32_t currentImage) {
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -1144,10 +1142,12 @@ private:
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 		UniformBufferObject ubo{};
-		ubo.model = glm::rotate(glm::mat4(1.0f), sin(time / 2)/3 * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		/*ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.model += glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		ubo.model += glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		ubo.proj = glm::perspective(glm::radians(45.0f), SwapChainExtent.width / (float)SwapChainExtent.height, 0.1f, 10.0f);
-		ubo.proj[1][1] *= -1;
+		ubo.proj[1][1] *= -1;*/
 
 		memcpy(UniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 	}
@@ -1581,7 +1581,26 @@ private:
 
 	/* Загрузка модели */
 	void LoadModel() {
-		tinyobj::attrib_t attrib;
+		vertices = {
+			{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+			{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+			{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+			{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+			{{-0.5f, -0.5f - 1.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+			{{0.5f, -0.5f - 1.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+			{{0.5f, 0.5f - 1.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+			{{-0.5f, 0.5f - 1.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+		};
+
+		indices = {
+			0, 1, 2, 2, 3, 0,
+			4, 5, 6, 6, 7, 4
+		};
+
+		Print("Model generated!");
+
+		/*tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
 		std::string err;
@@ -1616,7 +1635,7 @@ private:
 
 				indices.push_back(uniqueVertices[vertex]);
 			}
-		}
+		}*/
 	}
 
 	/* ? */
@@ -1740,7 +1759,7 @@ private:
 		CreateTextureSampler();
 		LoadModel();
 		CreateVertexBuffer();
-		СreateIndexBuffer();
+		CreateIndexBuffer();
 		CreateUniformBuffers();
 		CreateDescriptorPool();
 		CreateDescriptorSets();
@@ -1805,7 +1824,7 @@ private:
 
 		vkResetFences(VulkanDevice, 1, &InFlightFences[Frame]);
 
-		vkResetCommandBuffer(CommandBuffers[Frame], /*VkCommandBufferResetFlagBits*/ 0);
+		vkResetCommandBuffer(CommandBuffers[Frame], 0);
 		RecordCommandBuffer(CommandBuffers[Frame], imageIndex);
 
 		VkSubmitInfo submitInfo{};
