@@ -64,6 +64,7 @@ private:
 
 	/* Создание окна */
 	void CreateGameWindow() {
+		//glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
 		Window = glfwCreateWindow(START_WINDOW_WIDTH, START_WINDOW_HEIGHT, GetGameTitle().c_str(), NULL, NULL);
 		glfwSetWindowUserPointer(Window, this);
 		if (!Window) {
@@ -73,6 +74,7 @@ private:
 		else {
 			Print("Window created!");
 			glfwMakeContextCurrent(Window);
+			glfwSwapInterval(0);
 			glfwSetFramebufferSizeCallback(Window, WindowSizeChanged);
 		}
 	}
@@ -170,7 +172,7 @@ private:
 	void DestroyAll() {
 		if (Error != GLFW_NOT_LOADED) {
 			if (Error != GLFW_NOT_CREATE_WINDOW) {
-
+				ClearRender();
 			}
 			DestroyGLFW();
 		}

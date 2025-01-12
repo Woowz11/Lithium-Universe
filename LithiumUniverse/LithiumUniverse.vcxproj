@@ -139,6 +139,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="GlobalRender.cpp" />
     <ClCompile Include="LithiumUniverse.cpp" />
+    <ClCompile Include="Shader.h" />
     <ClCompile Include="Start.cpp" />
   </ItemGroup>
   <ItemGroup>
