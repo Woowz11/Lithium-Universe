@@ -1014,6 +1014,8 @@ private:
 
 	/* Создание вершин */
 	void CreateVertexBuffer() {
+		UpdateModel();
+
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
 		VkBuffer stagingBuffer;
@@ -1580,10 +1582,12 @@ private:
 	}
 
 	/* Загрузка модели */
-	void LoadModel() {
+	void UpdateModel() {
+		double randomValue = static_cast<double>(std::rand()) / RAND_MAX;
+
 		vertices = {
-			{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-			{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+			{{-0.5f+ randomValue, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+			{{0.5f, -0.5f- randomValue, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
 			{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
 			{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
 
@@ -1597,8 +1601,6 @@ private:
 			0, 1, 2, 2, 3, 0,
 			4, 5, 6, 6, 7, 4
 		};
-
-		Print("Model generated!");
 
 		/*tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
@@ -1660,6 +1662,18 @@ private:
 
 		CreateImage(SwapChainExtent.width, SwapChainExtent.height, 1, MSAASamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, ColorImage, ColorImageMemory);
 		ColorImageView = CreateImageView(ColorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+	}
+
+	/* Обновить сцену (вертексы (если добавлены новые или удалены)) */
+	void UpdateScene() {
+		UpdateModel();
+		CreateVertexBuffer();
+		CreateIndexBuffer();
+		CreateUniformBuffers();
+		CreateDescriptorPool();
+		CreateDescriptorSets();
+		CreateCommandBuffer();
+		CreateSyncObjects();
 	}
 
 	/* Загрузка Vulkan */
@@ -1757,14 +1771,7 @@ private:
 		CreateTextures();
 		CreateTexturesView();
 		CreateTextureSampler();
-		LoadModel();
-		CreateVertexBuffer();
-		CreateIndexBuffer();
-		CreateUniformBuffers();
-		CreateDescriptorPool();
-		CreateDescriptorSets();
-		CreateCommandBuffer();
-		CreateSyncObjects();
+		UpdateScene();
 	}
 	
 	/* Создание окна */
@@ -1872,11 +1879,28 @@ private:
 		Frame = (Frame + 1) % MaxFramesInFlight;
 	}
 
+	clock_t begin_time;
+	clock_t fps = 0;
+	void StartFPS() {
+		begin_time = clock();
+		fps = 0;
+	}
+	void EndFPS() {
+		clock_t t = clock() - begin_time;
+		if (t != 0) {
+			fps = fps++ / (clock() - begin_time);
+			Print(fps);
+		}
+	}
+
 	/* Цикл всего */
 	void Loop() {
 		while (!glfwWindowShouldClose(Window)) {
 			LoopGLFW();
+			//UpdateScene();
+			StartFPS();
 			Render();
+			EndFPS();
 		}
 		vkDeviceWaitIdle(VulkanDevice);
 	}

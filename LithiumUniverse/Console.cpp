@@ -7,3 +7,6 @@ void Print(const char* message) {
 void Print(std::string message) {
 	Print(message.c_str());
 }
+void Print(double message) {
+	Print(std::to_string(message));
+}
