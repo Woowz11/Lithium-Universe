@@ -3,3 +3,4 @@
 void Print(const char* message);
 void Print(std::string message);
 void Print(double message);
+void Print(bool message);

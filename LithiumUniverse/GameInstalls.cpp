@@ -1,8 +1,7 @@
-#define VK_USE_PLATFORM_WIN32_KHR
-#define GLFW_INCLUDE_NONE
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
+//#define GLFW_EXPOSE_NATIVE_WIN32
+//#include <GLFW/glfw3native.h>
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -32,7 +31,9 @@
 
 enum GameInstallError {
 	SUCCESS = 0,
-	GLFW_NOT_CREATE_WINDOW = 1
+	GLFW_NOT_CREATE_WINDOW = 1,
+	GLAD_NOT_LOADED_GL = 2,
+	GLFW_NOT_LOADED = 3
 };
 
 class GameInstalls {
@@ -43,48 +44,79 @@ public:
 	const bool DeveloperVersion = true;
 #endif
 
+	const uint32_t START_WINDOW_WIDTH = 800;
+	const uint32_t START_WINDOW_HEIGHT = 600;
 	GLFWwindow* Window = NULL;
 
 	void Run() {
 		RunAll();
-		if (Error==GameInstallError::SUCCESS) {
+		if (Error==SUCCESS) {
 			Loop();
 		}
 		DestroyAll();
 	}
 
+	std::string GetGameTitle() {
+		return "LithiumUniverse (" + GetGameVersion() + ")";
+	}
+
 private:
-	GameInstallError Error = GameInstallError::SUCCESS;
+	GameInstallError Error = SUCCESS;
 
 	/* Создание окна */
 	void CreateGameWindow() {
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		const uint32_t WIDTH = 800;
-		const uint32_t HEIGHT = 600;
-
-		std::string WindowTitle = "LithiumUniverse (" + GetGameVersion() + ")";
-		Window = glfwCreateWindow(WIDTH, HEIGHT, WindowTitle.c_str(), NULL, NULL);
+		Window = glfwCreateWindow(START_WINDOW_WIDTH, START_WINDOW_HEIGHT, GetGameTitle().c_str(), NULL, NULL);
 		glfwSetWindowUserPointer(Window, this);
-		//glfwSetFramebufferSizeCallback(Window, FramebufferResizeCallback);
 		if (!Window) {
-			Error = GameInstallError::GLFW_NOT_CREATE_WINDOW;
+			Error = GLFW_NOT_CREATE_WINDOW;
 			Window = NULL;
 		}
 		else {
 			Print("Window created!");
 			glfwMakeContextCurrent(Window);
+			glfwSetFramebufferSizeCallback(Window, WindowSizeChanged);
 		}
+	}
+
+	/* Размер окна был изменён */
+	static void WindowSizeChanged(GLFWwindow* window, int width, int height)
+	{
+		glViewport(0, 0, width, height);
 	}
 
 	/* Загрузка GLFW */
 	void RunGLFW() {
-		glfwInit();
-		CreateGameWindow();
+		if (!glfwInit()) {
+			Print("GLFW not loaded!");
+			Error = GLFW_NOT_LOADED;
+		}
+		else {
+			int major, minor, revision;
+			glfwGetVersion(&major, &minor, &revision);
+			Print("GLFW (" + std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(revision) + ")");
+			CreateGameWindow();
+		}
+	}
+
+	/* Загрузка GLAD */
+	void RunGLAD() {
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+			Error = GLAD_NOT_LOADED_GL;
+			Print("GLAD not loaded GL!");
+		}
+		else {
+			gladGLversionStruct VER = GLVersion;
+			Print("GL (" + std::to_string(VER.major) + "." + std::to_string(VER.minor) + ")");
+		}
+		glViewport(0, 0, START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
 	}
 
 	/* Загрузка всего */
 	void RunAll() {
 		RunGLFW();
+		RunGLAD();
+
+		Print("All started, and start Loop()!");
 	}
 
 	/* Цикл GLFW */
@@ -93,9 +125,22 @@ private:
 		glfwPollEvents();
 	}
 
+	/* Обработка клавиш */
+	void ProcessInput()
+	{
+		if (glfwGetKey(Window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+			glfwSetWindowShouldClose(Window, true);
+		}
+	}
+
 	/* Цикл всего */
 	void Loop() {
 		while (!glfwWindowShouldClose(Window)) {
+			ProcessInput();
+
+			glClearColor(0.2f, 0.0f, 0.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
+
 			LoopGLFW();
 		}
 	}
@@ -107,10 +152,12 @@ private:
 
 	/* Очистить всё */
 	void DestroyAll() {
-		if (Error != GameInstallError::GLFW_NOT_CREATE_WINDOW) {
-			
+		if (Error != GLFW_NOT_LOADED) {
+			if (Error != GLFW_NOT_CREATE_WINDOW) {
+
+			}
+			DestroyGLFW();
 		}
-		DestroyGLFW();
 	}
 };
 

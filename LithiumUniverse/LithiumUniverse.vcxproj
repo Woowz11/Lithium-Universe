@@ -136,6 +136,7 @@
     <ClCompile Include="BaseConstants.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="GameInstalls.cpp" />
+    <ClCompile Include="glad.c" />
     <ClCompile Include="GlobalRender.cpp" />
     <ClCompile Include="LithiumUniverse.cpp" />
     <ClCompile Include="Start.cpp" />

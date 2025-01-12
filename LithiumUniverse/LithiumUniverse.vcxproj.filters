@@ -35,6 +35,9 @@
     <ClCompile Include="GameInstalls.cpp">
       <Filter>Scripts</Filter>
     </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>Scripts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">

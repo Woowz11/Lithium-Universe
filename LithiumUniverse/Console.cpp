@@ -10,3 +10,6 @@ void Print(std::string message) {
 void Print(double message) {
 	Print(std::to_string(message));
 }
+void Print(bool message) {
+	Print(message?"true" : "false");
+}
