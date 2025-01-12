@@ -1,14 +1,14 @@
-#include "BaseConstants.h";
+п»ї#include "BaseConstants.h";
 #include <string>
 
-/* Обозначения версии (x.y.z) 
- * x - Номер полной сборки     (публичный релиз)
- * y - Номер тестовой сборки   (частично играбельное, для теста, друзьям)
- * z - Номер отладочной сборки (точнее отправки коммита на гит)
+/* РћР±РѕР·РЅР°С‡РµРЅРёСЏ РІРµСЂСЃРёРё (x.y.z) 
+ * x - РќРѕРјРµСЂ РїРѕР»РЅРѕР№ СЃР±РѕСЂРєРё     (РїСѓР±Р»РёС‡РЅС‹Р№ СЂРµР»РёР·)
+ * y - РќРѕРјРµСЂ С‚РµСЃС‚РѕРІРѕР№ СЃР±РѕСЂРєРё   (С‡Р°СЃС‚РёС‡РЅРѕ РёРіСЂР°Р±РµР»СЊРЅРѕРµ, РґР»СЏ С‚РµСЃС‚Р°, РґСЂСѓР·СЊСЏРј)
+ * z - РќРѕРјРµСЂ РѕС‚Р»Р°РґРѕС‡РЅРѕР№ СЃР±РѕСЂРєРё (С‚РѕС‡РЅРµРµ РѕС‚РїСЂР°РІРєРё РєРѕРјРјРёС‚Р° РЅР° РіРёС‚)
  */
 const int GameVersionMajor = 0;
 const int GameVersionMinor = 1;
-const int GameVersionPatch = 22;
+const int GameVersionPatch = 23;
 
 std::string GetGameVersionPatchWithLetters() {
     const std::string alphabet = "ABCDEFGHIJKLMNoPQRSTUVWXYZ";

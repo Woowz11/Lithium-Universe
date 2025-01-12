@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+п»ї#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -62,7 +62,7 @@ public:
 private:
 	GameInstallError Error = SUCCESS;
 
-	/* Создание окна */
+	/* РЎРѕР·РґР°РЅРёРµ РѕРєРЅР° */
 	void CreateGameWindow() {
 		Window = glfwCreateWindow(START_WINDOW_WIDTH, START_WINDOW_HEIGHT, GetGameTitle().c_str(), NULL, NULL);
 		glfwSetWindowUserPointer(Window, this);
@@ -77,13 +77,13 @@ private:
 		}
 	}
 
-	/* Размер окна был изменён */
+	/* Р Р°Р·РјРµСЂ РѕРєРЅР° Р±С‹Р» РёР·РјРµРЅС‘РЅ */
 	static void WindowSizeChanged(GLFWwindow* window, int width, int height)
 	{
 		glViewport(0, 0, width, height);
 	}
 
-	/* Загрузка GLFW */
+	/* Р—Р°РіСЂСѓР·РєР° GLFW */
 	void RunGLFW() {
 		if (!glfwInit()) {
 			Print("GLFW not loaded!");
@@ -97,7 +97,7 @@ private:
 		}
 	}
 
-	/* Загрузка GLAD */
+	/* Р—Р°РіСЂСѓР·РєР° GLAD */
 	void RunGLAD() {
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 			Error = GLAD_NOT_LOADED_GL;
@@ -110,7 +110,7 @@ private:
 		glViewport(0, 0, START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
 	}
 
-	/* Загрузка всего */
+	/* Р—Р°РіСЂСѓР·РєР° РІСЃРµРіРѕ */
 	void RunAll() {
 		RunGLFW();
 		RunGLAD();
@@ -119,7 +119,7 @@ private:
 		Print("All started, and start Loop()!");
 	}
 
-	/* Вычесление FPS */
+	/* Р’С‹С‡РµСЃР»РµРЅРёРµ FPS */
 	float LastFPSTime = 0.0f;
 	float LastFPSTimeForSecond = 0.0f;
 	void CalculateFPS() {
@@ -132,7 +132,7 @@ private:
 		}
 	}
 
-	/* Цикл GLFW */
+	/* Р¦РёРєР» GLFW */
 	void LoopGLFW() {
 		glfwSwapBuffers(Window);
 		glfwPollEvents();
@@ -140,7 +140,7 @@ private:
 		glfwSetWindowTitle(Window, GetGameTitle().c_str());
 	}
 
-	/* Обработка клавиш */
+	/* РћР±СЂР°Р±РѕС‚РєР° РєР»Р°РІРёС€ */
 	void ProcessInput()
 	{
 		if (glfwGetKey(Window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -149,7 +149,7 @@ private:
 		}
 	}
 
-	/* Цикл всего */
+	/* Р¦РёРєР» РІСЃРµРіРѕ */
 	void Loop() {
 		while (!glfwWindowShouldClose(Window)) {
 			ProcessInput();
@@ -161,12 +161,12 @@ private:
 		}
 	}
 
-	/* Очистить GLFW */
+	/* РћС‡РёСЃС‚РёС‚СЊ GLFW */
 	void DestroyGLFW() {
 		glfwTerminate();
 	}
 
-	/* Очистить всё */
+	/* РћС‡РёСЃС‚РёС‚СЊ РІСЃС‘ */
 	void DestroyAll() {
 		if (Error != GLFW_NOT_LOADED) {
 			if (Error != GLFW_NOT_CREATE_WINDOW) {
