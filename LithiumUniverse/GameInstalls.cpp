@@ -125,10 +125,7 @@ private:
 		float currentTime = glfwGetTime();
 		float deltaTime = currentTime - LastFPSTime;
 		LastFPSTime = currentTime;
-		if (currentTime - LastFPSTimeForSecond >= 0.5f) {
-			LastFPSTimeForSecond = currentTime;
-			FPS = (1 / deltaTime);
-		}
+		FPS = (1 / deltaTime);
 	}
 
 	/* Цикл GLFW */
@@ -136,7 +133,11 @@ private:
 		glfwSwapBuffers(Window);
 		glfwPollEvents();
 
-		glfwSetWindowTitle(Window, GetGameTitle().c_str());
+		float currentTime = glfwGetTime();
+		if (currentTime - LastFPSTimeForSecond >= 0.5f) {
+			LastFPSTimeForSecond = currentTime;
+			glfwSetWindowTitle(Window, GetGameTitle().c_str());
+		}
 	}
 
 	/* Обработка клавиш */
@@ -145,6 +146,34 @@ private:
 		if (glfwGetKey(Window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 			Print("EXIT!");
 			glfwSetWindowShouldClose(Window, true);
+		}
+
+		if (glfwGetKey(Window, GLFW_KEY_HOME) == GLFW_PRESS) {
+			SetCameraPosition(0, 0);
+		}
+
+		bool W = glfwGetKey(Window, GLFW_KEY_W) == GLFW_PRESS;
+		bool S = glfwGetKey(Window, GLFW_KEY_S) == GLFW_PRESS;
+		bool D = glfwGetKey(Window, GLFW_KEY_D) == GLFW_PRESS;
+		bool A = glfwGetKey(Window, GLFW_KEY_A) == GLFW_PRESS;
+
+		bool SHIFT = glfwGetKey(Window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS;
+		bool CONTROL = glfwGetKey(Window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS;
+
+		float speed = (SHIFT?3:(CONTROL?0.3f:1));
+
+		if (W && !S) {
+			MoveCamera( 0,  speed);
+		}
+		if (S && !W) {
+			MoveCamera( 0, -speed);
+		}
+
+		if (D && !A) {
+			MoveCamera(speed,  0);
+		}
+		if (A && !D) {
+			MoveCamera(-speed,  0);
 		}
 	}
 

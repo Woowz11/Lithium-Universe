@@ -19,66 +19,30 @@ Shader ourShader;
 
 unsigned int texture1;
 
-glm::vec3 cubePositions[] = {
-    glm::vec3(0.0f,  0.0f,  -0.1f),
-    glm::vec3(2.0f,  5.0f, -15.0f),
-    glm::vec3(-1.5f, -2.2f, -2.5f),
-    glm::vec3(-3.8f, -2.0f, -12.3f),
-    glm::vec3(2.4f, -0.4f, -3.5f),
-    glm::vec3(-1.7f,  3.0f, -7.5f),
-    glm::vec3(1.3f, -2.0f, -2.5f),
-    glm::vec3(1.5f,  2.0f, -2.5f),
-    glm::vec3(1.5f,  0.2f, -1.5f),
-    glm::vec3(-1.3f,  1.0f, -1.5f)
+int vertices_length = 6; /* Кол-во строк в vertices */
+float vertices[] = {
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f
 };
+
+glm::vec2 CameraPosition = glm::vec2(0,0);
+float CameraSpeed = 0.05f;
+
+void MoveCamera(float vel_x, float vel_y) {
+    CameraPosition = CameraPosition + glm::vec2(-vel_x * CameraSpeed, -vel_y * CameraSpeed);
+}
+
+void SetCameraPosition(float x, float y) {
+    CameraPosition = glm::vec2(x,y);
+}
 
 void InstallRender(uint32_t SWW, uint32_t SWH) {
     START_WINDOW_WIDTH = SWW;
     START_WINDOW_HEIGHT = SWH;
-
-    float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
 
     ourShader = *new Shader("F:/Lithium-Universe/Resources/shader.vert", "F:/Lithium-Universe/Resources/shader.frag");
 
@@ -147,15 +111,19 @@ void Render() {
     ourShader.setMat4("view", view);
 
     glBindVertexArray(VAO);
-    for (unsigned int i = 0; i < 10; i++)
+    int total = 1000;
+    for (unsigned int i = 0; i < total; i++)
     {
+        double randomValue = ((static_cast<double>(rand()) / RAND_MAX) - 0.5f) * 2;
+        double randomValue2 = ((static_cast<double>(rand()) / RAND_MAX) - 0.5f) * 2;
         glm::mat4 model = glm::mat4(1.0f);
-        float a = ((((sin((float)glfwGetTime()) + 1) / 2) * 3) + 1);
-        model = glm::translate(model, cubePositions[i] * a );
-        float angle = 20.0f * i;
-        model = glm::rotate(model, glm::radians(angle) * (float)glfwGetTime() * a, glm::vec3(1.0f, 0.3f, 0.5f));
+        float a = ((((sin((float)glfwGetTime()) + 1) / 2)) + 1)/100;
+        model = glm::translate(model, glm::vec3(((float)i / (float)total) * randomValue, ((float)i / (float)total) * randomValue2,0));
+        model = glm::translate(model, glm::vec3(CameraPosition.x, CameraPosition.y, 0));
+        float angle = 45.0f * i;
+        model = glm::rotate(model, glm::radians(angle) * a, glm::vec3(0,0,1));
         ourShader.setMat4("model", model);
 
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, vertices_length);
     }
 }
