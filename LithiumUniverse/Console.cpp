@@ -1,11 +1,14 @@
 ﻿#include <Windows.h>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <chrono>
 #include <vector>
 #include <ctime>
 #include <map>
 
+#include "ExplorerActions.h";
+#include "StringActions.h";
 #include "Console.h";
 
 /* Скрипт [Вывод сообщений в консоль и логирование их] */
@@ -18,7 +21,7 @@ const std::map<std::string, std::string> ColorCodes = {
 	{ColorCodePrefix + "_","\u001b[37m"       }, /* Белый (ресет) */
 	{ColorCodePrefix + "R","\u001b[31m"       }, /* Тёмн. Красный */
 	{ColorCodePrefix + "G","\u001b[38;5;10m"  }, /* Зелёный       */
-	{ColorCodePrefix + "B","\u001b[34m"       }, /* Синий         */
+	{ColorCodePrefix + "B","\u001b[38;5;4m"   }, /* Синий         */
 	{ColorCodePrefix + "Y","\u001b[38;5;226m" }, /* Жёлтый        */
 	{ColorCodePrefix + "A","\u001b[38;5;14m"  }, /* Голубой       */
 	{ColorCodePrefix + "P","\u001b[35m"       }, /* Фиолетовый    */
@@ -38,13 +41,28 @@ const std::vector<std::string> LogTypePrefixes = {
 	"RER",
 	"FFT",
 	"RDR",
-	"BDB",
-	"GDG",
+	"BDG",
+	"GDB",
 	"YDY"
 };
 
 /* Консоль */
 HANDLE Console;
+
+/* Папка с логами */
+std::string LogsPath;
+
+/* Текущий лог */
+std::string CurrentLogName;
+
+/* Позиция текущего лога */
+std::string CurrentLogPath;
+
+/* Лог файл */
+std::ofstream LogFile;
+
+/* Лог файл удалён или сломан? */
+bool LogFileCorrupted = false;
 
 /* Сообщения были хоть раз отправлены? */
 bool MessagesHaveBeenSentBeforeThis = false;
@@ -69,15 +87,28 @@ void CoutWithColors(std::string Message) {
 	std::cout << ReplaceColorCodesToRealColors(Message,false).c_str();
 }
 
-/* Заполнить строку символами */
-std::string FillString(std::string target, char symbol, int length, bool ToRight) {
-	if (target.length() >= length) {
-		return target;
+/* Создать название лог файлу */
+std::string GenerateLogFileName() {
+	std::string Result;
+
+	auto now_forlocal = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	std::tm l;
+	localtime_s(&l, &now_forlocal);
+
+	int seconds = l.tm_sec;
+	int minutes = l.tm_min;
+	int hours   = l.tm_hour;
+	int days    = l.tm_mday;
+	int month   = l.tm_mon+1;
+	int year    = l.tm_year+1900;
+
+	Result = std::to_string(seconds) + "-" + std::to_string(minutes) + "-" + std::to_string(hours) + "-" + std::to_string(days) + "-" + std::to_string(month) + "-" + std::to_string(year);
+
+	if (HasFile(LogsPath + "/" + Result + ".log")) {
+		Result += " (CALMDOWN!)";
 	}
 
-	int fillLength = length - target.length();
-	std::string filledString(fillLength, symbol);
-	return ToRight? filledString + target : target + filledString;
+	return Result + ".log";
 }
 
 /* Получить основную часть сообщения */
@@ -111,7 +142,18 @@ std::string GetPrintMessageBaseDecorations(std::string Base, SendLogType SLT, bo
 
 /* Отправить сообщение в логи (основа) */
 void PrintLogBase(std::string Base, SendLogType SLT, std::string Message) {
-	std::string Result = GetPrintMessageBaseDecorations(Base, SLT, true) + Message;
+	std::string Result = ReplaceColorCodesToRealColors(GetPrintMessageBaseDecorations(Base, SLT, true) + Message, true);
+	if (!LogFileCorrupted) {
+		if (HasFile(CurrentLogPath)) {
+			AddToFile(LogFile, Result);
+		}
+		else {
+			if (!LogFileCorrupted) {
+				LogFileCorrupted = true;
+				ErrorFromLog("LOGGER", "The current log file has been corrupted! Possibly deleted! Path: " + CurrentLogPath);
+			}
+		}
+	}
 }
 
 /* Отправить сообщение в консоль (основа) */
@@ -165,6 +207,11 @@ void Error(std::string Base, std::string Message) {
 	PrintBase(Base, Both, SLT_Error, Message);
 }
 
+/* Отправить ошибку (специально для логов) */
+void ErrorFromLog(std::string Base, std::string Message) {
+	PrintBase(Base, OnlyConsole, SLT_Error, Message);
+}
+
 /* Отправить фатальную ошибку */
 void Fatal(std::string Base, std::string Message) {
 	PrintBase(Base, Both, SLT_Fatal, Message);
@@ -172,7 +219,23 @@ void Fatal(std::string Base, std::string Message) {
 
 /* ==== Работа с консолью ==== */
 
+/* Очистка консоли */
+void CloseConsole() {
+	LogFile.close();
+}
+
 /* Регистрация консоли */
-void InstallConsole() {
+void InstallConsole(std::string GamePath) {
 	Console = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	LogsPath = AddFileToPath(GamePath, "Logs");
+
+	CreateFolder(LogsPath);
+
+	CurrentLogName = GenerateLogFileName();
+	CurrentLogPath = LogsPath + "/" + CurrentLogName;
+
+	CreateFile_(CurrentLogPath);
+
+	LogFile.open(CurrentLogPath);
 }

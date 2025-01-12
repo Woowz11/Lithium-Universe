@@ -1,5 +1,5 @@
-﻿#include <string>
-#pragma once
+﻿#pragma once
+#include <string>
 
 enum SendLogType {
 	SLT_Info = 0,             /* Простое сообщение                    */
@@ -9,8 +9,8 @@ enum SendLogType {
 	SLT_Error = 4,            /* Ошибка                               */
 	SLT_Fatal = 5,            /* Фатальная ошибка                     */
 	SLT_DebugRed = 6,         /* Отладочное помеченное красным цветом */
-	SLT_DebugBlue = 8,        /* Отладочное помеченное синим цветом   */
 	SLT_DebugGreen = 7,       /* Отладочное помеченное зелёным цветом */
+	SLT_DebugBlue = 8,        /* Отладочное помеченное синим цветом   */
 	SLT_DebugYellow = 9       /* Отладочное помеченное жёлтым цветом  */
 };
 
@@ -27,6 +27,8 @@ void PrintImportant(std::string Base, std::string Message);
 void Warn(std::string Base, std::string Message);
 void WarnSerious(std::string Base, std::string Message);
 void Error(std::string Base, std::string Message);
+void ErrorFromLog(std::string Base, std::string Message);
 void Fatal(std::string Base, std::string Message);
 
-void InstallConsole();
+void CloseConsole();
+void InstallConsole(std::string GamePath);

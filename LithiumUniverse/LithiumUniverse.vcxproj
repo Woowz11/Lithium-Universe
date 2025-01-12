@@ -135,19 +135,23 @@
   <ItemGroup>
     <ClCompile Include="BaseConstants.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="ExplorerActions.cpp" />
     <ClCompile Include="GameInstalls.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="GlobalRender.cpp" />
     <ClCompile Include="LithiumUniverse.cpp" />
     <ClCompile Include="Shader.h" />
     <ClCompile Include="Start.cpp" />
+    <ClCompile Include="StringActions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseConstants.h" />
     <ClInclude Include="Console.h" />
+    <ClInclude Include="ExplorerActions.h" />
     <ClInclude Include="GameInstalls.h" />
     <ClInclude Include="GlobalRender.h" />
     <ClInclude Include="LithiumUniverse.h" />
+    <ClInclude Include="StringActions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

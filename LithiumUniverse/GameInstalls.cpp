@@ -19,6 +19,7 @@
 #include <array>
 #include <set>
 
+#include "LithiumUniverse.h";
 #include "BaseConstants.h";
 #include "GlobalRender.h";
 #include "Console.h";
@@ -136,6 +137,7 @@ private:
 		if (currentTime - LastFPSTimeForSecond >= 0.5f) {
 			LastFPSTimeForSecond = currentTime;
 			glfwSetWindowTitle(Window, GetGameTitle().c_str());
+			Print("kaka", "$$RGOVNOOOO!!!!");
 		}
 	}
 
@@ -217,5 +219,6 @@ int Run() {
 		return EXIT_FAILURE;
 	}
 	Print("LU", "Game has been exit successfully!");
+	End();
 	return EXIT_SUCCESS;
 }

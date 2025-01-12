@@ -44,6 +44,12 @@
     <ClCompile Include="glad.c">
       <Filter>NotMy</Filter>
     </ClCompile>
+    <ClCompile Include="ExplorerActions.cpp">
+      <Filter>Scripts\Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="StringActions.cpp">
+      <Filter>Scripts\Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -60,6 +66,12 @@
     </ClInclude>
     <ClInclude Include="GameInstalls.h">
       <Filter>Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="ExplorerActions.h">
+      <Filter>Scripts\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="StringActions.h">
+      <Filter>Scripts\Foundation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

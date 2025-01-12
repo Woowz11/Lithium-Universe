@@ -1,2 +1,4 @@
 #pragma once
-int Start();
+
+void End();
+int Start(char* ExePat);

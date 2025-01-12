@@ -1,0 +1,6 @@
+$$WII$$_:[$$W 1:48:31:072$$_][$$WLU     $$_]: Run LithiumUniverse (0.1.1C $$CDEV$$_)!
+$$WII$$_:[$$W 1:48:31:117$$_][$$WGLFW   $$_]: GLFW (3.4.0)
+$$WII$$_:[$$W 1:48:31:495$$_][$$WGLFW   $$_]: Window created!
+$$WII$$_:[$$W 1:48:31:502$$_][$$WGLAD   $$_]: GL (4.6)
+$$WII$$_:[$$W 1:48:31:502$$_][$$WSHADER $$_]: Start create shader ( $$YF:/Lithium-Universe/Resources/shader.vert$$_ | $$YF:/Lithium-Universe/Resources/shader.frag$$_ )!
+$$WII$$_:[$$W 1:48:31:509$$_][$$WLU     $$_]: All started, and start Loop()!

@@ -1,7 +1,15 @@
+#include <string>
+
+#include "ExplorerActions.h";
 #include "GameInstalls.h";
 #include "Console.h";
 
-int Start() {
-	InstallConsole();
+void End() {
+	CloseConsole();
+}
+
+int Start(char* ExePath) {
+	std::string GamePath = RemoveLastFileInPath(FixPath(ExePath));
+	InstallConsole(GamePath);
 	return Run();
 }
