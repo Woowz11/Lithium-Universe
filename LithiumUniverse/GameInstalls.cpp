@@ -1,4 +1,5 @@
 #define VK_USE_PLATFORM_WIN32_KHR
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
@@ -11,6 +12,7 @@
 #include <stb_image.h>
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
+#include <GL/glew.h>
 
 #include <stdexcept>
 #include <algorithm>
@@ -57,10 +59,12 @@ private:
 
 	/* Создание окна */
 	void CreateGameWindow() {
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		const uint32_t WIDTH = 800;
 		const uint32_t HEIGHT = 600;
 
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		std::string WindowTitle = "LithiumUniverse (" + GetGameVersion() + ")";
 		Window = glfwCreateWindow(WIDTH, HEIGHT, WindowTitle.c_str(), NULL, NULL);
 		glfwSetWindowUserPointer(Window, this);
@@ -81,9 +85,22 @@ private:
 		CreateGameWindow();
 	}
 
+	/* Загрузка GLEW */
+	void RunGLEW() {
+		GLenum GLEWError = glewInit();
+		if (GLEW_OK != GLEWError) {
+			Print("GLEW initialization error! " + (std::string)(const char*)glewGetErrorString(GLEWError));
+		}
+		else {
+			Print("GL (" + (std::string)(const char*)glGetString(GL_VERSION) + ")");
+		}
+		Print("GLEW (" + (std::string)(const char*)glewGetString(GLEW_VERSION) + ") initializated!");
+	}
+
 	/* Загрузка всего */
 	void RunAll() {
 		RunGLFW();
+		RunGLEW();
 	}
 
 	/* Цикл GLFW */
@@ -104,12 +121,17 @@ private:
 		glfwTerminate();
 	}
 
+	/* Очистить GLEW */
+	void DestroyGLEW() {
+		
+	}
+
 	/* Очистить всё */
 	void DestroyAll() {
-		DestroyGLFW();
 		if (Error != GameInstallError::GLFW_NOT_CREATE_WINDOW) {
 			
 		}
+		DestroyGLFW();
 	}
 };
 
