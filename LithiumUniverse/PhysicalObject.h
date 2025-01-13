@@ -12,7 +12,7 @@ public:
 	float Elasticity             = 1;                /* Упругость              */
 	float Mass                   = 1;                /* Масса                  */
 
-	PhysicalObject(std::string Name_) : RenderedObject(Name_, RO_UI) {}
+	PhysicalObject(std::string Name_) : RenderedObject(Name_, RO_Phys) {}
 
 	/* Сделать статичным */
 	void MakeStatic() {

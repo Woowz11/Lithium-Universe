@@ -154,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseConstants.h" />
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="ExplorerActions.h" />
     <ClInclude Include="GameControls.h" />

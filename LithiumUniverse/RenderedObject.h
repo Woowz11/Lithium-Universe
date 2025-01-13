@@ -5,10 +5,12 @@
 #include <GLM/glm.hpp>
 
 #include "StaticInfo.h";
+#include "Collider.h";
 
 enum RO_Type {
 	RO_Default,
-	RO_UI
+	RO_UI,
+	RO_Phys
 };
 
 enum ShapeType {
@@ -35,7 +37,9 @@ private:
 public:
 	std::string Name;
 
-	RO_Type Type;
+	RO_Type Type; /* Тип объекта */
+
+	bool Active = true; /* Объект активен? */
 
 	int BaseTexture = 0; /* Базовая текстура */
 	int BaseShader  = 0; /* Базовый шейдер   */
@@ -49,8 +53,7 @@ public:
 	ShapeType Shape       = ST_Square;             /* Какие вертиксы рендерить?       */
 	bool ThatUI           = false;                 /* Прикрепить объект к камере?     */
 	bool Resize           = false;                 /* Менять размер вместе с экраном? */
-
-	bool Active = true; /* Объект существует? */
+	Collider Col          = Collider(CLDR_None);   /* Коллизия */
 
 	RenderedObject(std::string Name_, RO_Type type) {
 		TotalIDs++;
@@ -64,6 +67,9 @@ public:
 			Resize = true;
 			ThatUI = true;
 			Layer  = 500;
+			break;
+		case RO_Phys:
+			Col = CLDR_Fill;
 			break;
 		default:
 			break;

@@ -36,10 +36,11 @@ LARGE_INTEGER AppTimeFrequency, AppTimeStart, AppTimeEnd;
 std::string GamePath;
 
 float DeltaTime = 0;
+float Time = 0;
 void UpdateDeltaTime(float DT) {
     Camera->SetDeltaTime(DT);
     DeltaTime = DT;
-    UpdateDeltaTime_PHYSIC(DT);
+    UpdateDeltaTime_PHYSIC(DT, Time);
 }
 
 /* ==== Вертиксы ==== */
@@ -47,10 +48,10 @@ void UpdateDeltaTime(float DT) {
 unsigned int VBO, VAO;
 
 float square[] = {
-    -1.0f, -1.0f, -1.0f,    0.0f, 0.0f,
-     1.0f, -1.0f, -1.0f,    1.0f, 0.0f,
-     1.0f,  1.0f, -1.0f,    1.0f, 1.0f,
-    -1.0f,  1.0f, -1.0f,    0.0f, 1.0f
+    -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,    1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,    0.0f, 1.0f
 };
 int square_l = 4; /* Кол-во строк в square */
 
@@ -243,6 +244,8 @@ void Render() {
 	glClearColor(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    Time = static_cast<double>(AppTimeEnd.QuadPart - AppTimeStart.QuadPart) / AppTimeFrequency.QuadPart;
+
     /* ==== Рендер объектов ==== */
     for (RenderedObject OBJ : Scene) {
         if (OBJ.Active && OBJ.Render) {
@@ -258,7 +261,7 @@ void Render() {
             CSS.setFloat("Random", (static_cast<double>(rand()) / RAND_MAX));
 
             QueryPerformanceCounter(&AppTimeEnd);
-            CSS.setFloat("Time", static_cast<double>(AppTimeEnd.QuadPart - AppTimeStart.QuadPart) / AppTimeFrequency.QuadPart);
+            CSS.setFloat("Time", Time);
 
             CSS.setVec4("Color"  , OBJ.Color);
 
@@ -287,12 +290,13 @@ void Render() {
             if (!OBJ.ThatUI) {
                 ResultPosition = glm::rotate(ResultPosition, -glm::radians(Camera->Rotation), glm::vec3(0, 0, 1));
             }
-            ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.Position.x, OBJ.Position.y, OBJ.Layer + (float)OBJ.GetID()/10000));
+            ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.Position, OBJ.Layer + (float)OBJ.GetID() / 10000));
             if (!OBJ.ThatUI) {
                 ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
             }
             ResultPosition = glm::rotate(ResultPosition, -glm::radians(OBJ.Orientation), glm::vec3(0, 0, 1));
-            ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.Size.x, OBJ.Size.y, 1));
+            ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.Size, 1));
+
             CSS.setMat4("Position", ResultPosition);
 
             glDrawArrays(GL_QUADS, 0, square_l);
