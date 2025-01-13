@@ -21,6 +21,9 @@
     <Filter Include="Scripts\GameObjects">
       <UniqueIdentifier>{738e4b76-3c15-4c61-b42a-09196843ac81}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts\Physic">
+      <UniqueIdentifier>{f84255f9-5910-496a-86f2-3b790799d594}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Start.cpp">
@@ -68,6 +71,9 @@
     <ClCompile Include="PhysicalObject.h">
       <Filter>Scripts\GameObjects</Filter>
     </ClCompile>
+    <ClCompile Include="GlobalPhysic.cpp">
+      <Filter>Scripts\Physic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -96,6 +102,9 @@
     </ClInclude>
     <ClInclude Include="StaticInfo.h">
       <Filter>Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalPhysic.h">
+      <Filter>Scripts\Physic</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,8 +1,9 @@
 #pragma once
 #include <string>
+#include <vector>
+#include "RenderedObject.h";
 
-void UpdateScene();
-void Render();
+void RenderAndPhysic();
 void InstallRender(std::string GamePath_, uint32_t SWW, uint32_t SWH);
 void ClearRender();
 void MoveCamera(float vel_x, float vel_y);

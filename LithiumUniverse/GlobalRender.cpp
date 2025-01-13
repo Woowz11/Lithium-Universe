@@ -11,6 +11,7 @@
 #include <chrono>
 
 #include "ExplorerActions.h";
+#include "GlobalPhysic.h";
 #include "Console.h";
 #include "Shader.h";
 
@@ -34,13 +35,15 @@ std::string GamePath;
 float DeltaTime = 0;
 void UpdateDeltaTime(float DT) {
     DeltaTime = DT;
+    UpdateDeltaTime_PHYSIC(DT);
 }
 
 /* ==== Камера ==== */
 
+const float CameraSpeed = 2;
+const float CameraZoomSpeed = 0.5f;
+
 glm::vec2 CameraPosition = glm::vec2(0, 0);
-float CameraSpeed = 1;
-float CameraZoomSpeed = 1;
 float CameraZoom = 1;
 
 /* Двигать камеру */
@@ -204,12 +207,6 @@ void CreateTextures() {
 std::vector<RenderedObject> Scene           = {};
 glm::vec3                   BackgroundColor = glm::vec3(0.2f, 0, 0);
 
-/* Обновить сцену */
-void UpdateScene() {
-    Scene[0].AddRotation(DeltaTime*20);
-    Scene[1].Size = glm::vec2(Scene[0].Orientation.z/90, Scene[0].Orientation.z / 90);
-}
-
 /* Установить всё для рендера */
 void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
     glEnable(GL_BLEND);
@@ -254,12 +251,15 @@ void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
     Test.BaseShader  = 1;
     Test.BaseTexture = DefaultTexture;
     Test.Orientation = glm::vec3(0, 0, 45);
+    Test.Size = glm::vec2(0.5f,3);
     Scene.push_back(Test);
 
     UIObject TestUI = UIObject("test-ui");
     TestUI.BaseShader = 1;
     TestUI.BaseTexture = Default2Texture;
     Scene.push_back(TestUI);
+
+    InstallPhysic();
 }
 
 /* Удалить всё что осталось после рендера */
@@ -315,7 +315,6 @@ void Render() {
             glBindVertexArray(VAO);
 
             glm::mat4 ResultPosition = glm::mat4(1.0f);
-            ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.Size.x, OBJ.Size.y, 1));
             ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.Position.x * 2, OBJ.Position.y * 2, OBJ.Layer + (float)OBJ.GetID()/10000));
             if (!OBJ.ThatUI) {
                 ResultPosition = glm::translate(ResultPosition, glm::vec3(CameraPosition.x, CameraPosition.y, 0));
@@ -323,9 +322,16 @@ void Render() {
             //ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.x), glm::vec3(1, 0, 0));
             //ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.y), glm::vec3(0, 1, 0));
             ResultPosition = glm::rotate(ResultPosition, -glm::radians(OBJ.Orientation.z), glm::vec3(0, 0, 1));
+            ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.Size.x, OBJ.Size.y, 1));
             CSS.setMat4("Position", ResultPosition);
 
             glDrawArrays(GL_QUADS, 0, square_l);
         }
     }
+}
+
+/* Рендер и обновление физики */
+void RenderAndPhysic() {
+    UpdatePhysic(Scene);
+    Render();
 }

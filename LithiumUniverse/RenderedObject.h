@@ -23,11 +23,11 @@ private:
 
 	void CheckOrientationLimits() {
 		float z = Orientation.z;
-		if (z > 180) {
-			z = -180;
+		if (z > 360) {
+			z = 0;
 		}
-		if (z < -180) {
-			z = 180;
+		if (z < 0) {
+			z = 360;
 		}
 		Orientation = glm::vec3(Orientation.x, Orientation.y, z);
 	}

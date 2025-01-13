@@ -241,8 +241,7 @@ private:
 		while (!glfwWindowShouldClose(Window)) {
 			Controls();
 
-			UpdateScene();
-			Render();
+			RenderAndPhysic();
 			CalculateFPS();
 
 			LoopGLFW();

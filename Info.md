@@ -6,7 +6,7 @@
 ## Управление
 * GLFW 3.4.0
 ## Физика (2D)
-* [CPhysics](https://github.com/HaydenMarshalla/CPhysics)?
+* Самописная
 ## Остальное
 * [GLM](https://github.com/g-truc/glm)
 * [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)

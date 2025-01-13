@@ -139,6 +139,7 @@
     <ClCompile Include="GameControls.cpp" />
     <ClCompile Include="GameInstalls.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="GlobalPhysic.cpp" />
     <ClCompile Include="GlobalRender.cpp" />
     <ClCompile Include="LithiumUniverse.cpp" />
     <ClCompile Include="PhysicalObject.h" />
@@ -155,6 +156,7 @@
     <ClInclude Include="ExplorerActions.h" />
     <ClInclude Include="GameControls.h" />
     <ClInclude Include="GameInstalls.h" />
+    <ClInclude Include="GlobalPhysic.h" />
     <ClInclude Include="GlobalRender.h" />
     <ClInclude Include="LithiumUniverse.h" />
     <ClInclude Include="StaticInfo.h" />

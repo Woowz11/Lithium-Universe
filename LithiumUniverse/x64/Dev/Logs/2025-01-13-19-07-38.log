@@ -1,0 +1,11 @@
+ I:[19:07:38:629][LU     ]: Run LithiumUniverse (0.1.1F DEV)!
+ I:[19:07:38:696][GLFW   ]: GLFW (3.4.0)
+ I:[19:07:39:056][GLFW   ]: Window created!
+ I:[19:07:39:100][GLAD   ]: GL (4.6)
+ I:[19:07:39:101][SHADER ]: Shader (Error (3)) created!
+ I:[19:07:39:102][SHADER ]: Shader (Default (6)) created!
+IM:[19:07:39:104][GL API/OTHER]: Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+ I:[19:07:39:108][TEXTURE]: Texture (F:/Lithium-Universe/LithiumUniverse/x64/Dev/Resources/Textures/Default.png (1)) created!
+ I:[19:07:39:112][TEXTURE]: Texture (F:/Lithium-Universe/LithiumUniverse/x64/Dev/Resources/Textures/Default2.png (2)) created!
+ I:[19:07:39:112][LU     ]: All started, and start Loop()!
+ I:[19:07:39:113][LU     ]: =============== [RUNTIME] ===============
