@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 
+void UpdateScene();
 void Render();
 void InstallRender(std::string GamePath_, uint32_t SWW, uint32_t SWH);
 void ClearRender();

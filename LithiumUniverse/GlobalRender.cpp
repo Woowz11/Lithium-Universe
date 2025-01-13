@@ -6,12 +6,17 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <windows.h>
 #include <iostream>
+#include <chrono>
 
 #include "ExplorerActions.h";
-#include "RenderedObject.h";
 #include "Console.h";
 #include "Shader.h";
+
+#include "RenderedObject.h";
+#include "PhysicalObject.h";
+#include "UIObject.h";
 
 uint32_t START_WINDOW_WIDTH;
 uint32_t START_WINDOW_HEIGHT;
@@ -21,6 +26,8 @@ void UpdateWindowSize(uint32_t W, uint32_t H) {
     CURRENT_WINDOW_WIDTH  = W;
     CURRENT_WINDOW_HEIGHT = H;
 }
+
+LARGE_INTEGER AppTimeFrequency, AppTimeStart, AppTimeEnd;
 
 std::string GamePath;
 
@@ -77,6 +84,8 @@ Projection (mat4)      = Проекция (от камеры)
 Position   (mat4)      = Позиция объекта
 Random     (float)     = Случайное дробное число от 0 до 1
 Texture    (sampler2D) = Текстура
+Time       (float)     = Прошедшее время с запуска приложения
+DeltaTime  (float)     = Размягчение зависящие от FPS
 
 Информация о location's
 [0] PolygonPosition (vec3) = Позиция полигона
@@ -94,6 +103,8 @@ out vec2 TextureCoord;
 uniform mat4 Position;
 uniform mat4 Projection;
 uniform float Random;
+uniform float Time;
+uniform float DeltaTime;
 
 void main()
 {
@@ -109,10 +120,14 @@ in vec2 TextureCoord;
 uniform sampler2D Texture;
 uniform vec4 Color;
 uniform float Random;
+uniform float Time;
+uniform float DeltaTime;
 
 void main()
 {
-    FragColor = texture(Texture, TextureCoord) * Color;
+    vec4 TextureColor = texture(Texture, TextureCoord) * Color;
+    if(TextureColor.a == 0){ discard; }
+    FragColor = TextureColor;
 })";
 
 Shader ErrorShader;
@@ -141,6 +156,7 @@ void CreateShaders() {
 /* ==== Текстуры ==== */
 
 unsigned int DefaultTexture;
+unsigned int Default2Texture;
 
 /* Создать текстуру */
 void CreateTexture(std::string Path, unsigned int& Texture) {
@@ -154,11 +170,11 @@ void CreateTexture(std::string Path, unsigned int& Texture) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST /*GL_LINEAR*/);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST /*GL_LINEAR*/);
 
-        int width, height, nrChannels;
-        unsigned char* data = stbi_load(Path.c_str(), &width, &height, &nrChannels, 0);
+        int width, height, channels;
+        unsigned char* data = stbi_load(Path.c_str(), &width, &height, &channels, 0);
         if (data)
         {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, channels==4? GL_RGBA: GL_RGB, width, height, 0, channels == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
             Print("TEXTURE", "Texture ($$Y" + Path + "$$_ ($$B" + std::to_string(Texture) + "$$_)) $$Gcreated$$_!");
         }
@@ -180,17 +196,31 @@ void CreateTextures() {
     CreateFolder(VanillaTexturesFolder);
 
     CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default.png"), DefaultTexture);
+    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default2.png"), Default2Texture);
 }
 
 /* ==== Сцена ==== */
 
 std::vector<RenderedObject> Scene           = {};
-glm::vec4                   BackgroundColor = glm::vec4(0.2f, 0, 0, 1);
+glm::vec3                   BackgroundColor = glm::vec3(0.2f, 0, 0);
 
+/* Обновить сцену */
+void UpdateScene() {
+    Scene[0].AddRotation(DeltaTime*20);
+    Scene[1].Size = glm::vec2(Scene[0].Orientation.z/90, Scene[0].Orientation.z / 90);
+}
+
+/* Установить всё для рендера */
 void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     GamePath = GamePath_;
     START_WINDOW_WIDTH = SWW;
     START_WINDOW_HEIGHT = SWH;
+
+    QueryPerformanceFrequency(&AppTimeFrequency);
+    QueryPerformanceCounter(&AppTimeStart);
 
     /* ==== Шейдеры ====*/
 
@@ -226,15 +256,10 @@ void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
     Test.Orientation = glm::vec3(0, 0, 45);
     Scene.push_back(Test);
 
-    RenderedObject Test3 = RenderedObject("test");
-    Test3.BaseShader = 1;
-    Test3.BaseTexture = DefaultTexture;
-    Test3.Resize = true;
-    Test3.ThatUI = true;
-    Test3.Position = glm::vec2(0, 0);
-    Test3.Layer = 10;
-    Test3.Color = glm::vec4(1, 0, 0, 1);
-    Scene.push_back(Test3);
+    UIObject TestUI = UIObject("test-ui");
+    TestUI.BaseShader = 1;
+    TestUI.BaseTexture = Default2Texture;
+    Scene.push_back(TestUI);
 }
 
 /* Удалить всё что осталось после рендера */
@@ -244,21 +269,29 @@ void ClearRender() {
 }
 
 /* Рендер картинки каждый кадр */
+Shader CSS;
 void Render() {
-	glClearColor(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, BackgroundColor.a);
+	glClearColor(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* ==== Рендер объектов ==== */
     for (RenderedObject OBJ : Scene) {
-        if (OBJ.Render) {
+        if (OBJ.Active && OBJ.Render) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, OBJ.BaseTexture);
 
             Shader OBJ_Shader = Shaders[OBJ.BaseShader];
-            glUseProgram(OBJ_Shader.ID);
+            if (CSS.RealID != OBJ_Shader.RealID) {
+                CSS = OBJ_Shader;
+                glUseProgram(CSS.ID);
+            }
 
-            OBJ_Shader.setVec4("Color"  , OBJ.Color);
-            OBJ_Shader.setFloat("Random", (static_cast<double>(rand()) / RAND_MAX));
+            CSS.setFloat("Random", (static_cast<double>(rand()) / RAND_MAX));
+
+            QueryPerformanceCounter(&AppTimeEnd);
+            CSS.setFloat("Time", static_cast<double>(AppTimeEnd.QuadPart - AppTimeStart.QuadPart) / AppTimeFrequency.QuadPart);
+
+            CSS.setVec4("Color"  , OBJ.Color);
 
             /* ==== Трансформация ==== */
             glm::mat4 Projection = glm::mat4(1.0f);
@@ -277,19 +310,20 @@ void Render() {
                 Down  / Zoom,
                 Up    / Zoom,
                 -1000.0f, 1000.0f);
-            OBJ_Shader.setMat4("Projection", Projection);
+            CSS.setMat4("Projection", Projection);
 
             glBindVertexArray(VAO);
 
             glm::mat4 ResultPosition = glm::mat4(1.0f);
+            ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.Size.x, OBJ.Size.y, 1));
             ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.Position.x * 2, OBJ.Position.y * 2, OBJ.Layer + (float)OBJ.GetID()/10000));
             if (!OBJ.ThatUI) {
                 ResultPosition = glm::translate(ResultPosition, glm::vec3(CameraPosition.x, CameraPosition.y, 0));
             }
-            ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.x), glm::vec3(1, 0, 0));
-            ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.y), glm::vec3(0, 1, 0));
-            ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.z), glm::vec3(0, 0, 1));
-            OBJ_Shader.setMat4("Position", ResultPosition);
+            //ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.x), glm::vec3(1, 0, 0));
+            //ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.y), glm::vec3(0, 1, 0));
+            ResultPosition = glm::rotate(ResultPosition, -glm::radians(OBJ.Orientation.z), glm::vec3(0, 0, 1));
+            CSS.setMat4("Position", ResultPosition);
 
             glDrawArrays(GL_QUADS, 0, square_l);
         }

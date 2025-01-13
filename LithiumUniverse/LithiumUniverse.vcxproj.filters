@@ -59,6 +59,15 @@
     <ClCompile Include="RenderedObject.h">
       <Filter>Scripts\GameObjects</Filter>
     </ClCompile>
+    <ClCompile Include="UIObject.h">
+      <Filter>Scripts\GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticInfo.cpp">
+      <Filter>Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicalObject.h">
+      <Filter>Scripts\GameObjects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -83,6 +92,9 @@
       <Filter>Scripts\Foundation</Filter>
     </ClInclude>
     <ClInclude Include="GameControls.h">
+      <Filter>Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticInfo.h">
       <Filter>Scripts</Filter>
     </ClInclude>
   </ItemGroup>

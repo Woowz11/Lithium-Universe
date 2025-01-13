@@ -141,10 +141,13 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="GlobalRender.cpp" />
     <ClCompile Include="LithiumUniverse.cpp" />
+    <ClCompile Include="PhysicalObject.h" />
     <ClCompile Include="RenderedObject.h" />
     <ClCompile Include="Shader.h" />
     <ClCompile Include="Start.cpp" />
+    <ClCompile Include="StaticInfo.cpp" />
     <ClCompile Include="StringActions.cpp" />
+    <ClCompile Include="UIObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseConstants.h" />
@@ -154,6 +157,7 @@
     <ClInclude Include="GameInstalls.h" />
     <ClInclude Include="GlobalRender.h" />
     <ClInclude Include="LithiumUniverse.h" />
+    <ClInclude Include="StaticInfo.h" />
     <ClInclude Include="StringActions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
