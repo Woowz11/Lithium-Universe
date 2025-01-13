@@ -31,8 +31,9 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 	RenderedObject Test = RenderedObject("test");
 	Test.BaseShader = 1;
 	Test.BaseTexture = 1;
-	Test.Orientation = glm::vec3(0, 0, 45);
+	//Test.Orientation = glm::vec3(0, 0, 45);
 	Test.Size = glm::vec2(0.5f, 3);
+	Test.Position = glm::vec2(-3, 0);
 	Scene.push_back(Test);
 
 	RenderedObject Test2 = RenderedObject("test2");

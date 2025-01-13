@@ -22,14 +22,14 @@ private:
 	int ID;
 
 	void CheckOrientationLimits() {
-		float z = Orientation.z;
+		float z = Orientation;
 		if (z > 360) {
 			z = 0;
 		}
 		if (z < 0) {
 			z = 360;
 		}
-		Orientation = glm::vec3(Orientation.x, Orientation.y, z);
+		Orientation = z;
 	}
 
 public:
@@ -42,7 +42,7 @@ public:
 
 	glm::vec2 Position    = glm::vec2(0, 0);       /* Позиция объекта                 */
 	glm::vec2 Size        = glm::vec2(1, 1);       /* Размер объекта                  */
-	glm::vec3 Orientation = glm::vec3(0, 0, 0);    /* Поворот объекта                 */
+	float Orientation     = 0;                     /* Поворот объекта                 */
 	glm::vec4 Color       = glm::vec4(1, 1, 1, 1); /* Цвет объекта                    */
 	float Layer           = 0;                     /* Слой объекта                    */
 	bool Render           = true;                  /* Рендерить объект?               */
@@ -90,13 +90,13 @@ public:
 
 	/* Повернуть объект */
 	void SetRotation(float deg) {
-		Orientation = glm::vec3(Orientation.x, Orientation.y, deg);
+		Orientation = deg;
 		CheckOrientationLimits();
 	}
 
 	/* Постепенно поварачивать объект */
 	void AddRotation(float deg) {
-		Orientation += glm::vec3(0, 0, deg);
+		Orientation += deg;
 		CheckOrientationLimits();
 	}
 };

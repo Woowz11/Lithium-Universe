@@ -287,13 +287,11 @@ void Render() {
             if (!OBJ.ThatUI) {
                 ResultPosition = glm::rotate(ResultPosition, -glm::radians(Camera->Rotation), glm::vec3(0, 0, 1));
             }
-            ResultPosition = glm::translate(ResultPosition, glm::vec3(-OBJ.Position.x, -OBJ.Position.y, OBJ.Layer + (float)OBJ.GetID()/10000));
+            ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.Position.x, OBJ.Position.y, OBJ.Layer + (float)OBJ.GetID()/10000));
             if (!OBJ.ThatUI) {
-                ResultPosition = glm::translate(ResultPosition, -glm::vec3(Camera->Position.x, Camera->Position.y, 0));
+                ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
             }
-            //ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.x), glm::vec3(1, 0, 0));
-            //ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.y), glm::vec3(0, 1, 0));
-            ResultPosition = glm::rotate(ResultPosition, -glm::radians(OBJ.Orientation.z), glm::vec3(0, 0, 1));
+            ResultPosition = glm::rotate(ResultPosition, -glm::radians(OBJ.Orientation), glm::vec3(0, 0, 1));
             ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.Size.x, OBJ.Size.y, 1));
             CSS.setMat4("Position", ResultPosition);
 

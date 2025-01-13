@@ -24,11 +24,7 @@ public:
 
 	/* Двигать камеру */
 	void MoveCamera(float vel_x, float vel_y) {
-		// Сука бесит, почему этот скрипт нормально не обновляется при компиляции, хуйня какая-то
-		//PrintFast("test", "1");
-		glm::vec2 vel = glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt);
-		//vel = glm::rotate(vel, glm::radians(Rotation));
-		Position = Position + glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt);
+		Position = Position + glm::rotate(-glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt), glm::radians(Rotation));
 	}
 
 	/* Установить позицию камере */
