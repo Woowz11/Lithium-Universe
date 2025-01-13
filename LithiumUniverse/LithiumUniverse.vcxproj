@@ -136,7 +136,9 @@
     <ClCompile Include="BaseConstants.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="ExplorerActions.cpp" />
+    <ClCompile Include="GameCamera.h" />
     <ClCompile Include="GameControls.cpp" />
+    <ClCompile Include="GameData.cpp" />
     <ClCompile Include="GameInstalls.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="GlobalPhysic.cpp" />
@@ -155,6 +157,7 @@
     <ClInclude Include="Console.h" />
     <ClInclude Include="ExplorerActions.h" />
     <ClInclude Include="GameControls.h" />
+    <ClInclude Include="GameData.h" />
     <ClInclude Include="GameInstalls.h" />
     <ClInclude Include="GlobalPhysic.h" />
     <ClInclude Include="GlobalRender.h" />

@@ -14,6 +14,8 @@
 #include "GlobalPhysic.h";
 #include "Console.h";
 #include "Shader.h";
+#include "GameCamera.h";
+#include "GameData.h";
 
 #include "RenderedObject.h";
 #include "PhysicalObject.h";
@@ -34,36 +36,9 @@ std::string GamePath;
 
 float DeltaTime = 0;
 void UpdateDeltaTime(float DT) {
+    Camera->SetDeltaTime(DT);
     DeltaTime = DT;
     UpdateDeltaTime_PHYSIC(DT);
-}
-
-/* ==== Камера ==== */
-
-const float CameraSpeed = 2;
-const float CameraZoomSpeed = 0.5f;
-
-glm::vec2 CameraPosition = glm::vec2(0, 0);
-float CameraZoom = 1;
-
-/* Двигать камеру */
-void MoveCamera(float vel_x, float vel_y) {
-    CameraPosition = CameraPosition + glm::vec2(-vel_x * CameraSpeed * CameraZoom * DeltaTime, -vel_y * CameraSpeed * CameraZoom * DeltaTime);
-}
-
-/* Установить позицию камере */
-void SetCameraPosition(float x, float y) {
-    CameraPosition = glm::vec2(x, y);
-}
-
-/* Двигать масштаб камеры */
-void MoveCameraZoom(float vel) {
-    CameraZoom += (-vel * CameraZoomSpeed * DeltaTime) * CameraZoom;
-}
-
-/* Изменить масштаб камеры */
-void SetCameraZoom(float z) {
-    CameraZoom = z;
 }
 
 /* ==== Вертиксы ==== */
@@ -247,17 +222,10 @@ void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
     DefaultShader.setInt("Texture", 0);
 
     /* ==== Сцена ==== */
-    RenderedObject Test = RenderedObject("test");
-    Test.BaseShader  = 1;
-    Test.BaseTexture = DefaultTexture;
-    Test.Orientation = glm::vec3(0, 0, 45);
-    Test.Size = glm::vec2(0.5f,3);
-    Scene.push_back(Test);
 
-    UIObject TestUI = UIObject("test-ui");
-    TestUI.BaseShader = 1;
-    TestUI.BaseTexture = Default2Texture;
-    Scene.push_back(TestUI);
+    CreateScene(Scene);
+
+    /* ==== Физика ==== */
 
     InstallPhysic();
 }
@@ -295,7 +263,7 @@ void Render() {
 
             /* ==== Трансформация ==== */
             glm::mat4 Projection = glm::mat4(1.0f);
-            float Zoom = 1 / (OBJ.ThatUI ? 1 : CameraZoom);
+            float Zoom = 1 / (OBJ.ThatUI ? 1 : Camera->Zoom);
 
             float WIN_WIDTH  = OBJ.Resize ? (float)START_WINDOW_WIDTH  : (float)CURRENT_WINDOW_WIDTH ;
             float WIN_HEIGHT = OBJ.Resize ? (float)START_WINDOW_HEIGHT : (float)CURRENT_WINDOW_HEIGHT;
@@ -315,9 +283,9 @@ void Render() {
             glBindVertexArray(VAO);
 
             glm::mat4 ResultPosition = glm::mat4(1.0f);
-            ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.Position.x * 2, OBJ.Position.y * 2, OBJ.Layer + (float)OBJ.GetID()/10000));
+            ResultPosition = glm::translate(ResultPosition, glm::vec3(-OBJ.Position.x, -OBJ.Position.y, OBJ.Layer + (float)OBJ.GetID()/10000));
             if (!OBJ.ThatUI) {
-                ResultPosition = glm::translate(ResultPosition, glm::vec3(CameraPosition.x, CameraPosition.y, 0));
+                ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
             }
             //ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.x), glm::vec3(1, 0, 0));
             //ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.y), glm::vec3(0, 1, 0));

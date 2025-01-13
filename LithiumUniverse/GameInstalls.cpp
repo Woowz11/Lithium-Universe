@@ -23,6 +23,7 @@
 #include "BaseConstants.h";
 #include "GlobalRender.h";
 #include "GameControls.h";
+#include "GameData.h";
 #include "Console.h";
 
 enum GameInstallError {
@@ -261,6 +262,7 @@ private:
 			}
 			DestroyGLFW();
 		}
+		ClearData();
 	}
 };
 

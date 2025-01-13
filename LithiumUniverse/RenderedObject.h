@@ -79,6 +79,9 @@ public:
 	void SetPosition(float x, float y) {
 		Position = glm::vec2(x, y);
 	}
+	void SetPosition(glm::vec2 pos) {
+		Position = pos;
+	}
 
 	/* Добавить позицию объекту */
 	void AddPosition(float x, float y) {

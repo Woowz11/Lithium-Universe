@@ -74,6 +74,12 @@
     <ClCompile Include="GlobalPhysic.cpp">
       <Filter>Scripts\Physic</Filter>
     </ClCompile>
+    <ClCompile Include="GameCamera.h">
+      <Filter>Scripts\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameData.cpp">
+      <Filter>Scripts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -105,6 +111,9 @@
     </ClInclude>
     <ClInclude Include="GlobalPhysic.h">
       <Filter>Scripts\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="GameData.h">
+      <Filter>Scripts</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

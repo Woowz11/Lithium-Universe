@@ -2,7 +2,8 @@
 
 #include "GlobalRender.h";
 #include "GameInstalls.h";
-
+#include "GameCamera.h";
+#include "GameData.h";
 /* Скрипт отвечающий за управление игроком */
 
 /* Управление клавиатурой */
@@ -12,8 +13,8 @@ void ControlsKeyboard() {
 	}
 
 	if (KeyPressed(GLFW_KEY_HOME) == GLFW_PRESS) {
-		SetCameraZoom(1);
-		SetCameraPosition(0, 0);
+		Camera->SetCameraZoom(1);
+		Camera->SetCameraPosition(0, 0);
 	}
 
 	bool W = KeyPressed(GLFW_KEY_W) == GLFW_PRESS;
@@ -27,27 +28,27 @@ void ControlsKeyboard() {
 	float speed = (SHIFT ? 3 : (CONTROL ? 0.3f : 1));
 
 	if (W && !S) {
-		MoveCamera(0, speed);
+		Camera->MoveCamera(0, speed);
 	}
 	if (S && !W) {
-		MoveCamera(0, -speed);
+		Camera->MoveCamera(0, -speed);
 	}
 
 	if (D && !A) {
-		MoveCamera(speed, 0);
+		Camera->MoveCamera(speed, 0);
 	}
 	if (A && !D) {
-		MoveCamera(-speed, 0);
+		Camera->MoveCamera(-speed, 0);
 	}
 
 	bool PLUS  = KeyPressed(GLFW_KEY_EQUAL) == GLFW_PRESS;
 	bool MINUS = KeyPressed(GLFW_KEY_MINUS) == GLFW_PRESS;
 
 	if (PLUS && !MINUS) {
-		MoveCameraZoom(speed);
+		Camera->MoveCameraZoom(speed);
 	}
 	if (MINUS && !PLUS) {
-		MoveCameraZoom(-speed);
+		Camera->MoveCameraZoom(-speed);
 	}
 }
 
