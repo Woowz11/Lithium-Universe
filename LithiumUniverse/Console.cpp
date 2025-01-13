@@ -147,9 +147,10 @@ std::string GetPrintMessageBaseDecorations(std::string Base, SendLogType SLT, bo
 
 /* Отправить сообщение в логи (основа) */
 void PrintLogBase(std::string Base, SendLogType SLT, std::string Message) {
-	std::string Result = ReplaceColorCodesToRealColors(GetPrintMessageBaseDecorations(Base, SLT, true) + Message, true);
 	if (!LogFileCorrupted) {
 		if (HasFile(CurrentLogPath)) {
+			std::string Decor = GetPrintMessageBaseDecorations(Base, SLT, true);
+			std::string Result = ReplaceColorCodesToRealColors(Decor + ReplaceCharsToString(Message, '\n', Decor), true);
 			AddToFile(LogFile, Result);
 		}
 		else {
@@ -163,7 +164,8 @@ void PrintLogBase(std::string Base, SendLogType SLT, std::string Message) {
 
 /* Отправить сообщение в консоль (основа) */
 void PrintConsoleBase(std::string Base, SendLogType SLT, std::string Message) {
-	std::string Result = GetPrintMessageBaseDecorations(Base, SLT, false) + Message;
+	std::string Decor = GetPrintMessageBaseDecorations(Base, SLT, false);
+	std::string Result = Decor + ReplaceCharsToString(Message,'\n',Decor);
 	CoutWithColors(Result);
 }
 

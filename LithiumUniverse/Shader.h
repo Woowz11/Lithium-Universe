@@ -21,7 +21,7 @@ public:
     std::string Name;
     bool Success = true;
 
-    Shader() { ID = ErrorShaderID; Name = "Unknown"; }
+    Shader() { RealID = -1; ID = ErrorShaderID; Name = "Unknown"; }
 
     Shader(std::string Name_, std::string VertexCode, std::string FragmentCode)
     {
@@ -131,9 +131,9 @@ private:
             if (!success)
             {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-                Error("SHADER (COMPILATION)", "Error with shader ($$Y" + Name + "$$_ ($$B" + std::to_string(RealID) + "$$_)) type: $$C" + type);
-                Error("SHADER (COMPILATION)", RemoveLastSymbol(infoLog));
-                Error("SHADER (COMPILATION)", "$$R---------------------------------------------------");
+                Error("SHADER (COMPIL.)", "Error with shader ($$Y" + Name + "$$_ ($$B" + std::to_string(RealID) + "$$_)) type: $$C" + type);
+                Error("SHADER (COMPIL.)", RemoveLastSymbol(infoLog));
+                Error("SHADER (COMPIL.)", "$$R---------------------------------------------------");
             }
         }
         else

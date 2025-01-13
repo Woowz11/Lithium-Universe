@@ -38,6 +38,18 @@ std::string ReplaceCharsToChars(std::string Target, char ToThis, char ToThat) {
 	return Result;
 }
 
+/* Заменить все символы в строке на строку */
+std::string ReplaceCharsToString(std::string Target, char ToThis, std::string ToThat) {
+	std::string Result = Target;
+	std::string Char(1, ToThis);
+	size_t pos = 0;
+	while ((pos = Result.find(Char, pos)) != std::string::npos) {
+		Result.replace(pos, Char.length(), ToThat);
+		pos += ToThat.length();
+	}
+	return Result;
+}
+
 /* Получить последний символ строки */
 char GetLastSymbol(std::string Target) {
 	if (Target.empty()) {

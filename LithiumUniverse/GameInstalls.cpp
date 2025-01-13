@@ -123,8 +123,84 @@ private:
 		else {
 			gladGLversionStruct VER = GLVersion;
 			Print("GLAD", "GL (" + std::to_string(VER.major) + "." + std::to_string(VER.minor) + ")");
+			glEnable(GL_DEPTH_TEST);
+
+			glEnable(GL_DEBUG_OUTPUT);
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+			glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* msg, const void* data) {
+				std::string _source;
+				std::string _type;
+
+				switch (source) {
+				case GL_DEBUG_SOURCE_API:
+					_source = "API";
+					break;
+				case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+					_source = "WIN";
+					break;
+				case GL_DEBUG_SOURCE_SHADER_COMPILER:
+					_source = "SHADER";
+					break;
+				case GL_DEBUG_SOURCE_THIRD_PARTY:
+					_source = "THIRDPARTY";
+					break;
+				case GL_DEBUG_SOURCE_APPLICATION:
+					_source = "APP";
+					break;
+				case GL_DEBUG_SOURCE_OTHER:
+					_source = "OTHER";
+					break;
+				default:
+					_source = "UNKNOWN";
+					break;
+				}
+
+				switch (type) {
+				case GL_DEBUG_TYPE_ERROR:
+					_type = "ERROR";
+					break;
+				case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+					_type = "DEPRECATED BEHAVIOR";
+					break;
+				case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+					_type = "UDEFINED BEHAVIOR";
+					break;
+				case GL_DEBUG_TYPE_PORTABILITY:
+					_type = "PORTABILITY";
+					break;
+				case GL_DEBUG_TYPE_PERFORMANCE:
+					_type = "PERFORMANCE";
+					break;
+				case GL_DEBUG_TYPE_OTHER:
+					_type = "OTHER";
+					break;
+				case GL_DEBUG_TYPE_MARKER:
+					_type = "MARKER";
+					break;
+				default:
+					_type = "UNKNOWN";
+					break;
+				}
+
+				switch (severity) {
+				case GL_DEBUG_SEVERITY_HIGH:
+					Error("GL " + _source + "/" + _type, msg);
+					break;
+				case GL_DEBUG_SEVERITY_MEDIUM:
+					WarnSerious("GL " + _source + "/" + _type, msg);
+					break;
+				case GL_DEBUG_SEVERITY_LOW:
+					Warn("GL " + _source + "/" + _type, msg);
+					break;
+				case GL_DEBUG_SEVERITY_NOTIFICATION:
+					PrintImportant("GL " + _source + "/" + _type, msg);
+					break;
+				default:
+					Print("GL " + _source + "/" + _type, msg);
+					break;
+				}
+			}, NULL);
 		}
-		glEnable(GL_DEPTH_TEST);
 	}
 
 	/* Загрузка всего */
