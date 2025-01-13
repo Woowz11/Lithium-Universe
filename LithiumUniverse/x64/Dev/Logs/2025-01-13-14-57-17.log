@@ -1,9 +1,0 @@
- I:[14:57:17:518][LU     ]: Run LithiumUniverse (0.1.1D DEV)!
- I:[14:57:17:552][GLFW   ]: GLFW (3.4.0)
- I:[14:57:17:924][GLFW   ]: Window created!
- I:[14:57:17:931][GLAD   ]: GL (4.6)
- I:[14:57:17:933][SHADER ]: Shader (Error (3)) created!
- I:[14:57:17:934][SHADER ]: Shader (Default (6)) created!
- I:[14:57:17:939][TEXTURE]: Texture (F:/Lithium-Universe/LithiumUniverse/x64/Dev/Resources/Textures/Default.png (1)) created!
- I:[14:57:17:947][LU     ]: All started, and start Loop()!
- I:[14:57:56:351][LU     ]: Game has been exit successfully!
