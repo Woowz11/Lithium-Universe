@@ -1,0 +1,27 @@
+ I:[15:21:44:672][LU     ]: Run LithiumUniverse (0.1.1D DEV)!
+ I:[15:21:44:712][GLFW   ]: GLFW (3.4.0)
+ I:[15:21:45:146][GLFW   ]: Window created!
+ I:[15:21:45:152][GLAD   ]: GL (4.6)
+ E:[15:21:45:185][SHADER (COMPILATION)]: Error with shader (Error (3452816845)) type: VERTEX
+ E:[15:21:45:186][SHADER (COMPILATION)]: 0(9) : error C0000: syntax error, unexpected integer constant at token "<int-const>"
+ E:[15:21:45:187][SHADER (COMPILATION)]: ---------------------------------------------------
+ E:[15:21:45:405][SHADER (LINKING)]: Error with shader (Error (3)) type: PROGRAM
+ E:[15:21:45:406][SHADER (LINKING)]: Vertex info
+-----------
+0(9) : error C0000: syntax error, unexpected integer constant at token "<int-const>"
+(0) : error C2003: incompatible options for link
+ E:[15:21:45:407][SHADER (LINKING)]: ---------------------------------------------------
+ I:[15:21:45:407][SHADER ]: Shader (Error (3)) has errors!
+ E:[15:21:45:409][SHADER (COMPILATION)]: Error with shader (Default (3452816845)) type: VERTEX
+ E:[15:21:45:410][SHADER (COMPILATION)]: 0(9) : error C0000: syntax error, unexpected integer constant at token "<int-const>"
+ E:[15:21:45:411][SHADER (COMPILATION)]: ---------------------------------------------------
+ E:[15:21:45:645][SHADER (LINKING)]: Error with shader (Default (6)) type: PROGRAM
+ E:[15:21:45:646][SHADER (LINKING)]: Vertex info
+-----------
+0(9) : error C0000: syntax error, unexpected integer constant at token "<int-const>"
+(0) : error C2003: incompatible options for link
+ E:[15:21:45:647][SHADER (LINKING)]: ---------------------------------------------------
+ I:[15:21:45:648][SHADER ]: Shader (Default (6)) has errors!
+ I:[15:21:45:652][TEXTURE]: Texture (F:/Lithium-Universe/LithiumUniverse/x64/Dev/Resources/Textures/Default.png (1)) created!
+ I:[15:21:45:655][LU     ]: All started, and start Loop()!
+ I:[15:21:49:272][LU     ]: Game has been exit successfully!

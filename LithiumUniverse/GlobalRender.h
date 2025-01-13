@@ -8,3 +8,5 @@ void MoveCamera(float vel_x, float vel_y);
 void SetCameraPosition(float x, float y);
 void MoveCameraZoom(float vel);
 void SetCameraZoom(float z);
+void UpdateDeltaTime(float DT);
+void UpdateWindowSize(uint32_t W, uint32_t H);

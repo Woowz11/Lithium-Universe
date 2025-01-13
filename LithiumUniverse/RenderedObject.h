@@ -24,7 +24,6 @@ public:
 	glm::vec3 Orientation = glm::vec3(0, 0, 0);    /* Поворот объекта                 */
 	glm::vec4 Color       = glm::vec4(1, 1, 1, 1); /* Цвет объекта                    */
 	float Layer           = 0;                     /* Слой объекта                    */
-	glm::mat4 Matrix      = glm::mat4(1);          /* Результативная позиция объекта  */
 	bool Render           = true;                  /* Рендерить объект?               */
 	ShapeType Shape       = Square;                /* Какие вертиксы рендерить?       */
 	bool ThatUI           = false;                 /* Прикрепить объект к камере?     */

@@ -15,18 +15,30 @@
 
 uint32_t START_WINDOW_WIDTH;
 uint32_t START_WINDOW_HEIGHT;
+uint32_t CURRENT_WINDOW_WIDTH;
+uint32_t CURRENT_WINDOW_HEIGHT;
+void UpdateWindowSize(uint32_t W, uint32_t H) {
+    CURRENT_WINDOW_WIDTH  = W;
+    CURRENT_WINDOW_HEIGHT = H;
+}
+
 std::string GamePath;
+
+float DeltaTime = 0;
+void UpdateDeltaTime(float DT) {
+    DeltaTime = DT;
+}
 
 /* ==== Камера ==== */
 
 glm::vec2 CameraPosition = glm::vec2(0, 0);
-float CameraSpeed = 0.001f;
-float CameraZoomSpeed = 0.001f;
+float CameraSpeed = 1;
+float CameraZoomSpeed = 1;
 float CameraZoom = 1;
 
 /* Двигать камеру */
 void MoveCamera(float vel_x, float vel_y) {
-    CameraPosition = CameraPosition + glm::vec2(-vel_x * CameraSpeed * CameraZoom, -vel_y * CameraSpeed * CameraZoom);
+    CameraPosition = CameraPosition + glm::vec2(-vel_x * CameraSpeed * CameraZoom * DeltaTime, -vel_y * CameraSpeed * CameraZoom * DeltaTime);
 }
 
 /* Установить позицию камере */
@@ -36,7 +48,7 @@ void SetCameraPosition(float x, float y) {
 
 /* Двигать масштаб камеры */
 void MoveCameraZoom(float vel) {
-    CameraZoom += (-vel * CameraZoomSpeed) * CameraZoom;
+    CameraZoom += (-vel * CameraZoomSpeed * DeltaTime) * CameraZoom;
 }
 
 /* Изменить масштаб камеры */
@@ -58,36 +70,49 @@ int square_l = 4; /* Кол-во строк в square */
 
 /* ==== Шейдеры ==== */
 
+std::vector<Shader> Shaders = {};
+
+/* Информация о uniform's
+Projection (mat4)      = Проекция (от камеры)
+Position   (mat4)      = Позиция объекта
+Random     (float)     = Случайное дробное число от 0 до 1
+Texture    (sampler2D) = Текстура
+
+Информация о location's
+[0] PolygonPosition (vec3) = Позиция полигона
+[1] TextureUV       (vec2) = Развёртка текстуры
+*/
+
 Shader DefaultShader;
 
 std::string DefaultShader_Vert = R"(#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec2 aTexCoord;
+layout (location = 0) in vec3 PolygonPosition;
+layout (location = 1) in vec2 TextureUV;
 
-out vec2 TexCoord;
+out vec2 TextureCoord;
 
-uniform mat4 Model;
-uniform mat4 View;
+uniform mat4 Position;
 uniform mat4 Projection;
 uniform float Random;
 
 void main()
 {
-    gl_Position = Projection * View * Model * vec4(aPos, 1.0f);
-    TexCoord = vec2(aTexCoord.x, 1.0 - aTexCoord.y);
+    gl_Position = Projection * Position * vec4(PolygonPosition, 1.0f);
+    TextureCoord = vec2(TextureUV.x, 1.0 - TextureUV.y);
 })";
 
 std::string DefaultShader_Frag = R"(#version 330 core
 out vec4 FragColor;
 
-in vec2 TexCoord;
+in vec2 TextureCoord;
 
 uniform sampler2D Texture;
+uniform vec4 Color;
 uniform float Random;
 
 void main()
 {
-    FragColor = texture(Texture, TexCoord);
+    FragColor = texture(Texture, TextureCoord) * Color;
 })";
 
 Shader ErrorShader;
@@ -95,19 +120,22 @@ Shader ErrorShader;
 std::string ErrorShader_Frag = R"(#version 330 core
 out vec4 FragColor;
 
-in vec2 TexCoord;
+in vec2 TextureCoord;
+uniform vec4 Color;
 
 uniform sampler2D Texture;
 
 void main()
 {
-    FragColor = vec4(1.0f,0.0f,1.0f,1.0f);
+    FragColor = vec4(1.0f,0.0f,1.0f,1.0f) * Color;
 })";
 
 /* Создать шейдеры */
 void CreateShaders() {
     ErrorShader = *new Shader("Error", DefaultShader_Vert, ErrorShader_Frag);
+    Shaders.push_back(ErrorShader);
     DefaultShader = *new Shader("Default", DefaultShader_Vert, DefaultShader_Frag);
+    Shaders.push_back(DefaultShader);
 }
 
 /* ==== Текстуры ==== */
@@ -132,7 +160,7 @@ void CreateTexture(std::string Path, unsigned int& Texture) {
         {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
-            Print("TEXTURE", "Texture ($$Y" + Path + "$$_ ($$G" + std::to_string(Texture) + "$$_)) created!");
+            Print("TEXTURE", "Texture ($$Y" + Path + "$$_ ($$B" + std::to_string(Texture) + "$$_)) $$Gcreated$$_!");
         }
         else
         {
@@ -156,7 +184,8 @@ void CreateTextures() {
 
 /* ==== Сцена ==== */
 
-std::vector<RenderedObject> Scene = {};
+std::vector<RenderedObject> Scene           = {};
+glm::vec4                   BackgroundColor = glm::vec4(0.2f, 0, 0, 1);
 
 void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
     GamePath = GamePath_;
@@ -187,46 +216,82 @@ void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
 
     CreateTextures();
 
-    DefaultShader.use();
+    glUseProgram(DefaultShader.ID);
     DefaultShader.setInt("Texture", 0);
+
+    /* ==== Сцена ==== */
+    RenderedObject Test = RenderedObject("test");
+    Test.BaseShader  = 1;
+    Test.BaseTexture = DefaultTexture;
+    Test.Orientation = glm::vec3(0, 0, 45);
+    Scene.push_back(Test);
+
+    RenderedObject Test3 = RenderedObject("test");
+    Test3.BaseShader = 1;
+    Test3.BaseTexture = DefaultTexture;
+    Test3.Resize = true;
+    Test3.ThatUI = true;
+    Test3.Position = glm::vec2(0, 0);
+    Test3.Layer = 10;
+    Test3.Color = glm::vec4(1, 0, 0, 1);
+    Scene.push_back(Test3);
 }
 
+/* Удалить всё что осталось после рендера */
 void ClearRender() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
 }
 
+/* Рендер картинки каждый кадр */
 void Render() {
-	glClearColor(0.2f, 0.0f, 0.0f, 1.0f);
+	glClearColor(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, BackgroundColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, DefaultTexture);
+    /* ==== Рендер объектов ==== */
+    for (RenderedObject OBJ : Scene) {
+        if (OBJ.Render) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, OBJ.BaseTexture);
 
-    DefaultShader.use();
+            Shader OBJ_Shader = Shaders[OBJ.BaseShader];
+            glUseProgram(OBJ_Shader.ID);
 
-    /* ==== Трансформация ==== */
-    glm::mat4 view = glm::mat4(1.0f);
-    glm::mat4 projection = glm::mat4(1.0f);
-    float Zoom  = 1/CameraZoom;
-    float Left  = -(float)START_WINDOW_WIDTH / 240;
-    float Right = (float)START_WINDOW_WIDTH / 240;
-    float Down  = -(float)START_WINDOW_HEIGHT / 240;
-    float Up    = (float)START_WINDOW_HEIGHT / 240;
-    projection  = glm::ortho(Left/Zoom, Right/Zoom, Down/Zoom, Up/Zoom, -1000.0f, 1000.0f); //glm::perspective(glm::radians(45.0f), (float)START_WINDOW_WIDTH / (float)START_WINDOW_HEIGHT, 0.1f, 100.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    DefaultShader.setMat4("Projection", projection);
-    DefaultShader.setMat4("View", view);
+            OBJ_Shader.setVec4("Color"  , OBJ.Color);
+            OBJ_Shader.setFloat("Random", (static_cast<double>(rand()) / RAND_MAX));
 
-    glBindVertexArray(VAO);
+            /* ==== Трансформация ==== */
+            glm::mat4 Projection = glm::mat4(1.0f);
+            float Zoom = 1 / (OBJ.ThatUI ? 1 : CameraZoom);
 
-    double randomValue = ((static_cast<double>(rand()) / RAND_MAX) - 0.5f) * 2;
+            float WIN_WIDTH  = OBJ.Resize ? (float)START_WINDOW_WIDTH  : (float)CURRENT_WINDOW_WIDTH ;
+            float WIN_HEIGHT = OBJ.Resize ? (float)START_WINDOW_HEIGHT : (float)CURRENT_WINDOW_HEIGHT;
 
-    DefaultShader.setFloat("Random", randomValue);
+            float Left  = -WIN_WIDTH  / 240;
+            float Right =  WIN_WIDTH  / 240;
+            float Down  = -WIN_HEIGHT / 240;
+            float Up    =  WIN_HEIGHT / 240;
+            Projection = glm::ortho(
+                Left  / Zoom,
+                Right / Zoom,
+                Down  / Zoom,
+                Up    / Zoom,
+                -1000.0f, 1000.0f);
+            OBJ_Shader.setMat4("Projection", Projection);
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(CameraPosition.x, CameraPosition.y, 0));
-    DefaultShader.setMat4("Model", model);
+            glBindVertexArray(VAO);
 
-    glDrawArrays(GL_QUADS, 0, square_l);
+            glm::mat4 ResultPosition = glm::mat4(1.0f);
+            ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.Position.x * 2, OBJ.Position.y * 2, OBJ.Layer + (float)OBJ.GetID()/10000));
+            if (!OBJ.ThatUI) {
+                ResultPosition = glm::translate(ResultPosition, glm::vec3(CameraPosition.x, CameraPosition.y, 0));
+            }
+            ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.x), glm::vec3(1, 0, 0));
+            ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.y), glm::vec3(0, 1, 0));
+            ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.z), glm::vec3(0, 0, 1));
+            OBJ_Shader.setMat4("Position", ResultPosition);
+
+            glDrawArrays(GL_QUADS, 0, square_l);
+        }
+    }
 }

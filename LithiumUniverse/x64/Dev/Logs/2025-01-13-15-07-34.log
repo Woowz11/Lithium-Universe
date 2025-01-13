@@ -1,0 +1,20 @@
+ I:[15:07:34:852][LU     ]: Run LithiumUniverse (0.1.1D DEV)!
+ I:[15:07:34:919][GLFW   ]: GLFW (3.4.0)
+ I:[15:07:35:310][GLFW   ]: Window created!
+ I:[15:07:35:316][GLAD   ]: GL (4.6)
+ I:[15:07:35:318][SHADER ]: Shader (Error (3)) created!
+ E:[15:07:35:731][SHADER (COMPILATION)]: Error with shader (Default (3452816845)) type: FRAGMENT
+ E:[15:07:35:732][SHADER (COMPILATION)]: 0(7) : error C0000: syntax error, unexpected integer constant at token "<int-const>"
+
+ E:[15:07:35:733][SHADER (COMPILATION)]: ---------------------------------------------------
+ E:[15:07:35:863][SHADER (LINKING)]: Error with shader (Default (3)) type: PROGRAM
+ E:[15:07:35:864][SHADER (LINKING)]: Fragment info
+-------------
+0(7) : error C0000: syntax error, unexpected integer constant at token "<int-const>"
+(0) : error C2003: incompatible options for link
+
+ E:[15:07:35:865][SHADER (LINKING)]: ---------------------------------------------------
+ I:[15:07:35:865][SHADER ]: Shader (Default (6)) created!
+ I:[15:07:35:883][TEXTURE]: Texture (F:/Lithium-Universe/LithiumUniverse/x64/Dev/Resources/Textures/Default.png (1)) created!
+ I:[15:07:35:885][LU     ]: All started, and start Loop()!
+ I:[15:12:23:876][LU     ]: Game has been exit successfully!

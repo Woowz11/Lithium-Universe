@@ -89,12 +89,14 @@ private:
 			glfwMakeContextCurrent(Window);
 			glfwSwapInterval(0);
 			glfwSetFramebufferSizeCallback(Window, WindowSizeChanged);
+			UpdateWindowSize(START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
 		}
 	}
 
 	/* Размер окна был изменён */
 	static void WindowSizeChanged(GLFWwindow* window, int width, int height)
 	{
+		UpdateWindowSize(width, height);
 		glViewport(0, 0, width, height);
 	}
 
@@ -132,6 +134,7 @@ private:
 		InstallRender(GamePath,START_WINDOW_WIDTH,START_WINDOW_HEIGHT);
 
 		Print("LU", "All started, and start Loop()!");
+		Print("LU", "=============== [RUNTIME] ===============");
 	}
 
 	/* Вычесление FPS */
@@ -142,6 +145,7 @@ private:
 		float deltaTime = currentTime - LastFPSTime;
 		LastFPSTime = currentTime;
 		FPS = (1 / deltaTime);
+		UpdateDeltaTime(deltaTime);
 	}
 
 	/* Цикл GLFW */

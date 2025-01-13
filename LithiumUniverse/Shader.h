@@ -8,15 +8,20 @@
 #include <sstream>
 #include <iostream>
 
+#include "StringActions.h";
 #include "Console.h";
+
+static unsigned int ErrorShaderID = 3;
 
 class Shader
 {
 public:
     unsigned int ID;
+    unsigned int RealID;
     std::string Name;
+    bool Success = true;
 
-    Shader() { ID = -1; Name = "Unknown"; }
+    Shader() { ID = ErrorShaderID; Name = "Unknown"; }
 
     Shader(std::string Name_, std::string VertexCode, std::string FragmentCode)
     {
@@ -40,21 +45,22 @@ public:
         glCompileShader(fragment);
         checkCompileErrors(fragment, "FRAGMENT");
 
-        ID = glCreateProgram();
-        glAttachShader(ID, vertex);
-        glAttachShader(ID, fragment);
-        glLinkProgram(ID);
-        checkCompileErrors(ID, "PROGRAM");
+        RealID = glCreateProgram();
+        glAttachShader(RealID, vertex);
+        glAttachShader(RealID, fragment);
+        glLinkProgram(RealID);
+        checkCompileErrors(RealID, "PROGRAM");
 
         glDeleteShader(vertex);
         glDeleteShader(fragment);
 
-        Print("SHADER", "Shader ($$Y" + Name + "$$_ ($$G" + std::to_string(ID) + "$$_)) created!");
-    }
-
-    void use() const
-    {
-        glUseProgram(ID);
+        Print("SHADER", "Shader ($$Y" + Name + "$$_ ($$B" + std::to_string(RealID) + "$$_)) "+(Success?"$$Gcreated" : "has $$Rerrors") + "$$_!");
+        if (Success) {
+            ID = RealID;
+        }
+        else {
+            ID = ErrorShaderID;
+        }
     }
 
     void setBool(const std::string& name, bool value) const
@@ -125,9 +131,9 @@ private:
             if (!success)
             {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-                Error("SHADER (COMPILATION)", "Error with shader ($$Y" + Name + "$$_ ($$G" + std::to_string(ID) + "$$_)) type: " + type);
-                Error("SHADER (COMPILATION)", infoLog);
-                Error("SHADER (COMPILATION)", "---------------------------------------------------");
+                Error("SHADER (COMPILATION)", "Error with shader ($$Y" + Name + "$$_ ($$B" + std::to_string(RealID) + "$$_)) type: $$C" + type);
+                Error("SHADER (COMPILATION)", RemoveLastSymbol(infoLog));
+                Error("SHADER (COMPILATION)", "$$R---------------------------------------------------");
             }
         }
         else
@@ -136,10 +142,13 @@ private:
             if (!success)
             {
                 glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-                Error("SHADER (LINKING)", "Error with shader ($$Y" + Name + "$$_ ($$G" + std::to_string(ID) + "$$_)) type: " + type);
-                Error("SHADER (LINKING)", infoLog);
-                Error("SHADER (LINKING)", "---------------------------------------------------");
+                Error("SHADER (LINKING)", "Error with shader ($$Y" + Name + "$$_ ($$B" + std::to_string(RealID) + "$$_)) type: $$C" + type);
+                Error("SHADER (LINKING)", RemoveLastSymbol(infoLog));
+                Error("SHADER (LINKING)", "$$R---------------------------------------------------");
             }
+        }
+        if (!success) {
+            Success = false;
         }
     }
 };

@@ -44,10 +44,10 @@ void ControlsKeyboard() {
 	bool MINUS = KeyPressed(GLFW_KEY_MINUS) == GLFW_PRESS;
 
 	if (PLUS && !MINUS) {
-		MoveCameraZoom(1);
+		MoveCameraZoom(speed);
 	}
 	if (MINUS && !PLUS) {
-		MoveCameraZoom(-1);
+		MoveCameraZoom(-speed);
 	}
 }
 
