@@ -22,6 +22,7 @@
 #include "LithiumUniverse.h";
 #include "BaseConstants.h";
 #include "GlobalRender.h";
+#include "GameControls.h";
 #include "Console.h";
 
 enum GameInstallError {
@@ -39,13 +40,16 @@ public:
 	const bool DeveloperVersion = true;
 #endif
 
+	std::string GamePath;
 	const uint32_t START_WINDOW_WIDTH = 800;
 	const uint32_t START_WINDOW_HEIGHT = 600;
 	GLFWwindow* Window = NULL;
 
 	float FPS = -1;
 
-	void Run() {
+	/* Запуск игры */
+	void Run(std::string GamePath_) {
+		GamePath = GamePath_;
 		RunAll();
 		if (GlobalError==SUCCESS) {
 			Loop();
@@ -57,9 +61,21 @@ public:
 		return "LithiumUniverse (" + GetGameVersion() + ") FPS: "+std::to_string(FPS);
 	}
 
+	/* ==== Управление, другие функции ==== */
+
+	int KeyPressed(int Key) {
+		return glfwGetKey(Window, Key);
+	}
+
+	void ExitGame() {
+		glfwSetWindowShouldClose(Window, true);
+	}
+
 private:
 	GameInstallError GlobalError = SUCCESS;
 
+	/* ==== Основа ==== */
+	 
 	/* Создание окна */
 	void CreateGameWindow() {
 		Window = glfwCreateWindow(START_WINDOW_WIDTH, START_WINDOW_HEIGHT, GetGameTitle().c_str(), NULL, NULL);
@@ -113,7 +129,7 @@ private:
 	void RunAll() {
 		RunGLFW();
 		RunGLAD();
-		InstallRender(START_WINDOW_WIDTH,START_WINDOW_HEIGHT);
+		InstallRender(GamePath,START_WINDOW_WIDTH,START_WINDOW_HEIGHT);
 
 		Print("LU", "All started, and start Loop()!");
 	}
@@ -137,50 +153,13 @@ private:
 		if (currentTime - LastFPSTimeForSecond >= 0.5f) {
 			LastFPSTimeForSecond = currentTime;
 			glfwSetWindowTitle(Window, GetGameTitle().c_str());
-			Print("kaka", "$$RGOVNOOOO!!!!");
-		}
-	}
-
-	/* Обработка клавиш */
-	void ProcessInput()
-	{
-		if (glfwGetKey(Window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-			glfwSetWindowShouldClose(Window, true);
-		}
-
-		if (glfwGetKey(Window, GLFW_KEY_HOME) == GLFW_PRESS) {
-			SetCameraPosition(0, 0);
-		}
-
-		bool W = glfwGetKey(Window, GLFW_KEY_W) == GLFW_PRESS;
-		bool S = glfwGetKey(Window, GLFW_KEY_S) == GLFW_PRESS;
-		bool D = glfwGetKey(Window, GLFW_KEY_D) == GLFW_PRESS;
-		bool A = glfwGetKey(Window, GLFW_KEY_A) == GLFW_PRESS;
-
-		bool SHIFT = glfwGetKey(Window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS;
-		bool CONTROL = glfwGetKey(Window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS;
-
-		float speed = (SHIFT?3:(CONTROL?0.3f:1));
-
-		if (W && !S) {
-			MoveCamera( 0,  speed);
-		}
-		if (S && !W) {
-			MoveCamera( 0, -speed);
-		}
-
-		if (D && !A) {
-			MoveCamera(speed,  0);
-		}
-		if (A && !D) {
-			MoveCamera(-speed,  0);
 		}
 	}
 
 	/* Цикл всего */
 	void Loop() {
 		while (!glfwWindowShouldClose(Window)) {
-			ProcessInput();
+			Controls();
 
 			Render();
 			CalculateFPS();
@@ -205,20 +184,31 @@ private:
 	}
 };
 
-int Run() {
-	GameInstalls game;
-	Print("LU", "Run LithiumUniverse (" + GetGameVersion() + (game.DeveloperVersion ? " $$CDEV$$_" : "") + ")!");
+/* Запуск игры */
+GameInstalls Game;
+int Run(std::string GamePath_) {
+	Print("LU", "Run LithiumUniverse (" + GetGameVersion() + (Game.DeveloperVersion ? " $$CDEV$$_" : "") + ")!");
 
 	try {
-		game.Run();
+		Game.Run(GamePath_);
 	}
 	catch (const std::exception& e) {
 		std::string Error = e.what();
 		Fatal("LU CRASH", Error);
-		Fatal("LU CRASH", "The game was terminated with an error!");
+		Fatal("LU CRASH", "$$RThe game was terminated with an error!$$_");
 		return EXIT_FAILURE;
 	}
-	Print("LU", "Game has been exit successfully!");
+	Print("LU", "$$GGame has been exit successfully!$$_");
 	End();
 	return EXIT_SUCCESS;
+}
+
+/* Получить нажатие клавиши */
+int KeyPressed(int Key) {
+	return Game.KeyPressed(Key);
+}
+
+/* Закрыть игру */
+void ExitGame() {
+	Game.ExitGame();
 }

@@ -5,7 +5,6 @@
 #include <glm/glm.hpp>
 
 #include <string>
-#include <fstream>
 #include <sstream>
 #include <iostream>
 
@@ -14,41 +13,20 @@
 class Shader
 {
 public:
-    Shader(){}
-
     unsigned int ID;
-    Shader(const char* vertexPath, const char* fragmentPath)
+    std::string Name;
+
+    Shader() { ID = -1; Name = "Unknown"; }
+
+    Shader(std::string Name_, std::string VertexCode, std::string FragmentCode)
     {
-        Print("SHADER", "Start create shader ( $$Y" + (std::string)vertexPath + "$$_ | $$Y" + (std::string)fragmentPath + "$$_ )!");
+        Name = Name_;
 
         std::string vertexCode;
         std::string fragmentCode;
-        std::ifstream vShaderFile;
-        std::ifstream fShaderFile;
 
-        vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        try
-        {
-            vShaderFile.open(vertexPath);
-            fShaderFile.open(fragmentPath);
-            std::stringstream vShaderStream, fShaderStream;
-
-            vShaderStream << vShaderFile.rdbuf();
-            fShaderStream << fShaderFile.rdbuf();
-
-            vShaderFile.close();
-            fShaderFile.close();
-
-            vertexCode = vShaderStream.str();
-            fragmentCode = fShaderStream.str();
-        }
-        catch (std::ifstream::failure& e)
-        {
-            Error("SHADER (READING)", e.what());
-        }
-        const char* vShaderCode = vertexCode.c_str();
-        const char* fShaderCode = fragmentCode.c_str();
+        const char* vShaderCode = VertexCode.c_str();
+        const char* fShaderCode = FragmentCode.c_str();
 
         unsigned int vertex, fragment;
 
@@ -70,6 +48,8 @@ public:
 
         glDeleteShader(vertex);
         glDeleteShader(fragment);
+
+        Print("SHADER", "Shader ($$Y" + Name + "$$_ ($$G" + std::to_string(ID) + "$$_)) created!");
     }
 
     void use() const
@@ -145,7 +125,7 @@ private:
             if (!success)
             {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-                Error("SHADER (COMPILATION)", "Error with shader type: "+type);
+                Error("SHADER (COMPILATION)", "Error with shader ($$Y" + Name + "$$_ ($$G" + std::to_string(ID) + "$$_)) type: " + type);
                 Error("SHADER (COMPILATION)", infoLog);
                 Error("SHADER (COMPILATION)", "---------------------------------------------------");
             }
@@ -156,7 +136,7 @@ private:
             if (!success)
             {
                 glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-                Error("SHADER (LINKING)", "Error with shader type: " + type);
+                Error("SHADER (LINKING)", "Error with shader ($$Y" + Name + "$$_ ($$G" + std::to_string(ID) + "$$_)) type: " + type);
                 Error("SHADER (LINKING)", infoLog);
                 Error("SHADER (LINKING)", "---------------------------------------------------");
             }

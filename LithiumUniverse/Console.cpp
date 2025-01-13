@@ -34,12 +34,12 @@ const std::map<std::string, std::string> ColorCodes = {
 
 /* Приставки к типу сообщения (связано с SendLogType) */
 const std::vector<std::string> LogTypePrefixes = {
-	"WII",
+	"W I",
 	"AIM",
-	"CWR",
+	"C W",
 	"OWS",
-	"RER",
-	"FFT",
+	"R E",
+	"F F",
 	"RDR",
 	"BDG",
 	"GDB",
@@ -102,7 +102,12 @@ std::string GenerateLogFileName() {
 	int month   = l.tm_mon+1;
 	int year    = l.tm_year+1900;
 
-	Result = std::to_string(seconds) + "-" + std::to_string(minutes) + "-" + std::to_string(hours) + "-" + std::to_string(days) + "-" + std::to_string(month) + "-" + std::to_string(year);
+	Result = std::to_string(year)                         + "-" +
+		FillString(std::to_string(month),   '0', 2, true) + "-" +
+		FillString(std::to_string(days),    '0', 2, true) + "-" +
+		FillString(std::to_string(hours),   '0', 2, true) + "-" +
+		FillString(std::to_string(minutes), '0', 2, true) + "-" +
+		FillString(std::to_string(seconds), '0', 2, true);
 
 	if (HasFile(LogsPath + "/" + Result + ".log")) {
 		Result += " (CALMDOWN!)";

@@ -11,5 +11,5 @@ void End() {
 int Start(char* ExePath) {
 	std::string GamePath = RemoveLastFileInPath(FixPath(ExePath));
 	InstallConsole(GamePath);
-	return Run();
+	return Run(GamePath);
 }

@@ -18,6 +18,9 @@
     <Filter Include="NotMy">
       <UniqueIdentifier>{dea607ac-2b93-45ee-ae82-74bb40ec0de5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts\GameObjects">
+      <UniqueIdentifier>{738e4b76-3c15-4c61-b42a-09196843ac81}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Start.cpp">
@@ -50,6 +53,12 @@
     <ClCompile Include="StringActions.cpp">
       <Filter>Scripts\Foundation</Filter>
     </ClCompile>
+    <ClCompile Include="GameControls.cpp">
+      <Filter>Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderedObject.h">
+      <Filter>Scripts\GameObjects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -72,6 +81,9 @@
     </ClInclude>
     <ClInclude Include="StringActions.h">
       <Filter>Scripts\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameControls.h">
+      <Filter>Scripts</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
