@@ -1,6 +1,7 @@
 ﻿#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
+#define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -283,9 +284,12 @@ void Render() {
             glBindVertexArray(VAO);
 
             glm::mat4 ResultPosition = glm::mat4(1.0f);
+            if (!OBJ.ThatUI) {
+                ResultPosition = glm::rotate(ResultPosition, -glm::radians(Camera->Rotation), glm::vec3(0, 0, 1));
+            }
             ResultPosition = glm::translate(ResultPosition, glm::vec3(-OBJ.Position.x, -OBJ.Position.y, OBJ.Layer + (float)OBJ.GetID()/10000));
             if (!OBJ.ThatUI) {
-                ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
+                ResultPosition = glm::translate(ResultPosition, -glm::vec3(Camera->Position.x, Camera->Position.y, 0));
             }
             //ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.x), glm::vec3(1, 0, 0));
             //ResultPosition = glm::rotate(ResultPosition, glm::radians(OBJ.Orientation.y), glm::vec3(0, 1, 0));

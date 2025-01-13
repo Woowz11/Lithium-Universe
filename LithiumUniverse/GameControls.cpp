@@ -13,6 +13,7 @@ void ControlsKeyboard() {
 	}
 
 	if (KeyPressed(GLFW_KEY_HOME) == GLFW_PRESS) {
+		Camera->SetCameraRotation(0);
 		Camera->SetCameraZoom(1);
 		Camera->SetCameraPosition(0, 0);
 	}
@@ -22,7 +23,7 @@ void ControlsKeyboard() {
 	bool D = KeyPressed(GLFW_KEY_D) == GLFW_PRESS;
 	bool A = KeyPressed(GLFW_KEY_A) == GLFW_PRESS;
 
-	bool SHIFT = KeyPressed(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS;
+	bool SHIFT   = KeyPressed(GLFW_KEY_LEFT_SHIFT  ) == GLFW_PRESS;
 	bool CONTROL = KeyPressed(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS;
 
 	float speed = (SHIFT ? 3 : (CONTROL ? 0.3f : 1));
@@ -49,6 +50,16 @@ void ControlsKeyboard() {
 	}
 	if (MINUS && !PLUS) {
 		Camera->MoveCameraZoom(-speed);
+	}
+
+	bool RIGHT = KeyPressed(GLFW_KEY_RIGHT) == GLFW_PRESS;
+	bool LEFT  = KeyPressed(GLFW_KEY_LEFT ) == GLFW_PRESS;
+
+	if (RIGHT && !LEFT) {
+		Camera->MoveCameraRotation(speed);
+	}
+	if (LEFT && !RIGHT) {
+		Camera->MoveCameraRotation(-speed);
 	}
 }
 

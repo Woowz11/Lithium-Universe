@@ -194,6 +194,11 @@ void Print(std::string Base, std::string Message) {
 	PrintBase(Base, Both, SLT_Info, Message);
 }
 
+/* Отправить обычное сообщение (кроме логов) */
+void PrintFast(std::string Base, std::string Message) {
+	PrintBase(Base, OnlyConsole, SLT_Info, Message);
+}
+
 /* Отправить важное сообщение */
 void PrintImportant(std::string Base, std::string Message) {
 	PrintBase(Base, Both, SLT_Important, Message);

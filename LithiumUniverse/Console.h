@@ -23,6 +23,7 @@ enum MessageType {
 void PrintBase(std::string Base, MessageType MT, SendLogType SLT, std::string Message);
 
 void Print(std::string Base, std::string Message);
+void PrintFast(std::string Base, std::string Message);
 void PrintImportant(std::string Base, std::string Message);
 void Warn(std::string Base, std::string Message);
 void WarnSerious(std::string Base, std::string Message);

@@ -22,7 +22,7 @@ void Physic(RenderedObject& OBJ) {
 	//OBJ.AddRotation(dt * 20);
 	//OBJ.Size = glm::vec2((OBJ.Orientation.z - 180) / 90, (OBJ.Orientation.z - 180) / 90);
 	if (OBJ.Name == "test2") {
-		OBJ.SetPosition(Camera->Position);
+		OBJ.SetPosition(-(Camera->Position));
 	}
 }
 

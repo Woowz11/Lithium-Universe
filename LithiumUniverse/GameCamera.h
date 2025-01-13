@@ -1,16 +1,18 @@
 ﻿#ifndef GAME_CAMERA_H
 #define GAME_CAMERA_H
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <GLM/glm.hpp>
+#include <GLM/gtx/rotate_vector.hpp>
+#include <iostream>
+#include "Console.h";
 
 class GameCamera {
 private:
 	float dt = 0;
 public:
-	const float Speed = 2;
-	const float ZoomSpeed = 0.5f;
-
 	glm::vec2 Position = glm::vec2(0,0);
+	float Rotation = 0;
 	float Zoom = 1;
 
 	GameCamera() {}
@@ -22,7 +24,11 @@ public:
 
 	/* Двигать камеру */
 	void MoveCamera(float vel_x, float vel_y) {
-		Position = Position + glm::vec2(vel_x * Speed * Zoom * dt, vel_y * Speed * Zoom * dt);
+		// Сука бесит, почему этот скрипт нормально не обновляется при компиляции, хуйня какая-то
+		//PrintFast("test", "1");
+		glm::vec2 vel = glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt);
+		//vel = glm::rotate(vel, glm::radians(Rotation));
+		Position = Position + glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt);
 	}
 
 	/* Установить позицию камере */
@@ -32,12 +38,22 @@ public:
 
 	/* Двигать масштаб камеры */
 	void MoveCameraZoom(float vel) {
-		Zoom += (-vel * ZoomSpeed * dt) * Zoom;
+		Zoom += (-vel * 0.5f * dt) * Zoom;
 	}
 
 	/* Изменить масштаб камеры */
 	void SetCameraZoom(float z) {
 		Zoom = z;
+	}
+
+	/* Повернуть камеру */
+	void MoveCameraRotation(float vel) {
+		Rotation += (vel * 50 * dt);
+	}
+
+	/* Установить поворот камеры */
+	void SetCameraRotation(float deg) {
+		Rotation = deg;
 	}
 };
 
