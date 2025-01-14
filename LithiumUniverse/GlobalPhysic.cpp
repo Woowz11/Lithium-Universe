@@ -30,17 +30,34 @@ bool DC_PointToPoint(RenderedObject Point1, RenderedObject Point2) {
 
 /* Проверка коллизии: Точка с кругом */
 bool DC_PointToCircle(RenderedObject Point, RenderedObject Circle) {
-	float X = Point.Position.x;
-	float Y = Point.Position.y;
+	float X  = Point.Position.x;
+	float Y  = Point.Position.y;
 	float CX = Circle.Position.x;
 	float CY = Circle.Position.y;
-	float R = Circle.Size.x/2;
+	float R  = Circle.Size.x / 2;
 
 	float DistX = X - CX;
 	float DistY = Y - CY;
-	float Distance = sqrt((DistX*DistX) + (DistY*DistY));
+	float Distance = sqrt((DistX * DistX) + (DistY * DistY));
 
 	return Distance <= R;
+}
+
+/* Проверка коллизии: Круг с кругом */
+bool DC_CircleToCircle(RenderedObject Circle1, RenderedObject Circle2) {
+	float C1X = Circle1.Position.x;
+	float C1Y = Circle1.Position.y;
+	float R1 = Circle1.Size.x / 2;
+
+	float C2X = Circle2.Position.x;
+	float C2Y = Circle2.Position.y;
+	float R2  = Circle2.Size.x / 2;
+
+	float DistX = C1X - C2X;
+	float DistY = C1Y - C2Y;
+	float Distance = sqrt((DistX * DistX) + (DistY * DistY));
+
+	return Distance <= R1+R2;
 }
 
 /* ==== Физические действия ==== */
@@ -60,6 +77,10 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 
 	if (COL2.Type == CLDR_Point && COL1.Type == CLDR_Circle) {
 		return DC_PointToCircle(OBJ2, OBJ1);
+	}
+
+	if (COL1.Type == CLDR_Circle && COL2.Type == CLDR_Circle) {
+		return DC_CircleToCircle(OBJ1, OBJ2);
 	}
 
 	return false;
@@ -88,10 +109,10 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 	Test2.BaseShader = 1;
 	Test2.BaseTexture = 3;
 	//Test2.Size = glm::vec2(2,0.5f);
-	Test2.Col = Collider(CLDR_Point);
+	Test2.Col = Collider(CLDR_Circle);
 	Test2.Color = glm::vec4(0,0,1,1);
 	Test2.Layer = 100;
-	Test2.Render = false;
+	//Test2.Render = false;
 	Scene.push_back(Test2);
 
 	int x = -5;
@@ -106,9 +127,9 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 		PhysicalObject Test3 = PhysicalObject("test3");
 		Test3.BaseShader = 1;
 		Test3.BaseTexture = 3;
-		Test3.Position = glm::vec2(x*2,y*2);
+		Test3.Position = glm::vec2(x*3,y*3);
 		Test3.Col = Collider(CLDR_Circle);
-		//Test3.Size = glm::vec2((float)(x + 6) / 7.5f, (float)(y + 6) / 7.5f);
+		Test3.Size = glm::vec2((float)i/10);
 		//Test3.Orientation = (float)i / 100.0f * 360;
 		Scene.push_back(Test3);
 	}
