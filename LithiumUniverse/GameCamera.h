@@ -10,6 +10,7 @@
 class GameCamera {
 private:
 	float dt = 0;
+	float RealCameraRotation = 0;
 public:
 	glm::vec2 Position = glm::vec2(0,0);
 	float Rotation = 0;
@@ -44,12 +45,13 @@ public:
 
 	/* Повернуть камеру */
 	void MoveCameraRotation(float vel) {
-		Rotation += (vel * 50 * dt);
+		SetCameraRotation(RealCameraRotation - (vel * 50 * dt));
 	}
 
 	/* Установить поворот камеры */
 	void SetCameraRotation(float deg) {
-		Rotation = deg;
+		RealCameraRotation = deg;
+		Rotation = (floor(RealCameraRotation/15)*15);
 	}
 };
 

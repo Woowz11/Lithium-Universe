@@ -57,11 +57,11 @@ public:
 	ShapeType Shape        = ST_Square;              /* Какие вертиксы рендерить?       */
 	bool ThatUI            = false;                  /* Прикрепить объект к камере?     */
 	bool Resize            = false;                  /* Менять размер вместе с экраном? */
-	Collider Col           = Collider(CLDR_None);    /* Коллизия */
+	Collider Col           = Collider(CLDR_None);    /* Коллизия                        */
+	bool Selectable        = false;                  /* Мышка реагирует на этот объект? */
 
 	RenderedObject(std::string Name_, RO_Type type) {
-		TotalIDs++;
-		ID = TotalIDs;
+		ID = TotalIDs++;
 		Name = Name_;
 		Type = type;
 
@@ -70,10 +70,12 @@ public:
 		case RO_UI:
 			Resize = true;
 			ThatUI = true;
+			Selectable = true;
 			Layer  = 500;
 			break;
 		case RO_Phys:
 			Col = Collider(CLDR_Custom);
+			Selectable = true;
 			break;
 		default:
 			break;

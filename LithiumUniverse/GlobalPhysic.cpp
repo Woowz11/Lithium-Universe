@@ -14,7 +14,15 @@ void UpdateDeltaTime_PHYSIC(float DT, float Time_) {
 	t = Time_;
 }
 
+/* Позиция мыши в мире */
 glm::vec2 PhysicalMousePosition = glm::vec2(0, 0);
+/* Название объекта мыши */
+std::string MouseDetectorName = "GAME: MouseObject";
+/* Айди объекта обозначающего мышь */
+int MouseDetectorObject = -1;
+
+/* Мышь наведена на этот объект */
+RenderedObject* MouseOnThisObject = nullptr;
 
 /* Установить физику */
 void InstallPhysic() {
@@ -197,37 +205,70 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 	return false;
 }
 
+/* Мышку навели на объект */
+void MouseOverOnObject() {
+	MouseOnThisObject->Color = glm::vec4(1, 0, 0, 1);
+}
+
+/* Мышку убрали с объекта */
+void MouseUnoverOnObject() {
+	MouseOnThisObject->Color = glm::vec4(1, 1, 1, 1);
+}
+
 /* Выполнить физику для объекта */
+RenderedObject* MouseOnThisObject_Result = nullptr;
 void Physic(RenderedObject& OBJ, std::vector<RenderedObject>& Scene) {
-	if (OBJ.Name == "test2") {
+	if (OBJ.Name == MouseDetectorName) {
 		OBJ.SetPosition(PhysicalMousePosition);
 	}
-	else {
-		bool collide = ObjectCollide(OBJ, Scene[0]);
-		OBJ.Color = (collide ? glm::vec4(0, 1, 0, 1) : glm::vec4(1, 0, 0, 1));
-		OBJ.AddRotation(dt*30);
+
+	if (OBJ.Selectable && OBJ.Render) {
+		if (ObjectCollide(OBJ, Scene[MouseDetectorObject])) {
+			if (MouseOnThisObject_Result == nullptr || (OBJ.Layer >= MouseOnThisObject_Result->Layer)) {
+				MouseOnThisObject_Result = &OBJ;
+			}
+		}
+
+		OBJ.AddRotation(dt * 30);
 	}
+}
+
+/* Обрабатываеться после физики */
+void AfterPhysic() {
+	if (MouseOnThisObject == nullptr && MouseOnThisObject_Result != nullptr) {
+		MouseOnThisObject = MouseOnThisObject_Result;
+		MouseOverOnObject();
+	}
+
+	if (MouseOnThisObject != nullptr && MouseOnThisObject_Result == nullptr) {
+		MouseUnoverOnObject();
+		MouseOnThisObject = nullptr;
+	}
+
+	if (MouseOnThisObject != nullptr && MouseOnThisObject_Result != nullptr) {
+		if (MouseOnThisObject->GetID() != MouseOnThisObject_Result->GetID()) {
+			MouseUnoverOnObject();
+			MouseOnThisObject = MouseOnThisObject_Result;
+			MouseOverOnObject();
+		}
+	}
+
+	MouseOnThisObject_Result = nullptr;
 }
 
 /* Создать сцену */
 void CreateScene(std::vector<RenderedObject>& Scene) {
+	/* ==== Создание мыши ==== */
+	MouseDetectorObject = 0;
+	RenderedObject MouseOBJ = RenderedObject(MouseDetectorName);
+	MouseOBJ.Col = Collider(CLDR_Point);
+	MouseOBJ.Render = false;
+	Scene.push_back(MouseOBJ);
+
 	int square_texture = 1;
 	int special_texture = 2;
 	int circle_texture = 3;
 	int cable_texture = 4;
-
-	PhysicalObject Test = PhysicalObject("test2");
-	Test.BaseShader = 1;
-	Test.BaseTexture = special_texture;
-	Test.Col = Collider(CLDR_Custom);
-	Test.Col.SetPoints({
-		glm::vec2(-1.0f,  1.0f), glm::vec2(1.0f,  1.0f),
-		glm::vec2(0.5f, -1.0f), glm::vec2(-0.5f, -1.0f)
-	});
-	Test.Color = glm::vec4(0,0,1,1);
-	Test.Layer = 100;
-	//Test.Render = false;
-	Scene.push_back(Test);
 
 	for (int i = 1; i < 10; i++) {
 		PhysicalObject Test2 = PhysicalObject("test");
@@ -236,9 +277,23 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 		Test2.Col.SetPoints({
 			glm::vec2(-1.0f,  1.0f), glm::vec2(1.0f,  1.0f),
 			glm::vec2(0.5f, -1.0f), glm::vec2(-0.5f, -1.0f)
+			});
+		Test2.Position = glm::vec2(i - 5, 0);
+		Test2.Size = glm::vec2(1, (float)i / 5);
+		Scene.push_back(Test2);
+	}
+
+	for (int i = 1; i < 50; i++) {
+		PhysicalObject Test2 = PhysicalObject("test2");
+		Test2.BaseShader = 1;
+		Test2.BaseTexture = special_texture;
+		Test2.Col.SetPoints({
+			glm::vec2(-1.0f,  1.0f), glm::vec2(1.0f,  1.0f),
+			glm::vec2(0.5f, -1.0f), glm::vec2(-0.5f, -1.0f)
 		});
-		Test2.Position = glm::vec2(i-5,0);
-		Test2.Size = glm::vec2(1,(float)i/5);
+		Test2.Position = glm::vec2(0, (float)(i + 2)/6);
+		Test2.Size = glm::vec2((float)i / 25, 1);
+		Test2.Layer = 1.0f / i;
 		Scene.push_back(Test2);
 	}
 }
@@ -255,4 +310,5 @@ void UpdatePhysic(std::vector<RenderedObject>& Scene) {
 			Physic(OBJ, Scene);
 		}
 	}
+	AfterPhysic();
 }
