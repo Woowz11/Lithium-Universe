@@ -86,15 +86,12 @@ bool DT_SquareToLine(RenderedObject Square, RenderedObject Line) {
 	return Left || Right || Top || Bottom;
 }
 
-/* Проверка коллизии: Точка с кастомной */
-bool DT_PointToCustom(RenderedObject Point, RenderedObject Custom) {
-	glm::vec2 P = Point.Position;
-	std::vector<glm::vec2> Points = Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation);
-
+/* Проверка коллизии: Точка с кастомной (Функция) */
+bool DT_PointToCustom_Func(glm::vec2 P, std::vector<glm::vec2> Points) {
 	bool Result = false;
 
 	int size = Points.size();
-	for (int i = 0, j = size-1; i < size; j = i++) {
+	for (int i = 0, j = size - 1; i < size; j = i++) {
 		glm::vec2 VC = Points[i];
 		glm::vec2 VN = Points[j];
 
@@ -102,7 +99,7 @@ bool DT_PointToCustom(RenderedObject Point, RenderedObject Custom) {
 			((VC.y > P.y) != (VN.y > P.y))
 			&&
 			(P.x < (VN.x - VC.x) * (P.y - VC.y) / (VN.y - VC.y) + VC.x)
-		) {
+			) {
 			Result = !Result;
 		}
 	}
@@ -110,12 +107,13 @@ bool DT_PointToCustom(RenderedObject Point, RenderedObject Custom) {
 	return Result;
 }
 
-/* Проверка коллизии: Линия с кастомной */
-bool DT_LineToCustom(RenderedObject Line, RenderedObject Custom) {
-	glm::vec2 StartPos = Line.GetLineStartPosition();
-	glm::vec2 EndPos = Line.GetLineEndPosition();
-	std::vector<glm::vec2> Points = Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation);
+/* Проверка коллизии: Точка с кастомной */
+bool DT_PointToCustom(RenderedObject Point, RenderedObject Custom) {
+	return DT_PointToCustom_Func(Point.Position, Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation));
+}
 
+/* Проверка коллизии: Линия с кастомной (Функция) */
+bool DT_LineToCustom_Func(glm::vec2 StartPos, glm::vec2 EndPos, std::vector<glm::vec2> Points) {
 	int size = Points.size();
 	for (int i = 0, j = size - 1; i < size; j = i++) {
 		glm::vec2 VC = Points[i];
@@ -124,6 +122,30 @@ bool DT_LineToCustom(RenderedObject Line, RenderedObject Custom) {
 		if (DT_LineToLine_Func(StartPos, EndPos, VC, VN)) {
 			return true;
 		}
+	}
+	return false;
+}
+
+/* Проверка коллизии: Линия с кастомной */
+bool DT_LineToCustom(RenderedObject Line, RenderedObject Custom) {
+	return DT_LineToCustom_Func(Line.GetLineStartPosition(), Line.GetLineEndPosition(), Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation));
+}
+
+/* Проверка коллизии: Кастомной с кастомной */
+bool DT_CustomToCustom(RenderedObject Custom1, RenderedObject Custom2) {
+	std::vector<glm::vec2> Points1 = Custom1.Col.GetPhysicalPoints(Custom1.Position, Custom1.Size, Custom1.Orientation);
+	std::vector<glm::vec2> Points2 = Custom2.Col.GetPhysicalPoints(Custom2.Position, Custom2.Size, Custom2.Orientation);
+
+	int size = Points1.size();
+	for (int i = 0, j = size - 1; i < size; j = i++) {
+		glm::vec2 VC = Points1[i];
+		glm::vec2 VN = Points1[j];
+
+		bool Hit = DT_LineToCustom_Func(VC, VN, Points2);
+		if (Hit) { return true; }
+
+		Hit = DT_PointToCustom_Func(Points2[0], Points1);
+		if (Hit) { return true; }
 	}
 	return false;
 }
@@ -168,14 +190,17 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 		return DT_LineToCustom(OBJ2, OBJ1);
 	}
 
+	if (COL1.Type == CLDR_Custom && COL2.Type == CLDR_Custom) {
+		return DT_CustomToCustom(OBJ2, OBJ1);
+	}
+
 	return false;
 }
 
 /* Выполнить физику для объекта */
 void Physic(RenderedObject& OBJ, std::vector<RenderedObject>& Scene) {
 	if (OBJ.Name == "test2") {
-		//OBJ.SetPosition(PhysicalMousePosition);
-		OBJ.SetLineEndPosition(PhysicalMousePosition);
+		OBJ.SetPosition(PhysicalMousePosition);
 	}
 	else {
 		bool collide = ObjectCollide(OBJ, Scene[0]);
@@ -191,22 +216,18 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 	int circle_texture = 3;
 	int cable_texture = 4;
 
-	/*PhysicalObject Test = PhysicalObject("test2");
+	PhysicalObject Test = PhysicalObject("test2");
 	Test.BaseShader = 1;
-	Test.BaseTexture = square_texture;
-	Test.Col = Collider(CLDR_Point);
+	Test.BaseTexture = special_texture;
+	Test.Col = Collider(CLDR_Custom);
+	Test.Col.SetPoints({
+		glm::vec2(-1.0f,  1.0f), glm::vec2(1.0f,  1.0f),
+		glm::vec2(0.5f, -1.0f), glm::vec2(-0.5f, -1.0f)
+	});
 	Test.Color = glm::vec4(0,0,1,1);
 	Test.Layer = 100;
-	Test.Render = false;
-	Scene.push_back(Test);*/
-
-	PhysicalObject Test2 = PhysicalObject("test2");
-	Test2.MakeItLine(glm::vec2(0, -10), glm::vec2(0, 0), 0.1f);
-	Test2.Col = Collider(CLDR_Line);
-	Test2.BaseTexture = 4;
-	Test2.Color = glm::vec4(0, 0, 1, 1);
-	Test2.Layer = 100;
-	Scene.push_back(Test2);
+	//Test.Render = false;
+	Scene.push_back(Test);
 
 	for (int i = 1; i < 10; i++) {
 		PhysicalObject Test2 = PhysicalObject("test");
