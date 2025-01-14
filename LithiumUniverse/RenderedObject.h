@@ -6,6 +6,7 @@
 
 #include "StaticInfo.h";
 #include "Collider.h";
+#include "Console.h";
 
 enum RO_Type {
 	RO_Default,
@@ -79,6 +80,11 @@ public:
 
 	int GetID() const {
 		return ID;
+	}
+
+	/* Получить физическую позицию, она измеряется с верхнего левого угла, а не с центра фигуры */
+	glm::vec2 GetPhysicalPosition() {
+		return Position - glm::vec2(Size.x/2, Size.y/2);
 	}
 
 	/* Установить позицию объекту */
