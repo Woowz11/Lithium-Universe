@@ -110,6 +110,24 @@ bool DT_PointToCustom(RenderedObject Point, RenderedObject Custom) {
 	return Result;
 }
 
+/* Проверка коллизии: Линия с кастомной */
+bool DT_LineToCustom(RenderedObject Line, RenderedObject Custom) {
+	glm::vec2 StartPos = Line.GetLineStartPosition();
+	glm::vec2 EndPos = Line.GetLineEndPosition();
+	std::vector<glm::vec2> Points = Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation);
+
+	int size = Points.size();
+	for (int i = 0, j = size - 1; i < size; j = i++) {
+		glm::vec2 VC = Points[i];
+		glm::vec2 VN = Points[j];
+
+		if (DT_LineToLine_Func(StartPos, EndPos, VC, VN)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 /* ==== Физические действия ==== */
 
 /* Объекты прикосаются с друг другом? */
@@ -143,13 +161,21 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 		return DT_PointToCustom(OBJ2, OBJ1);
 	}
 
+	if (COL1.Type == CLDR_Line && COL2.Type == CLDR_Custom) {
+		return DT_LineToCustom(OBJ1, OBJ2);
+	}
+	if (COL2.Type == CLDR_Line && COL1.Type == CLDR_Custom) {
+		return DT_LineToCustom(OBJ2, OBJ1);
+	}
+
 	return false;
 }
 
 /* Выполнить физику для объекта */
 void Physic(RenderedObject& OBJ, std::vector<RenderedObject>& Scene) {
 	if (OBJ.Name == "test2") {
-		OBJ.SetPosition(PhysicalMousePosition);
+		//OBJ.SetPosition(PhysicalMousePosition);
+		OBJ.SetLineEndPosition(PhysicalMousePosition);
 	}
 	else {
 		bool collide = ObjectCollide(OBJ, Scene[0]);
@@ -165,24 +191,31 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 	int circle_texture = 3;
 	int cable_texture = 4;
 
-	PhysicalObject Test = PhysicalObject("test2");
+	/*PhysicalObject Test = PhysicalObject("test2");
 	Test.BaseShader = 1;
 	Test.BaseTexture = square_texture;
 	Test.Col = Collider(CLDR_Point);
 	Test.Color = glm::vec4(0,0,1,1);
 	Test.Layer = 100;
 	Test.Render = false;
-	Scene.push_back(Test);
-	
+	Scene.push_back(Test);*/
+
+	PhysicalObject Test2 = PhysicalObject("test2");
+	Test2.MakeItLine(glm::vec2(0, -10), glm::vec2(0, 0), 0.1f);
+	Test2.Col = Collider(CLDR_Line);
+	Test2.BaseTexture = 4;
+	Test2.Color = glm::vec4(0, 0, 1, 1);
+	Test2.Layer = 100;
+	Scene.push_back(Test2);
+
 	for (int i = 1; i < 10; i++) {
 		PhysicalObject Test2 = PhysicalObject("test");
 		Test2.BaseShader = 1;
-		Test2.BaseTexture = circle_texture;
-		/*Test2.Col.SetPoints({
+		Test2.BaseTexture = special_texture;
+		Test2.Col.SetPoints({
 			glm::vec2(-1.0f,  1.0f), glm::vec2(1.0f,  1.0f),
 			glm::vec2(0.5f, -1.0f), glm::vec2(-0.5f, -1.0f)
-		});*/
-		Test2.Col.SetCircle();
+		});
 		Test2.Position = glm::vec2(i-5,0);
 		Test2.Size = glm::vec2(1,(float)i/5);
 		Scene.push_back(Test2);
