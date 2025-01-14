@@ -168,13 +168,8 @@ bool DT_CircleToLine(RenderedObject Circle, RenderedObject Line) {
 	return Distance <= R;
 }
 
-/* Проверка коллизии: Линия с линией */
-bool DT_LineToLine(RenderedObject Line1, RenderedObject Line2) {
-	glm::vec2 Start1Pos = Line1.GetLineStartPosition();
-	glm::vec2 End1Pos   = Line1.GetLineEndPosition();
-	glm::vec2 Start2Pos = Line2.GetLineStartPosition();
-	glm::vec2 End2Pos   = Line2.GetLineEndPosition();
-
+/* Проверка коллизии: Линия с линией (Функция) */
+bool DT_LineToLine_Func(glm::vec2 Start1Pos, glm::vec2 End1Pos, glm::vec2 Start2Pos, glm::vec2 End2Pos) {
 	float UA =
 		((End2Pos.x - Start2Pos.x) * (Start1Pos.y - Start2Pos.y) - (End2Pos.y - Start2Pos.y) * (Start1Pos.x - Start2Pos.x))
 		/
@@ -186,6 +181,32 @@ bool DT_LineToLine(RenderedObject Line1, RenderedObject Line2) {
 		((End2Pos.y - Start2Pos.y) * (End1Pos.x - Start1Pos.x) - (End2Pos.x - Start2Pos.x) * (End1Pos.y - Start1Pos.y));
 
 	return (UA >= 0 && UA <= 1 && UB >= 0 && UB <= 1);
+}
+
+/* Проверка коллизии: Линия с линией */
+bool DT_LineToLine(RenderedObject Line1, RenderedObject Line2) {
+	glm::vec2 Start1Pos = Line1.GetLineStartPosition();
+	glm::vec2 End1Pos   = Line1.GetLineEndPosition();
+	glm::vec2 Start2Pos = Line2.GetLineStartPosition();
+	glm::vec2 End2Pos   = Line2.GetLineEndPosition();
+
+	return DT_LineToLine_Func(Start1Pos, End1Pos, Start2Pos, End2Pos);
+}
+
+/* Проверка коллизии: Квадрат с линией */
+bool DT_SquareToLine(RenderedObject Square, RenderedObject Line) {
+	glm::vec2 StartPos = Line.GetLineStartPosition();
+	glm::vec2 EndPos   = Line.GetLineEndPosition();
+
+	glm::vec2 P = Square.GetPhysicalPosition();
+	glm::vec2 S = Square.Size;
+
+	bool Left   = DT_LineToLine_Func(StartPos, EndPos, P, glm::vec2(P.x      , P.y + S.y)                                  );
+	bool Right  = DT_LineToLine_Func(StartPos, EndPos,    glm::vec2(P.x + S.x, P.y      ),  glm::vec2(P.x + S.x, P.y + S.y));
+	bool Top    = DT_LineToLine_Func(StartPos, EndPos, P, glm::vec2(P.x + S.x, P.y      )                                  );
+	bool Bottom = DT_LineToLine_Func(StartPos, EndPos,    glm::vec2(P.x      , P.y + S.y),  glm::vec2(P.x + S.x, P.y + S.y));
+
+	return Left || Right || Top || Bottom;
 }
 
 /* ==== Физические действия ==== */
@@ -250,14 +271,20 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 		return DT_LineToLine(OBJ1, OBJ2);
 	}
 
+	if (COL1.Type == CLDR_Square && COL2.Type == CLDR_Line) {
+		return DT_SquareToLine(OBJ1, OBJ2);
+	}
+	if (COL2.Type == CLDR_Square && COL1.Type == CLDR_Line) {
+		return DT_SquareToLine(OBJ2, OBJ1);
+	}
+
 	return false;
 }
 
 /* Выполнить физику для объекта */
 void Physic(RenderedObject& OBJ, std::vector<RenderedObject>& Scene) {
 	if (OBJ.Name == "test2") {
-		//OBJ.SetPosition(PhysicalMousePosition);
-		OBJ.SetLineEndPosition(PhysicalMousePosition);
+		OBJ.SetPosition(PhysicalMousePosition);
 	}
 	else {
 		bool collide = ObjectCollide(OBJ, Scene[0]);
@@ -270,21 +297,13 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 	int square_texture = 1;
 	int circle_texture = 3;
 
-	//PhysicalObject Test2 = PhysicalObject("test2");
-	//Test2.BaseShader = 1;
-	//Test2.BaseTexture = circle_texture;
-	//Test2.Col = Collider(CLDR_Circle);
-	//Test2.Color = glm::vec4(0,0,1,1);
-	//Test2.Layer = 100;
-	//Test2.Render = false;
-	//Scene.push_back(Test2);
-
 	PhysicalObject Test2 = PhysicalObject("test2");
-	Test2.MakeItLine(glm::vec2(-10,10),glm::vec2(0,0), 0.1f);
-	Test2.Col = Collider(CLDR_Line);
-	Test2.BaseTexture = 4;
-	Test2.Color = glm::vec4(0, 0, 1, 1);
+	Test2.BaseShader = 1;
+	Test2.BaseTexture = square_texture;
+	Test2.Col = Collider(CLDR_Square);
+	Test2.Color = glm::vec4(0,0,1,1);
 	Test2.Layer = 100;
+	//Test2.Render = false;
 	Scene.push_back(Test2);
 	
 	PhysicalObject Line = PhysicalObject("line");
