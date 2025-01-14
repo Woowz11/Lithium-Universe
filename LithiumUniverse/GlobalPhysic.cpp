@@ -70,6 +70,17 @@ bool DC_PointToSquare(RenderedObject Point, RenderedObject Square) {
 		Point.Position.y <= P.y + Square.Size.y ;
 }
 
+/* Проверка коллизии: Квадрат с квадратом */
+bool DC_SquareToSquare(RenderedObject Square1, RenderedObject Square2) {
+	glm::vec2 P1 = Square1.GetPhysicalPosition();
+	glm::vec2 P2 = Square2.GetPhysicalPosition();
+	return
+		P1.x + Square1.Size.x >= P2.x &&
+		P1.y + Square1.Size.y >= P2.y &&
+		P2.x + Square2.Size.x >= P1.x &&
+		P2.y + Square2.Size.y >= P1.y ;
+}
+
 /* ==== Физические действия ==== */
 
 /* Объекты прикосаются с друг другом? */
@@ -99,6 +110,10 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 		return DC_PointToSquare(OBJ2, OBJ1);
 	}
 
+	if (COL1.Type == CLDR_Square && COL2.Type == CLDR_Square) {
+		return DC_SquareToSquare(OBJ1, OBJ2);
+	}
+
 	return false;
 }
 
@@ -126,11 +141,11 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 
 	PhysicalObject Test2 = PhysicalObject("test2");
 	Test2.BaseShader = 1;
-	Test2.BaseTexture = circle_texture;
-	Test2.Col = Collider(CLDR_Point);
+	Test2.BaseTexture = square_texture;
+	Test2.Col = Collider(CLDR_Square);
 	Test2.Color = glm::vec4(0,0,1,1);
 	Test2.Layer = 100;
-	Test2.Render = false;
+	//Test2.Render = false;
 	Scene.push_back(Test2);
 
 	for (int i = 1; i < 10; i++) {
