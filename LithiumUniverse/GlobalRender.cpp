@@ -15,11 +15,11 @@
 
 #include "ExplorerActions.h";
 #include "GlobalPhysic.h";
-#include "Console.h";
-#include "Shader.h";
 #include "GameCamera.h";
 #include "GameObject.h";
 #include "GameData.h";
+#include "Console.h";
+#include "Shader.h";
 
 uint32_t START_WINDOW_WIDTH;
 uint32_t START_WINDOW_HEIGHT;
@@ -41,6 +41,11 @@ void UpdateDeltaTime(float DT) {
     DeltaTime = DT;
     UpdateDeltaTime_PHYSIC(DT, Time);
 }
+
+/* ==== Глобальное ==== */
+
+/* Цвет заднего фона */
+glm::vec3 BackgroundColor = glm::vec3(0.2f, 0, 0);
 
 /* ==== Вертиксы ==== */
 
@@ -205,11 +210,6 @@ void CreateTextures() {
     CreateTexture(AddFileToPath(VanillaTexturesFolder, "Cable.png"), CableTexture);
 }
 
-/* ==== Сцена ==== */
-
-std::vector<GameObject> Scene           = {};
-glm::vec3               BackgroundColor = glm::vec3(0.2f, 0, 0);
-
 /* Установить всё для рендера */
 void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
     glEnable(GL_BLEND);
@@ -249,10 +249,6 @@ void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
     glUseProgram(DefaultShader.ID);
     DefaultShader.setInt("Texture", 0);
 
-    /* ==== Сцена ==== */
-
-    CreateScene(Scene);
-
     /* ==== Физика ==== */
 
     InstallPhysic();
@@ -268,7 +264,7 @@ void ClearRender() {
 Shader CSS;
 
 /* Рендер квадрата */
-void RenderSquare(GameObject OBJ) {
+void RenderSquare(const GameObject& OBJ) {
     /* ==== Трансформация ==== */
     glm::mat4 Projection = glm::mat4(1.0f);
     float Zoom = 1 / (OBJ.ThatUI ? 1 : Camera->Zoom);
@@ -310,7 +306,7 @@ void RenderSquare(GameObject OBJ) {
 }
 
 /* Рендерить линию */
-void RenderLine(GameObject OBJ) {
+void RenderLine(const GameObject& OBJ) {
     /* ==== Трансформация ==== */
     glm::mat4 Projection = glm::mat4(1.0f);
     float Zoom = 1 / (OBJ.ThatUI ? 1 : Camera->Zoom);
@@ -361,14 +357,14 @@ void RenderLine(GameObject OBJ) {
 }
 
 /* Рендер картинки каждый кадр */
-void Render() {
+void Render(std::vector<GameObject>& Scene) {
 	glClearColor(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     Time = static_cast<double>(AppTimeEnd.QuadPart - AppTimeStart.QuadPart) / AppTimeFrequency.QuadPart;
 
     /* ==== Рендер объектов ==== */
-    for (GameObject OBJ : Scene) {
+    for (const GameObject& OBJ : Scene) {
         if (OBJ.Active && OBJ.Render) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, OBJ.BaseTexture);
@@ -401,8 +397,7 @@ void Render() {
 
 /* Рендер и обновление физики */
 void RenderAndPhysic() {
-    UpdatePhysic(Scene);
-    Render();
+    Render(UpdatePhysic());
 }
 
 /* Позицию экранную в мировую */

@@ -6,6 +6,6 @@
 
 void InstallPhysic();
 void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2);
-void CreateScene(std::vector<GameObject>& Scene);
-void UpdatePhysic(std::vector<GameObject>& Scene);
+void CreateScene();
+std::vector<GameObject>& UpdatePhysic();
 void UpdateDeltaTime_PHYSIC(float DT, float Time_);

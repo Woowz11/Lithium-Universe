@@ -23,10 +23,10 @@ int MouseDetectorObject = -1;
 /* Мышь наведена на этот объект */
 GameObject* MouseOnThisObject = nullptr;
 
-/* Установить физику */
-void InstallPhysic() {
+/* ==== Сцена ==== */
 
-}
+/* Сцена */
+std::vector<GameObject> Scene = {};
 
 /* ==== Детект коллизий ==== */
 
@@ -223,7 +223,7 @@ void MouseUnoverOnObject() {
 
 /* Выполнить физику для объекта */
 GameObject* MouseOnThisObject_Result = nullptr;
-void Physic(GameObject& OBJ, std::vector<GameObject>& Scene) {
+void Physic(GameObject& OBJ) {
 	if (OBJ.Name == MouseDetectorName) {
 		OBJ.SetPosition(PhysicalMousePosition);
 	}
@@ -266,7 +266,7 @@ void AfterPhysic() {
 }
 
 /* Создать сцену */
-void CreateScene(std::vector<GameObject>& Scene) {
+void CreateScene() {
 	/* ==== Создание мыши ==== */
 	MouseDetectorObject = 0;
 	GameObject MouseOBJ = GameObject(MouseDetectorName);
@@ -299,11 +299,18 @@ void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2) {
 }
 
 /* Обновить физику */
-void UpdatePhysic(std::vector<GameObject>& Scene) {
+std::vector<GameObject>& UpdatePhysic() {
 	for (GameObject& OBJ : Scene) {
 		if (OBJ.Active) {
-			Physic(OBJ, Scene);
+			Physic(OBJ);
 		}
 	}
 	AfterPhysic();
+
+	return Scene;
+}
+
+/* Установить физику */
+void InstallPhysic() {
+	CreateScene();
 }
