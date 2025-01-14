@@ -168,6 +168,26 @@ bool DT_CircleToLine(RenderedObject Circle, RenderedObject Line) {
 	return Distance <= R;
 }
 
+/* Проверка коллизии: Линия с линией */
+bool DT_LineToLine(RenderedObject Line1, RenderedObject Line2) {
+	glm::vec2 Start1Pos = Line1.GetLineStartPosition();
+	glm::vec2 End1Pos   = Line1.GetLineEndPosition();
+	glm::vec2 Start2Pos = Line2.GetLineStartPosition();
+	glm::vec2 End2Pos   = Line2.GetLineEndPosition();
+
+	float UA =
+		((End2Pos.x - Start2Pos.x) * (Start1Pos.y - Start2Pos.y) - (End2Pos.y - Start2Pos.y) * (Start1Pos.x - Start2Pos.x))
+		/
+		((End2Pos.y - Start2Pos.y) * (End1Pos.x - Start1Pos.x) - (End2Pos.x - Start2Pos.x) * (End1Pos.y - Start1Pos.y));
+
+	float UB =
+		((End1Pos.x - Start1Pos.x) * (Start1Pos.y - Start2Pos.y) - (End1Pos.y - Start1Pos.y) * (Start1Pos.x - Start2Pos.x))
+		/
+		((End2Pos.y - Start2Pos.y) * (End1Pos.x - Start1Pos.x) - (End2Pos.x - Start2Pos.x) * (End1Pos.y - Start1Pos.y));
+
+	return (UA >= 0 && UA <= 1 && UB >= 0 && UB <= 1);
+}
+
 /* ==== Физические действия ==== */
 
 /* Объекты прикосаются с друг другом? */
@@ -226,13 +246,18 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 		return DT_CircleToLine(OBJ2, OBJ1);
 	}
 
+	if (COL1.Type == CLDR_Line && COL2.Type == CLDR_Line) {
+		return DT_LineToLine(OBJ1, OBJ2);
+	}
+
 	return false;
 }
 
 /* Выполнить физику для объекта */
 void Physic(RenderedObject& OBJ, std::vector<RenderedObject>& Scene) {
 	if (OBJ.Name == "test2") {
-		OBJ.SetPosition(PhysicalMousePosition);
+		//OBJ.SetPosition(PhysicalMousePosition);
+		OBJ.SetLineEndPosition(PhysicalMousePosition);
 	}
 	else {
 		bool collide = ObjectCollide(OBJ, Scene[0]);
@@ -245,13 +270,21 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 	int square_texture = 1;
 	int circle_texture = 3;
 
-	PhysicalObject Test2 = PhysicalObject("test2");
-	Test2.BaseShader = 1;
-	Test2.BaseTexture = circle_texture;
-	Test2.Col = Collider(CLDR_Circle);
-	Test2.Color = glm::vec4(0,0,1,1);
-	Test2.Layer = 100;
+	//PhysicalObject Test2 = PhysicalObject("test2");
+	//Test2.BaseShader = 1;
+	//Test2.BaseTexture = circle_texture;
+	//Test2.Col = Collider(CLDR_Circle);
+	//Test2.Color = glm::vec4(0,0,1,1);
+	//Test2.Layer = 100;
 	//Test2.Render = false;
+	//Scene.push_back(Test2);
+
+	PhysicalObject Test2 = PhysicalObject("test2");
+	Test2.MakeItLine(glm::vec2(-10,10),glm::vec2(0,0), 0.1f);
+	Test2.Col = Collider(CLDR_Line);
+	Test2.BaseTexture = 4;
+	Test2.Color = glm::vec4(0, 0, 1, 1);
+	Test2.Layer = 100;
 	Scene.push_back(Test2);
 	
 	PhysicalObject Line = PhysicalObject("line");
