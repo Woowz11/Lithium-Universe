@@ -73,7 +73,7 @@ public:
 			Layer  = 500;
 			break;
 		case RO_Phys:
-			Col = CLDR_Square;
+			Col = Collider(CLDR_Custom);
 			break;
 		default:
 			break;
