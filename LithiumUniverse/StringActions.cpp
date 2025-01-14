@@ -1,4 +1,6 @@
-﻿#include <algorithm>
+﻿#include <GLM/glm.hpp>
+
+#include <algorithm>
 #include <iostream>
 #include <string>
 
@@ -68,4 +70,10 @@ std::string RemoveLastSymbol(std::string Target) {
 		Target.pop_back();
 		return Target;
 	}
+}
+
+/* ==== Конвертация в строки ==== */
+
+std::string ToStringVec2(glm::vec2 target) {
+	return "glm::vec2(" + std::to_string(target.x) + "," + std::to_string(target.y) + ")";
 }

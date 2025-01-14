@@ -1,4 +1,5 @@
 #pragma once
+#include <GLM/glm.hpp>
 #include <string>
 
 extern const std::string Base;
@@ -9,3 +10,5 @@ std::string ReplaceCharsToChars(std::string Target, char ToThis, char ToThat);
 std::string ReplaceCharsToString(std::string Target, char ToThis, std::string ToThat);
 char GetLastSymbol(std::string Target);
 std::string RemoveLastSymbol(std::string Target);
+
+std::string ToStringVec2(glm::vec2 target);

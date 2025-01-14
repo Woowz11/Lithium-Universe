@@ -5,6 +5,7 @@
 #define GLM_FORCE_RADIANS
 #include <GLM/glm.hpp>
 #include <GLM/gtx/rotate_vector.hpp>
+#include <GLM/gtx/vector_angle.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -61,12 +62,13 @@ int square_l = 4; /* Кол-во строк в square */
 std::vector<Shader> Shaders = {};
 
 /* Информация о uniform's
-Projection (mat4)      = Проекция (от камеры)
-Position   (mat4)      = Позиция объекта
-Random     (float)     = Случайное дробное число от 0 до 1
-Texture    (sampler2D) = Текстура
-Time       (float)     = Прошедшее время с запуска приложения
-DeltaTime  (float)     = Размягчение зависящие от FPS
+Projection   (mat4)      = Проекция (от камеры)
+Position     (mat4)      = Позиция объекта
+LinePosition (mat4)      = Позиция начала и конца линии
+Random       (float)     = Случайное дробное число от 0 до 1
+Texture      (sampler2D) = Текстура
+Time         (float)     = Прошедшее время с запуска приложения
+DeltaTime    (float)     = Размягчение зависящие от FPS
 
 Информация о location's
 [0] PolygonPosition (vec3) = Позиция полигона
@@ -126,12 +128,34 @@ void main()
     FragColor = vec4(1.0f,0.0f,1.0f,1.0f) * Color;
 })";
 
+Shader LineShader;
+
+std::string LineShader_Vert = R"(#version 330 core
+layout (location = 0) in vec3 PolygonPosition;
+layout (location = 1) in vec2 TextureUV;
+
+out vec2 TextureCoord;
+
+uniform mat4 LinePosition;
+uniform mat4 Projection;
+uniform float Random;
+uniform float Time;
+uniform float DeltaTime;
+
+void main()
+{
+    gl_Position = Projection * LinePosition * vec4(PolygonPosition, 1.0f);
+    TextureCoord = vec2(TextureUV.x, 1.0 - TextureUV.y);
+})";
+
 /* Создать шейдеры */
 void CreateShaders() {
     ErrorShader = *new Shader("Error", DefaultShader_Vert, ErrorShader_Frag);
     Shaders.push_back(ErrorShader);
     DefaultShader = *new Shader("Default", DefaultShader_Vert, DefaultShader_Frag);
     Shaders.push_back(DefaultShader);
+    LineShader = *new Shader("Line", LineShader_Vert, DefaultShader_Frag);
+    Shaders.push_back(LineShader);
 }
 
 /* ==== Текстуры ==== */
@@ -241,8 +265,103 @@ void ClearRender() {
     glDeleteBuffers(1, &VBO);
 }
 
-/* Рендер картинки каждый кадр */
+/* ==== Рендер объектов ==== */
 Shader CSS;
+
+/* Рендер квадрата */
+void RenderSquare(RenderedObject OBJ) {
+    /* ==== Трансформация ==== */
+    glm::mat4 Projection = glm::mat4(1.0f);
+    float Zoom = 1 / (OBJ.ThatUI ? 1 : Camera->Zoom);
+
+    float WIN_WIDTH = OBJ.Resize ? (float)START_WINDOW_WIDTH : (float)CURRENT_WINDOW_WIDTH;
+    float WIN_HEIGHT = OBJ.Resize ? (float)START_WINDOW_HEIGHT : (float)CURRENT_WINDOW_HEIGHT;
+
+    float Left = -WIN_WIDTH / 240;
+    float Right = WIN_WIDTH / 240;
+    float Down = -WIN_HEIGHT / 240;
+    float Up = WIN_HEIGHT / 240;
+    Projection = glm::ortho(
+        Left / Zoom,
+        Right / Zoom,
+        Down / Zoom,
+        Up / Zoom,
+        -1000.0f, 1000.0f);
+    CSS.setMat4("Projection", Projection);
+
+    glBindVertexArray(VAO);
+
+    glm::mat4 ResultPosition = glm::mat4(1.0f);
+
+    if (!OBJ.ThatUI) {
+        ResultPosition = glm::rotate(ResultPosition, -glm::radians(Camera->Rotation), glm::vec3(0, 0, 1));
+    }
+
+    ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.Position, OBJ.Layer + (float)OBJ.GetID() / 10000));
+    if (!OBJ.ThatUI) {
+        ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
+    }
+
+    ResultPosition = glm::rotate(ResultPosition, -glm::radians(OBJ.Orientation), glm::vec3(0, 0, 1));
+    ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.Size, 1));
+
+    CSS.setMat4("Position", ResultPosition);
+
+    glDrawArrays(GL_QUADS, 0, square_l);
+}
+
+/* Рендерить линию */
+void RenderLine(RenderedObject OBJ) {
+    /* ==== Трансформация ==== */
+    glm::mat4 Projection = glm::mat4(1.0f);
+    float Zoom = 1 / (OBJ.ThatUI ? 1 : Camera->Zoom);
+
+    float WIN_WIDTH = OBJ.Resize ? (float)START_WINDOW_WIDTH : (float)CURRENT_WINDOW_WIDTH;
+    float WIN_HEIGHT = OBJ.Resize ? (float)START_WINDOW_HEIGHT : (float)CURRENT_WINDOW_HEIGHT;
+
+    float Left = -WIN_WIDTH / 240;
+    float Right = WIN_WIDTH / 240;
+    float Down = -WIN_HEIGHT / 240;
+    float Up = WIN_HEIGHT / 240;
+    Projection = glm::ortho(
+        Left / Zoom,
+        Right / Zoom,
+        Down / Zoom,
+        Up / Zoom,
+        -1000.0f, 1000.0f);
+    CSS.setMat4("Projection", Projection);
+
+    glBindVertexArray(VAO);
+
+    float Thickness = OBJ.Size.x;
+    glm::vec2 StartPos = glm::vec2(OBJ.LinePosition.x, OBJ.LinePosition.y);
+    glm::vec2 EndPos = glm::vec2(OBJ.LinePosition.z, OBJ.LinePosition.w);
+    glm::vec2 CenterPos = StartPos / glm::vec2(2, 2) + EndPos / glm::vec2(2, 2);
+
+    glm::mat4 ResultPosition = glm::mat4(1.0f);
+    
+    glm::vec2 Direction = EndPos - StartPos;
+    float rad = atan2(Direction.y, Direction.x) - glm::half_pi<float>();;
+
+    if (!OBJ.ThatUI) {
+        ResultPosition = glm::rotate(ResultPosition, -glm::radians(Camera->Rotation), glm::vec3(0, 0, 1));
+    }
+
+    ResultPosition = glm::translate(ResultPosition, glm::vec3(CenterPos.x, CenterPos.y, OBJ.Layer + (float)OBJ.GetID() / 10000));
+
+    if (!OBJ.ThatUI) {
+        ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
+    }
+
+    ResultPosition = glm::rotate(ResultPosition, rad, glm::vec3(0, 0, 1));
+    ResultPosition = glm::scale(ResultPosition, glm::vec3(Thickness, glm::distance(StartPos, EndPos), 1));
+
+    CSS.setMat4("LinePosition", ResultPosition);
+
+    glDrawArrays(GL_QUADS, 0, square_l);
+}
+
+/* Рендер картинки каждый кадр */
 void Render() {
 	glClearColor(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -266,43 +385,17 @@ void Render() {
             QueryPerformanceCounter(&AppTimeEnd);
             CSS.setFloat("Time", Time);
 
-            CSS.setVec4("Color"  , OBJ.Color);
+            CSS.setVec4("Color", OBJ.Color);
 
-            /* ==== Трансформация ==== */
-            glm::mat4 Projection = glm::mat4(1.0f);
-            float Zoom = 1 / (OBJ.ThatUI ? 1 : Camera->Zoom);
-
-            float WIN_WIDTH  = OBJ.Resize ? (float)START_WINDOW_WIDTH  : (float)CURRENT_WINDOW_WIDTH ;
-            float WIN_HEIGHT = OBJ.Resize ? (float)START_WINDOW_HEIGHT : (float)CURRENT_WINDOW_HEIGHT;
-
-            float Left  = -WIN_WIDTH  / 240;
-            float Right =  WIN_WIDTH  / 240;
-            float Down  = -WIN_HEIGHT / 240;
-            float Up    =  WIN_HEIGHT / 240;
-            Projection = glm::ortho(
-                Left  / Zoom,
-                Right / Zoom,
-                Down  / Zoom,
-                Up    / Zoom,
-                -1000.0f, 1000.0f);
-            CSS.setMat4("Projection", Projection);
-
-            glBindVertexArray(VAO);
-
-            glm::mat4 ResultPosition = glm::mat4(1.0f);
-            if (!OBJ.ThatUI) {
-                ResultPosition = glm::rotate(ResultPosition, -glm::radians(Camera->Rotation), glm::vec3(0, 0, 1));
+            switch (OBJ.Shape)
+            {
+            case ST_Line:
+                RenderLine(OBJ);
+                break;
+            default:
+                RenderSquare(OBJ);
+                break;
             }
-            ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.Position, OBJ.Layer + (float)OBJ.GetID() / 10000));
-            if (!OBJ.ThatUI) {
-                ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
-            }
-            ResultPosition = glm::rotate(ResultPosition, -glm::radians(OBJ.Orientation), glm::vec3(0, 0, 1));
-            ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.Size, 1));
-
-            CSS.setMat4("Position", ResultPosition);
-
-            glDrawArrays(GL_QUADS, 0, square_l);
         }
     }
 }
