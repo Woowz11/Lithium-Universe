@@ -81,6 +81,38 @@ bool DC_SquareToSquare(RenderedObject Square1, RenderedObject Square2) {
 		P2.y + Square2.Size.y >= P1.y ;
 }
 
+/* Проверка коллизии: Круг с квадратом */
+bool DC_CircleToSquare(RenderedObject Circle, RenderedObject Square) {
+	float CX = Circle.Position.x;
+	float CY = Circle.Position.y;
+	float R  = Circle.Size.x / 2;
+
+	glm::vec2 P = Square.GetPhysicalPosition();
+
+	float TestX = CX;
+	float TestY = CY;
+
+	if (CX < P.x) {
+		TestX = P.x;
+	}
+	else if (CX > P.x + Square.Size.x) {
+		TestX = P.x + Square.Size.x;
+	}
+
+	if (CY < P.y) {
+		TestY = P.y;
+	}
+	else if (CY > P.y + Square.Size.y) {
+		TestY = P.y + Square.Size.y;
+	}
+
+	float DistX = CX - TestX;
+	float DistY = CY - TestY;
+	float Distance = sqrt((DistX*DistX) + (DistY*DistY));
+
+	return Distance <= R;
+}
+
 /* ==== Физические действия ==== */
 
 /* Объекты прикосаются с друг другом? */
@@ -114,6 +146,13 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 		return DC_SquareToSquare(OBJ1, OBJ2);
 	}
 
+	if (COL1.Type == CLDR_Circle && COL2.Type == CLDR_Square) {
+		return DC_CircleToSquare(OBJ1, OBJ2);
+	}
+	if (COL2.Type == CLDR_Circle && COL1.Type == CLDR_Square) {
+		return DC_CircleToSquare(OBJ2, OBJ1);
+	}
+
 	return false;
 }
 
@@ -141,8 +180,8 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 
 	PhysicalObject Test2 = PhysicalObject("test2");
 	Test2.BaseShader = 1;
-	Test2.BaseTexture = square_texture;
-	Test2.Col = Collider(CLDR_Square);
+	Test2.BaseTexture = circle_texture;
+	Test2.Col = Collider(CLDR_Circle);
 	Test2.Color = glm::vec4(0,0,1,1);
 	Test2.Layer = 100;
 	//Test2.Render = false;
