@@ -28,19 +28,24 @@ bool DC_PointToPoint(RenderedObject Point1, RenderedObject Point2) {
 	return Point1.Position.x == Point2.Position.x && Point1.Position.y == Point2.Position.y;
 }
 
-/* Проверка коллизии: Точка с кругом */
-bool DC_PointToCircle(RenderedObject Point, RenderedObject Circle) {
-	float X  = Point.Position.x;
-	float Y  = Point.Position.y;
-	float CX = Circle.Position.x;
-	float CY = Circle.Position.y;
-	float R  = Circle.Size.x / 2;
+/* Проверка коллизии: Точка с кругом (Функция) */
+bool DC_PointToCircle_Func(glm::vec2 PointPos, glm::vec2 CirclePos, float Radius) {
+	float X = PointPos.x;
+	float Y = PointPos.y;
+	float CX = CirclePos.x;
+	float CY = CirclePos.y;
+	float R = Radius / 2;
 
 	float DistX = X - CX;
 	float DistY = Y - CY;
 	float Distance = sqrt((DistX * DistX) + (DistY * DistY));
 
 	return Distance <= R;
+}
+
+/* Проверка коллизии: Точка с кругом */
+bool DC_PointToCircle(RenderedObject Point, RenderedObject Circle) {
+	return DC_PointToCircle_Func(Point.Position, Circle.Position, Circle.Size.x);
 }
 
 /* Проверка коллизии: Круг с кругом */
@@ -113,19 +118,54 @@ bool DC_CircleToSquare(RenderedObject Circle, RenderedObject Square) {
 	return Distance <= R;
 }
 
+/* Проверка коллизии: Точка с линией (Функция) */
+bool DT_PointToLine_Func(glm::vec2 P, glm::vec2 SP, glm::vec2 EP) {
+	float Accurate = 0.0001f;
+
+	float Dist1 = glm::distance(P, SP);
+	float Dist2 = glm::distance(P, EP);
+
+	float LineLength = glm::distance(SP, EP);
+
+	return (Dist1 + Dist2 >= LineLength - Accurate && Dist1 + Dist2 <= LineLength + Accurate);
+}
+
 /* Проверка коллизии: Точка с линией */
 bool DT_PointToLine(RenderedObject Point, RenderedObject Line) {
+	return DT_PointToLine_Func(Point.Position, Line.GetLineStartPosition(), Line.GetLineEndPosition());
+}
+
+/* Проверка коллизии: Круг с линией */
+bool DT_CircleToLine(RenderedObject Circle, RenderedObject Line) {
 	glm::vec2 StartPos = Line.GetLineStartPosition();
 	glm::vec2 EndPos = Line.GetLineEndPosition();
 
-	float th = 0.0001f;
+	glm::vec2 P = Circle.Position;
+	float R = Circle.Size.x;
 
-	float Dist1 = glm::distance(Point.Position, StartPos);
-	float Dist2 = glm::distance(Point.Position, EndPos);
+	bool Inside1 = DC_PointToCircle_Func(StartPos, P, R);
+	bool Inside2 = DC_PointToCircle_Func(EndPos, P, R);
 
-	float LineLength = glm::distance(StartPos, EndPos);
-	
-	return (Dist1+Dist2 >= LineLength-th && Dist1+Dist2 <= LineLength+th);
+	if (Inside1 || Inside2) { return true; }
+
+	float DistX = StartPos.x - EndPos.x;
+	float DistY = StartPos.y - EndPos.y;
+	float Distance = sqrt((DistX * DistX) + (DistY * DistY));
+
+	float Dot = ( (((P.x - StartPos.x)*(EndPos.x - StartPos.x)) + ((P.y - StartPos.y)*(EndPos.y - StartPos.y))) / pow(Distance, 2) );
+
+	float ClosestX = StartPos.x + (Dot * (EndPos.x - StartPos.x));
+	float ClosestY = StartPos.y + (Dot * (EndPos.y - StartPos.y));
+
+	bool OnSegment = DT_PointToLine_Func(glm::vec2(ClosestX, ClosestY), StartPos, EndPos);
+
+	if (!OnSegment) { return false; }
+
+	DistX = ClosestX - P.x;
+	DistY = ClosestY - P.y;
+	Distance = sqrt((DistX * DistX) + (DistY * DistY));
+
+	return Distance <= R;
 }
 
 /* ==== Физические действия ==== */
@@ -179,6 +219,13 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 		return DT_PointToLine(OBJ2, OBJ1);
 	}
 
+	if (COL1.Type == CLDR_Circle && COL2.Type == CLDR_Line) {
+		return DT_CircleToLine(OBJ1, OBJ2);
+	}
+	if (COL2.Type == CLDR_Circle && COL1.Type == CLDR_Line) {
+		return DT_CircleToLine(OBJ2, OBJ1);
+	}
+
 	return false;
 }
 
@@ -201,27 +248,26 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 	PhysicalObject Test2 = PhysicalObject("test2");
 	Test2.BaseShader = 1;
 	Test2.BaseTexture = circle_texture;
-	Test2.Col = Collider(CLDR_Point);
+	Test2.Col = Collider(CLDR_Circle);
 	Test2.Color = glm::vec4(0,0,1,1);
-	Test2.Size = glm::vec2(0.1f, 0.1f);
 	Test2.Layer = 100;
-	Test2.Render = false;
+	//Test2.Render = false;
 	Scene.push_back(Test2);
 	
 	PhysicalObject Line = PhysicalObject("line");
-	Line.BaseTexture = 1;
+	Line.BaseTexture = 4;
 	Line.MakeItLine(glm::vec2(-5, -5), glm::vec2(5, 5), 0.1f);
 	Line.Col = Collider(CLDR_Line);
 	Scene.push_back(Line);
 
 	PhysicalObject Line2 = PhysicalObject("line");
-	Line2.BaseTexture = 1;
+	Line2.BaseTexture = 4;
 	Line2.MakeItLine(glm::vec2(-5, 5), glm::vec2(5, 10), 1.0f);
 	Line2.Col = Collider(CLDR_Line);
 	Scene.push_back(Line2);
 
 	PhysicalObject Line3 = PhysicalObject("line");
-	Line3.BaseTexture = 1;
+	Line3.BaseTexture = 4;
 	Line3.MakeItLine(glm::vec2(-5, -10), glm::vec2(5, 0), 0.01f);
 	Line3.Col = Collider(CLDR_Line);
 	Scene.push_back(Line3);
@@ -230,7 +276,6 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 /* Указать позицию курсора */
 void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2) {
 	PhysicalMousePosition = ScreenPositionToWorld(Pos2);
-	//PrintFast("mouse", std::to_string(PhysicalMousePosition.x) + " | " + std::to_string(PhysicalMousePosition.y));
 }
 
 /* Обновить физику */
