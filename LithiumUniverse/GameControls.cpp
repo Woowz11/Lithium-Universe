@@ -1,10 +1,16 @@
 ﻿#include <GLFW/glfw3.h>
+#include <GLM/glm.hpp>
 
 #include "GlobalRender.h";
 #include "GameInstalls.h";
 #include "GameCamera.h";
 #include "GameData.h";
 /* Скрипт отвечающий за управление игроком */
+
+/* Курсор двигается */
+void MouseMove(glm::vec2 Pos, glm::vec2 Pos2) {
+	
+}
 
 /* Управление клавиатурой */
 void ControlsKeyboard() {

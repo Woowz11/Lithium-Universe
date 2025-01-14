@@ -3,7 +3,8 @@
 #include <stb_image.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
+#include <GLM/glm.hpp>
+#include <GLM/gtx/rotate_vector.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -308,4 +309,20 @@ void Render() {
 void RenderAndPhysic() {
     UpdatePhysic(Scene);
     Render();
+}
+
+/* Позицию экранную в мировую */
+glm::vec2 ScreenPositionToWorld(glm::vec2 Pos) {
+    glm::vec2 Result = Pos - glm::vec2(0.5f, 0.5f);
+    //800px => 20.0f / 3
+    Result *= glm::vec2(20.0f / 3, 15.0f / -3);
+    Result *= Camera->Zoom;
+    Result = glm::rotate(Result, glm::radians(Camera->Rotation));
+    Result -= Camera->Position;
+    return Result;
+}
+
+/* Курсор двигается */
+void MouseRenderMove(glm::vec2 Pos, glm::vec2 Pos2) {
+    UpdateMousePhysic(Pos, Pos2);
 }
