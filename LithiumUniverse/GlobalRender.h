@@ -2,7 +2,6 @@
 #include <GLM/glm.hpp>
 #include <string>
 #include <vector>
-#include "RenderedObject.h";
 #include "GameCamera.h";
 
 void RenderAndPhysic();

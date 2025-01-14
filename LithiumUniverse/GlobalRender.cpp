@@ -18,11 +18,8 @@
 #include "Console.h";
 #include "Shader.h";
 #include "GameCamera.h";
+#include "GameObject.h";
 #include "GameData.h";
-
-#include "RenderedObject.h";
-#include "PhysicalObject.h";
-#include "UIObject.h";
 
 uint32_t START_WINDOW_WIDTH;
 uint32_t START_WINDOW_HEIGHT;
@@ -210,8 +207,8 @@ void CreateTextures() {
 
 /* ==== Сцена ==== */
 
-std::vector<RenderedObject> Scene           = {};
-glm::vec3                   BackgroundColor = glm::vec3(0.2f, 0, 0);
+std::vector<GameObject> Scene           = {};
+glm::vec3               BackgroundColor = glm::vec3(0.2f, 0, 0);
 
 /* Установить всё для рендера */
 void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
@@ -271,7 +268,7 @@ void ClearRender() {
 Shader CSS;
 
 /* Рендер квадрата */
-void RenderSquare(RenderedObject OBJ) {
+void RenderSquare(GameObject OBJ) {
     /* ==== Трансформация ==== */
     glm::mat4 Projection = glm::mat4(1.0f);
     float Zoom = 1 / (OBJ.ThatUI ? 1 : Camera->Zoom);
@@ -313,7 +310,7 @@ void RenderSquare(RenderedObject OBJ) {
 }
 
 /* Рендерить линию */
-void RenderLine(RenderedObject OBJ) {
+void RenderLine(GameObject OBJ) {
     /* ==== Трансформация ==== */
     glm::mat4 Projection = glm::mat4(1.0f);
     float Zoom = 1 / (OBJ.ThatUI ? 1 : Camera->Zoom);
@@ -371,7 +368,7 @@ void Render() {
     Time = static_cast<double>(AppTimeEnd.QuadPart - AppTimeStart.QuadPart) / AppTimeFrequency.QuadPart;
 
     /* ==== Рендер объектов ==== */
-    for (RenderedObject OBJ : Scene) {
+    for (GameObject OBJ : Scene) {
         if (OBJ.Active && OBJ.Render) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, OBJ.BaseTexture);

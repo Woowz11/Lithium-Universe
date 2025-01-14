@@ -59,17 +59,11 @@
     <ClCompile Include="GameControls.cpp">
       <Filter>Scripts</Filter>
     </ClCompile>
-    <ClCompile Include="RenderedObject.h">
-      <Filter>Scripts\GameObjects</Filter>
-    </ClCompile>
-    <ClCompile Include="UIObject.h">
+    <ClCompile Include="GameObject.h">
       <Filter>Scripts\GameObjects</Filter>
     </ClCompile>
     <ClCompile Include="StaticInfo.cpp">
       <Filter>Scripts</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicalObject.h">
-      <Filter>Scripts\GameObjects</Filter>
     </ClCompile>
     <ClCompile Include="GlobalPhysic.cpp">
       <Filter>Scripts\Physic</Filter>

@@ -1,5 +1,5 @@
-﻿#ifndef RENDERED_OBJECT_H
-#define RENDERED_OBJECT_H
+﻿#ifndef GAME_OBJECT_H
+#define GAME_OBJECT_H
 
 #include <string>
 #include <GLM/glm.hpp>
@@ -22,7 +22,7 @@ enum ShapeType {
 };
 
 /* Пустой объект, который можно рендерить */
-class RenderedObject {
+class GameObject {
 private:
 	int ID;
 
@@ -60,7 +60,7 @@ public:
 	Collider Col           = Collider(CLDR_None);    /* Коллизия                        */
 	bool Selectable        = false;                  /* Мышка реагирует на этот объект? */
 
-	RenderedObject(std::string Name_, RO_Type type) {
+	GameObject(std::string Name_, RO_Type type) {
 		ID = TotalIDs++;
 		Name = Name_;
 		Type = type;
@@ -81,7 +81,7 @@ public:
 			break;
 		}
 	}
-	RenderedObject(std::string Name_) : RenderedObject(Name_, RO_Default) {}
+	GameObject(std::string Name_) : GameObject(Name_, RO_Default) {}
 
 	int GetID() const {
 		return ID;

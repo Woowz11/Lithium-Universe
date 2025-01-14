@@ -1,11 +1,10 @@
 ﻿#include <vector>
 
 #include "GlobalRender.h";
-#include "RenderedObject.h";
+#include "GameObject.h";
 #include "GameCamera.h";
 #include "GameData.h";
 #include "Collider.h";
-#include "PhysicalObject.h";
 
 float dt = 0;
 float t = 0;
@@ -22,7 +21,7 @@ std::string MouseDetectorName = "GAME: MouseObject";
 int MouseDetectorObject = -1;
 
 /* Мышь наведена на этот объект */
-RenderedObject* MouseOnThisObject = nullptr;
+GameObject* MouseOnThisObject = nullptr;
 
 /* Установить физику */
 void InstallPhysic() {
@@ -32,7 +31,7 @@ void InstallPhysic() {
 /* ==== Детект коллизий ==== */
 
 /* Проверка коллизии: Точка с точкой */
-bool DC_PointToPoint(RenderedObject Point1, RenderedObject Point2) {
+bool DC_PointToPoint(GameObject Point1, GameObject Point2) {
 	return Point1.Position.x == Point2.Position.x && Point1.Position.y == Point2.Position.y;
 }
 
@@ -49,7 +48,7 @@ bool DT_PointToLine_Func(glm::vec2 P, glm::vec2 SP, glm::vec2 EP) {
 }
 
 /* Проверка коллизии: Точка с линией */
-bool DT_PointToLine(RenderedObject Point, RenderedObject Line) {
+bool DT_PointToLine(GameObject Point, GameObject Line) {
 	return DT_PointToLine_Func(Point.Position, Line.GetLineStartPosition(), Line.GetLineEndPosition());
 }
 
@@ -69,7 +68,7 @@ bool DT_LineToLine_Func(glm::vec2 Start1Pos, glm::vec2 End1Pos, glm::vec2 Start2
 }
 
 /* Проверка коллизии: Линия с линией */
-bool DT_LineToLine(RenderedObject Line1, RenderedObject Line2) {
+bool DT_LineToLine(GameObject Line1, GameObject Line2) {
 	glm::vec2 Start1Pos = Line1.GetLineStartPosition();
 	glm::vec2 End1Pos   = Line1.GetLineEndPosition();
 	glm::vec2 Start2Pos = Line2.GetLineStartPosition();
@@ -79,7 +78,7 @@ bool DT_LineToLine(RenderedObject Line1, RenderedObject Line2) {
 }
 
 /* Проверка коллизии: Квадрат с линией */
-bool DT_SquareToLine(RenderedObject Square, RenderedObject Line) {
+bool DT_SquareToLine(GameObject Square, GameObject Line) {
 	glm::vec2 StartPos = Line.GetLineStartPosition();
 	glm::vec2 EndPos   = Line.GetLineEndPosition();
 
@@ -116,7 +115,7 @@ bool DT_PointToCustom_Func(glm::vec2 P, std::vector<glm::vec2> Points) {
 }
 
 /* Проверка коллизии: Точка с кастомной */
-bool DT_PointToCustom(RenderedObject Point, RenderedObject Custom) {
+bool DT_PointToCustom(GameObject Point, GameObject Custom) {
 	return DT_PointToCustom_Func(Point.Position, Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation));
 }
 
@@ -135,12 +134,12 @@ bool DT_LineToCustom_Func(glm::vec2 StartPos, glm::vec2 EndPos, std::vector<glm:
 }
 
 /* Проверка коллизии: Линия с кастомной */
-bool DT_LineToCustom(RenderedObject Line, RenderedObject Custom) {
+bool DT_LineToCustom(GameObject Line, GameObject Custom) {
 	return DT_LineToCustom_Func(Line.GetLineStartPosition(), Line.GetLineEndPosition(), Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation));
 }
 
 /* Проверка коллизии: Кастомной с кастомной */
-bool DT_CustomToCustom(RenderedObject Custom1, RenderedObject Custom2) {
+bool DT_CustomToCustom(GameObject Custom1, GameObject Custom2) {
 	std::vector<glm::vec2> Points1 = Custom1.Col.GetPhysicalPoints(Custom1.Position, Custom1.Size, Custom1.Orientation);
 	std::vector<glm::vec2> Points2 = Custom2.Col.GetPhysicalPoints(Custom2.Position, Custom2.Size, Custom2.Orientation);
 
@@ -161,7 +160,7 @@ bool DT_CustomToCustom(RenderedObject Custom1, RenderedObject Custom2) {
 /* ==== Физические действия ==== */
 
 /* Объекты прикосаются с друг другом? */
-bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
+bool ObjectCollide(GameObject OBJ1, GameObject OBJ2) {
 	Collider COL1 = OBJ1.Col;
 	Collider COL2 = OBJ2.Col;
 
@@ -169,19 +168,8 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 		return false;
 	}
 
-	if (COL1.Type == CLDR_Point && COL2.Type == CLDR_Point) {
-		return DC_PointToPoint(OBJ1, OBJ2);
-	}
-
-	if (COL1.Type == CLDR_Point && COL2.Type == CLDR_Line) {
-		return DT_PointToLine(OBJ1, OBJ2);
-	}
-	if (COL2.Type == CLDR_Point && COL1.Type == CLDR_Line) {
-		return DT_PointToLine(OBJ2, OBJ1);
-	}
-
-	if (COL1.Type == CLDR_Line && COL2.Type == CLDR_Line) {
-		return DT_LineToLine(OBJ1, OBJ2);
+	if (COL1.Type == CLDR_Custom && COL2.Type == CLDR_Custom) {
+		return DT_CustomToCustom(OBJ2, OBJ1);
 	}
 
 	if (COL1.Type == CLDR_Point && COL2.Type == CLDR_Custom) {
@@ -198,26 +186,44 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 		return DT_LineToCustom(OBJ2, OBJ1);
 	}
 
-	if (COL1.Type == CLDR_Custom && COL2.Type == CLDR_Custom) {
-		return DT_CustomToCustom(OBJ2, OBJ1);
+	if (COL1.Type == CLDR_Line && COL2.Type == CLDR_Line) {
+		return DT_LineToLine(OBJ1, OBJ2);
+	}
+
+	if (COL1.Type == CLDR_Point && COL2.Type == CLDR_Line) {
+		return DT_PointToLine(OBJ1, OBJ2);
+	}
+	if (COL2.Type == CLDR_Point && COL1.Type == CLDR_Line) {
+		return DT_PointToLine(OBJ2, OBJ1);
+	}
+
+	if (COL1.Type == CLDR_Point && COL2.Type == CLDR_Point) {
+		return DC_PointToPoint(OBJ1, OBJ2);
 	}
 
 	return false;
 }
 
+/* ==== Физика ==== */
+
+/* Обработка физики */
+void WorkPhysic(GameObject& OBJ) {
+	OBJ.AddRotation(dt * 50);
+}
+
 /* Мышку навели на объект */
 void MouseOverOnObject() {
-	MouseOnThisObject->Color = glm::vec4(1, 0, 0, 1);
+	//MouseOnThisObject->Color = glm::vec4(1, 0, 0, 1);
 }
 
 /* Мышку убрали с объекта */
 void MouseUnoverOnObject() {
-	MouseOnThisObject->Color = glm::vec4(1, 1, 1, 1);
+	//MouseOnThisObject->Color = glm::vec4(1, 1, 1, 1);
 }
 
 /* Выполнить физику для объекта */
-RenderedObject* MouseOnThisObject_Result = nullptr;
-void Physic(RenderedObject& OBJ, std::vector<RenderedObject>& Scene) {
+GameObject* MouseOnThisObject_Result = nullptr;
+void Physic(GameObject& OBJ, std::vector<GameObject>& Scene) {
 	if (OBJ.Name == MouseDetectorName) {
 		OBJ.SetPosition(PhysicalMousePosition);
 	}
@@ -228,8 +234,11 @@ void Physic(RenderedObject& OBJ, std::vector<RenderedObject>& Scene) {
 				MouseOnThisObject_Result = &OBJ;
 			}
 		}
+	}
 
-		OBJ.AddRotation(dt * 30);
+	/* Обновление физики у объекта */
+	if (OBJ.Type == RO_Phys) {
+		WorkPhysic(OBJ);
 	}
 }
 
@@ -257,10 +266,10 @@ void AfterPhysic() {
 }
 
 /* Создать сцену */
-void CreateScene(std::vector<RenderedObject>& Scene) {
+void CreateScene(std::vector<GameObject>& Scene) {
 	/* ==== Создание мыши ==== */
 	MouseDetectorObject = 0;
-	RenderedObject MouseOBJ = RenderedObject(MouseDetectorName);
+	GameObject MouseOBJ = GameObject(MouseDetectorName);
 	MouseOBJ.Col = Collider(CLDR_Point);
 	MouseOBJ.Render = false;
 	Scene.push_back(MouseOBJ);
@@ -270,32 +279,18 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 	int circle_texture = 3;
 	int cable_texture = 4;
 
-	for (int i = 1; i < 10; i++) {
-		PhysicalObject Test2 = PhysicalObject("test");
-		Test2.BaseShader = 1;
-		Test2.BaseTexture = special_texture;
-		Test2.Col.SetPoints({
-			glm::vec2(-1.0f,  1.0f), glm::vec2(1.0f,  1.0f),
-			glm::vec2(0.5f, -1.0f), glm::vec2(-0.5f, -1.0f)
-			});
-		Test2.Position = glm::vec2(i - 5, 0);
-		Test2.Size = glm::vec2(1, (float)i / 5);
-		Scene.push_back(Test2);
-	}
+	GameObject Test = GameObject("test", RO_Phys);
+	Test.BaseShader = 1;
+	Test.BaseTexture = square_texture;
+	Test.Position = glm::vec2(0, 3);
+	Scene.push_back(Test);
 
-	for (int i = 1; i < 50; i++) {
-		PhysicalObject Test2 = PhysicalObject("test2");
-		Test2.BaseShader = 1;
-		Test2.BaseTexture = special_texture;
-		Test2.Col.SetPoints({
-			glm::vec2(-1.0f,  1.0f), glm::vec2(1.0f,  1.0f),
-			glm::vec2(0.5f, -1.0f), glm::vec2(-0.5f, -1.0f)
-		});
-		Test2.Position = glm::vec2(0, (float)(i + 2)/6);
-		Test2.Size = glm::vec2((float)i / 25, 1);
-		Test2.Layer = 1.0f / i;
-		Scene.push_back(Test2);
-	}
+	GameObject Test2 = GameObject("test2");
+	Test2.BaseShader = 1;
+	Test2.BaseTexture = square_texture;
+	Test2.Size = glm::vec2(10, 0.5f);
+	Test2.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1);
+	Scene.push_back(Test2);
 }
 
 /* Указать позицию курсора */
@@ -304,8 +299,8 @@ void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2) {
 }
 
 /* Обновить физику */
-void UpdatePhysic(std::vector<RenderedObject>& Scene) {
-	for (RenderedObject& OBJ : Scene) {
+void UpdatePhysic(std::vector<GameObject>& Scene) {
+	for (GameObject& OBJ : Scene) {
 		if (OBJ.Active) {
 			Physic(OBJ, Scene);
 		}

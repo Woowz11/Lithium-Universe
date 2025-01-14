@@ -144,13 +144,11 @@
     <ClCompile Include="GlobalPhysic.cpp" />
     <ClCompile Include="GlobalRender.cpp" />
     <ClCompile Include="LithiumUniverse.cpp" />
-    <ClCompile Include="PhysicalObject.h" />
-    <ClCompile Include="RenderedObject.h" />
+    <ClCompile Include="GameObject.h" />
     <ClCompile Include="Shader.h" />
     <ClCompile Include="Start.cpp" />
     <ClCompile Include="StaticInfo.cpp" />
     <ClCompile Include="StringActions.cpp" />
-    <ClCompile Include="UIObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseConstants.h" />
