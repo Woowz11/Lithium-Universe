@@ -209,6 +209,30 @@ bool DT_SquareToLine(RenderedObject Square, RenderedObject Line) {
 	return Left || Right || Top || Bottom;
 }
 
+/* Проверка коллизии: Точка с кастомной */
+bool DT_PointToCustom(RenderedObject Point, RenderedObject Custom) {
+	glm::vec2 P = Point.Position;
+	std::vector<glm::vec2> Points = Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size);
+
+	bool Result = false;
+
+	int size = Points.size();
+	for (int i = 0, j = size-1; i < size; j = i++) {
+		glm::vec2 VC = Points[i];
+		glm::vec2 VN = Points[j];
+
+		if (
+			((VC.y > P.y) != (VN.y > P.y))
+			&&
+			(P.x < (VN.x - VC.x) * (P.y - VC.y) / (VN.y - VC.y) + VC.x)
+		) {
+			Result = !Result;
+		}
+	}
+
+	return Result;
+}
+
 /* ==== Физические действия ==== */
 
 /* Объекты прикосаются с друг другом? */
@@ -278,6 +302,13 @@ bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
 		return DT_SquareToLine(OBJ2, OBJ1);
 	}
 
+	if (COL1.Type == CLDR_Point && COL2.Type == CLDR_Custom) {
+		return DT_PointToCustom(OBJ1, OBJ2);
+	}
+	if (COL2.Type == CLDR_Point && COL1.Type == CLDR_Custom) {
+		return DT_PointToCustom(OBJ2, OBJ1);
+	}
+
 	return false;
 }
 
@@ -295,34 +326,32 @@ void Physic(RenderedObject& OBJ, std::vector<RenderedObject>& Scene) {
 /* Создать сцену */
 void CreateScene(std::vector<RenderedObject>& Scene) {
 	int square_texture = 1;
+	int special_texture = 2;
 	int circle_texture = 3;
+	int cable_texture = 4;
 
-	PhysicalObject Test2 = PhysicalObject("test2");
-	Test2.BaseShader = 1;
-	Test2.BaseTexture = square_texture;
-	Test2.Col = Collider(CLDR_Square);
-	Test2.Color = glm::vec4(0,0,1,1);
-	Test2.Layer = 100;
-	//Test2.Render = false;
-	Scene.push_back(Test2);
+	PhysicalObject Test = PhysicalObject("test2");
+	Test.BaseShader = 1;
+	Test.BaseTexture = square_texture;
+	Test.Col = Collider(CLDR_Point);
+	Test.Color = glm::vec4(0,0,1,1);
+	Test.Layer = 100;
+	Test.Render = false;
+	Scene.push_back(Test);
 	
-	PhysicalObject Line = PhysicalObject("line");
-	Line.BaseTexture = 4;
-	Line.MakeItLine(glm::vec2(-5, -5), glm::vec2(5, 5), 0.1f);
-	Line.Col = Collider(CLDR_Line);
-	Scene.push_back(Line);
-
-	PhysicalObject Line2 = PhysicalObject("line");
-	Line2.BaseTexture = 4;
-	Line2.MakeItLine(glm::vec2(-5, 5), glm::vec2(5, 10), 1.0f);
-	Line2.Col = Collider(CLDR_Line);
-	Scene.push_back(Line2);
-
-	PhysicalObject Line3 = PhysicalObject("line");
-	Line3.BaseTexture = 4;
-	Line3.MakeItLine(glm::vec2(-5, -10), glm::vec2(5, 0), 0.01f);
-	Line3.Col = Collider(CLDR_Line);
-	Scene.push_back(Line3);
+	for (int i = 1; i < 10; i++) {
+		PhysicalObject Test2 = PhysicalObject("test");
+		Test2.BaseShader = 1;
+		Test2.BaseTexture = special_texture;
+		Test2.Col = Collider(CLDR_Custom);
+		Test2.Col.SetPoints({
+			glm::vec2(-1.0f,  1.0f), glm::vec2(1.0f,  1.0f),
+			glm::vec2(0.5f, -1.0f), glm::vec2(-0.5f, -1.0f)
+		});
+		Test2.Position = glm::vec2(i-5,0);
+		Test2.Size = glm::vec2(1,(float)i/5);
+		Scene.push_back(Test2);
+	}
 }
 
 /* Указать позицию курсора */
