@@ -3,8 +3,11 @@
 /* Тип коллайдера */
 enum CLDR_Type {
 	CLDR_None,
-	CLDR_Fill,
+	CLDR_Square,
 	CLDR_Circle,
+	CLDR_Triangle,
+	CLDR_Point,
+	CLDR_Line,
 	CLDR_Custom
 };
 

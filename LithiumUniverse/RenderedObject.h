@@ -69,7 +69,7 @@ public:
 			Layer  = 500;
 			break;
 		case RO_Phys:
-			Col = CLDR_Fill;
+			Col = CLDR_Square;
 			break;
 		default:
 			break;

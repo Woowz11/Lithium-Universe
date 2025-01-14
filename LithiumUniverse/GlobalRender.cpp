@@ -138,6 +138,7 @@ void CreateShaders() {
 
 unsigned int DefaultTexture;
 unsigned int Default2Texture;
+unsigned int CircleTexture;
 
 /* Создать текстуру */
 void CreateTexture(std::string Path, unsigned int& Texture) {
@@ -178,6 +179,7 @@ void CreateTextures() {
 
     CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default.png"), DefaultTexture);
     CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default2.png"), Default2Texture);
+    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Circle.png"), CircleTexture);
 }
 
 /* ==== Сцена ==== */

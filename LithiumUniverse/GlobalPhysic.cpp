@@ -4,6 +4,8 @@
 #include "RenderedObject.h";
 #include "GameCamera.h";
 #include "GameData.h";
+#include "Collider.h";
+#include "PhysicalObject.h";
 
 float dt = 0;
 float t = 0;
@@ -19,44 +21,48 @@ void InstallPhysic() {
 
 }
 
-/* ==== Физические действия ==== */
+/* ==== Детект коллизий ==== */
 
-/* Точка прикосается с объектом? */
-bool PointCollide(glm::vec2 Position, glm::vec2 Size, RenderedObject OBJ) {
-	glm::vec2 P = Position;
-
-	glm::vec2 OBJSize = OBJ.Size;
-	glm::vec2 OBJPos = OBJ.Position;
-
-	bool CollideX =
-		P.x + (Size.x / 2) >= OBJPos.x - (OBJSize.x / 2)
-		&&
-		OBJPos.x + (OBJSize.x / 2) >= P.x - (Size.x / 2);
-	bool CollideY =
-		P.y + (Size.y / 2) >= OBJPos.y - (OBJSize.y / 2)
-		&&
-		OBJPos.y + (OBJSize.y / 2) >= P.y - (Size.y / 2);
-
-	return CollideX && CollideY;
+/* Проверка коллизии: Точка с точкой */
+bool DC_PointToPoint(RenderedObject Point1, RenderedObject Point2) {
+	return Point1.Position.x == Point2.Position.x && Point1.Position.y == Point2.Position.y;
 }
+
+/* Проверка коллизии: Точка с кругом */
+bool DC_PointToCircle(RenderedObject Point, RenderedObject Circle) {
+	float X = Point.Position.x;
+	float Y = Point.Position.y;
+	float CX = Circle.Position.x;
+	float CY = Circle.Position.y;
+	float R = Circle.Size.x/2;
+
+	float DistX = X - CX;
+	float DistY = Y - CY;
+	float Distance = sqrt((DistX*DistX) + (DistY*DistY));
+
+	return Distance <= R;
+}
+
+/* ==== Физические действия ==== */
 
 /* Объекты прикосаются с друг другом? */
 bool ObjectCollide(RenderedObject OBJ1, RenderedObject OBJ2) {
-	glm::vec2 OBJ1Size = OBJ1.Size;
-	glm::vec2 OBJ2Size = OBJ2.Size;
-	glm::vec2 OBJ1Pos  = OBJ1.Position;
-	glm::vec2 OBJ2Pos  = OBJ2.Position;
+	Collider COL1 = OBJ1.Col;
+	Collider COL2 = OBJ2.Col;
 
-	bool CollideX =
-		OBJ1Pos.x + (OBJ1Size.x / 2) >= OBJ2Pos.x - (OBJ2Size.x / 2)
-		&&
-		OBJ2Pos.x + (OBJ2Size.x / 2) >= OBJ1Pos.x - (OBJ1Size.x / 2);
-	bool CollideY =
-		OBJ1Pos.y + (OBJ1Size.y / 2) >= OBJ2Pos.y - (OBJ2Size.y / 2)
-		&&
-		OBJ2Pos.y + (OBJ2Size.y / 2) >= OBJ1Pos.y - (OBJ1Size.y / 2);
+	if (COL1.Type == CLDR_Point && COL2.Type == CLDR_Point) {
+		return DC_PointToPoint(OBJ1, OBJ2);
+	}
 
-	return CollideX && CollideY;
+	if (COL1.Type == CLDR_Point && COL2.Type == CLDR_Circle) {
+		return DC_PointToCircle(OBJ1, OBJ2);
+	}
+
+	if (COL2.Type == CLDR_Point && COL1.Type == CLDR_Circle) {
+		return DC_PointToCircle(OBJ2, OBJ1);
+	}
+
+	return false;
 }
 
 /* Выполнить физику для объекта */
@@ -71,28 +77,21 @@ void Physic(RenderedObject& OBJ, std::vector<RenderedObject>& Scene) {
 		OBJ.SetPosition(PhysicalMousePosition);
 	}
 	else {
-		bool collide = ObjectCollide(OBJ, Scene[1]);//PointCollide(PhysicalMousePosition, glm::vec2(0.0001f, 0.0001f), OBJ);
+		bool collide = ObjectCollide(OBJ, Scene[0]);//PointCollide(PhysicalMousePosition, glm::vec2(0.0001f, 0.0001f), OBJ);
 		OBJ.Color = (collide ? glm::vec4(0, 1, 0, 1) : glm::vec4(1, 0, 0, 1));
 	}
 }
 
 /* Создать сцену */
 void CreateScene(std::vector<RenderedObject>& Scene) {
-	RenderedObject Test = RenderedObject("test");
-	Test.BaseShader = 1;
-	Test.BaseTexture = 1;
-	//Test.Orientation = glm::vec3(0, 0, 45);
-	//Test.Size = glm::vec2(1, 1);
-	//Test.Position = glm::vec2(-3, 3);
-	Test.Active = false;
-	Scene.push_back(Test);
-
-	RenderedObject Test2 = RenderedObject("test2");
+	PhysicalObject Test2 = PhysicalObject("test2");
 	Test2.BaseShader = 1;
-	Test2.BaseTexture = 1;
-	Test2.Size = glm::vec2(2,0.5f);
+	Test2.BaseTexture = 3;
+	//Test2.Size = glm::vec2(2,0.5f);
+	Test2.Col = Collider(CLDR_Point);
 	Test2.Color = glm::vec4(0,0,1,1);
 	Test2.Layer = 100;
+	Test2.Render = false;
 	Scene.push_back(Test2);
 
 	int x = -5;
@@ -104,12 +103,13 @@ void CreateScene(std::vector<RenderedObject>& Scene) {
 			y++;
 		}
 
-		RenderedObject Test3 = RenderedObject("test3");
+		PhysicalObject Test3 = PhysicalObject("test3");
 		Test3.BaseShader = 1;
-		Test3.BaseTexture = 1;
-		Test3.Position = glm::vec2(x*4,y*4);
-		Test3.Size = glm::vec2((float)(x + 6) / 7.5f, (float)(y + 6) / 7.5f);
-		Test3.Orientation = (float)i / 100.0f * 360;
+		Test3.BaseTexture = 3;
+		Test3.Position = glm::vec2(x*2,y*2);
+		Test3.Col = Collider(CLDR_Circle);
+		//Test3.Size = glm::vec2((float)(x + 6) / 7.5f, (float)(y + 6) / 7.5f);
+		//Test3.Orientation = (float)i / 100.0f * 360;
 		Scene.push_back(Test3);
 	}
 }
