@@ -6,7 +6,7 @@
 ## Управление
 * GLFW 3.4.0
 ## Физика (2D)
-* Самописная
+* [Box2D](https://github.com/erincatto/box2d)
 ## Остальное
 * [GLM](https://github.com/g-truc/glm)
 * [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)

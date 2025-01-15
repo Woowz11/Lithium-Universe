@@ -39,7 +39,6 @@ float Time = 0;
 void UpdateDeltaTime(float DT) {
     Camera->SetDeltaTime(DT);
     DeltaTime = DT;
-    UpdateDeltaTime_PHYSIC(DT, Time);
 }
 
 /* ==== Глобальное ==== */
