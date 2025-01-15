@@ -1,4 +1,9 @@
-﻿#include <vector>
+﻿#define GLM_ENABLE_EXPERIMENTAL
+#define GLM_FORCE_RADIANS
+#include <GLM/glm.hpp>
+#include <GLM/gtx/rotate_vector.hpp>
+
+#include <vector>
 
 #include "GlobalRender.h";
 #include "GameObject.h";
@@ -53,20 +58,23 @@ class DT_Hit_Result {
 public:
 	bool Hit;
 	glm::vec2 Pos;
+	glm::vec2 Normal;
 
-	DT_Hit_Result(glm::vec2 p) {
+	DT_Hit_Result(glm::vec2 p, glm::vec2 n) {
 		Hit = true;
 		Pos = p;
+		Normal = n;
 	}
 	DT_Hit_Result() {
 		Hit = false;
 		Pos = glm::vec2(0, 0);
+		Normal = glm::vec2(0, 0);
 	}
 };
 
 /* Проверка коллизии: Точка с точкой */
 HitResult DC_PointToPoint(GameObject Point1, GameObject Point2) {
-	return (Point1.Position.x == Point2.Position.x && Point1.Position.y == Point2.Position.y) ? HitResult(&Point2, Point1.Position) : HitResult();
+	return (Point1.Position.x == Point2.Position.x && Point1.Position.y == Point2.Position.y) ? HitResult(&Point2, Point1.Position, glm::vec2(0,0)) : HitResult();
 }
 
 /* Проверка коллизии: Точка с линией (Функция) */
@@ -83,34 +91,54 @@ bool DT_PointToLine_Func(glm::vec2 P, glm::vec2 SP, glm::vec2 EP) {
 
 /* Проверка коллизии: Точка с линией */
 HitResult DT_PointToLine(GameObject Point, GameObject Line) {
-	return DT_PointToLine_Func(Point.Position, Line.GetLineStartPosition(), Line.GetLineEndPosition()) ? HitResult(&Line, Point.Position) : HitResult();
+	glm::vec2 LineVec = Line.GetLineEndPosition() - Line.GetLineStartPosition();
+	return DT_PointToLine_Func(Point.Position, Line.GetLineStartPosition(), Line.GetLineEndPosition()) ? HitResult(&Line, Point.Position, glm::normalize(glm::vec2(-LineVec.y, LineVec.x))) : HitResult();
 }
 
 /* Проверка коллизии: Линия с линией (Функция) */
-DT_Hit_Result DT_LineToLine_Func(glm::vec2 Start1Pos, glm::vec2 End1Pos, glm::vec2 Start2Pos, glm::vec2 End2Pos) {
-	float UA =
-		((End2Pos.x - Start2Pos.x) * (Start1Pos.y - Start2Pos.y) - (End2Pos.y - Start2Pos.y) * (Start1Pos.x - Start2Pos.x))
-		/
-		((End2Pos.y - Start2Pos.y) * (End1Pos.x - Start1Pos.x) - (End2Pos.x - Start2Pos.x) * (End1Pos.y - Start1Pos.y));
+enum DT_LineToLine_HitType {
+	DLTLHT_Perpendicular = 0, /* Вернуть нормаль перпендикулярной второй линии */
+	DLTLHT_Self = 1,          /* Вернуть нормаль паралельной первой линии      */
+	DLTLHT_Ricochet = 2       /* Вернуть нормаль отскакивающую от линии        */
+};
+DT_Hit_Result DT_LineToLine_Func(glm::vec2 Start1Pos, glm::vec2 End1Pos, glm::vec2 Start2Pos, glm::vec2 End2Pos, DT_LineToLine_HitType NormalType) {
+	glm::vec2 DirA = End1Pos - Start1Pos;
+	glm::vec2 DirB = End2Pos - Start2Pos;
 
-	float UB =
-		((End1Pos.x - Start1Pos.x) * (Start1Pos.y - Start2Pos.y) - (End1Pos.y - Start1Pos.y) * (Start1Pos.x - Start2Pos.x))
-		/
-		((End2Pos.y - Start2Pos.y) * (End1Pos.x - Start1Pos.x) - (End2Pos.x - Start2Pos.x) * (End1Pos.y - Start1Pos.y));
+	float D = DirA.x * DirB.y - DirA.y * DirB.x;
 
-	return (UA >= 0 && UA <= 1 && UB >= 0 && UB <= 1) ? DT_Hit_Result(glm::vec2(Start1Pos.x + UA * (End1Pos.x - Start1Pos.x), Start1Pos.y + UA * (End1Pos.y - Start1Pos.y))) : DT_Hit_Result();
+	if (std::abs(D) <= 0.0001f) {
+		return DT_Hit_Result((Start2Pos + End2Pos) * 0.5f, glm::normalize(glm::vec2(-DirB.y, DirB.x)));
+	}
+
+	glm::vec2 Dir = Start2Pos - Start1Pos;
+
+	float Uu = (Dir.x * DirA.y - Dir.y * DirA.x) / D;
+	float Ut = (Dir.x * DirB.y - Dir.y * DirB.x) / D;
+
+	if (Ut >= 0 && Ut <= 1.0f && Uu >= 0 && Uu <= 1.0f) {
+		glm::vec2 Normal;
+		switch (NormalType) {
+		case DLTLHT_Self:
+			Normal = -DirB;
+			break;
+
+		case DLTLHT_Ricochet:
+			Normal = -( -DirB - 2.0f * glm::dot(-DirB, glm::normalize(glm::vec2(-DirA.y, DirA.x))) * glm::normalize(glm::vec2(-DirA.y, DirA.x)));
+			break;
+
+		default:
+			Normal = glm::vec2(-DirA.y, DirA.x);
+			break;
+		}
+		return DT_Hit_Result(Start1Pos + Ut * DirA, glm::normalize(Normal));
+	}
 }
 
 /* Проверка коллизии: Линия с линией */
 HitResult DT_LineToLine(GameObject Line1, GameObject Line2) {
-	glm::vec2 Start1Pos = Line1.GetLineStartPosition();
-	glm::vec2 End1Pos   = Line1.GetLineEndPosition();
-	glm::vec2 Start2Pos = Line2.GetLineStartPosition();
-	glm::vec2 End2Pos   = Line2.GetLineEndPosition();
-
-	DT_Hit_Result R = DT_LineToLine_Func(Start1Pos, End1Pos, Start2Pos, End2Pos);
-
-	return R.Hit ? HitResult(&Line2, R.Pos) : HitResult();
+	DT_Hit_Result R = DT_LineToLine_Func(Line1.GetLineStartPosition(), Line1.GetLineEndPosition(), Line2.GetLineStartPosition(), Line2.GetLineEndPosition(), DLTLHT_Ricochet);
+	return R.Hit ? HitResult(&Line2, R.Pos, R.Normal) : HitResult();
 }
 
 /* Проверка коллизии: Точка с кастомной (Функция) */
@@ -136,7 +164,7 @@ bool DT_PointToCustom_Func(glm::vec2 P, std::vector<glm::vec2> Points) {
 
 /* Проверка коллизии: Точка с кастомной */
 HitResult DT_PointToCustom(GameObject Point, GameObject Custom) {
-	return DT_PointToCustom_Func(Point.Position, Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation)) ? HitResult(&Custom, Point.Position) : HitResult();
+	return DT_PointToCustom_Func(Point.Position, Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation)) ? HitResult(&Custom, Point.Position, glm::vec2(0, 0)) : HitResult();
 }
 
 /* Проверка коллизии: Линия с кастомной (Функция) */
@@ -148,7 +176,7 @@ std::vector<DT_Hit_Result> DT_LineToCustom_Func(glm::vec2 StartPos, glm::vec2 En
 		glm::vec2 VC = Points[i];
 		glm::vec2 VN = Points[j];
 
-		DT_Hit_Result R = DT_LineToLine_Func(StartPos, EndPos, VC, VN);
+		DT_Hit_Result R = DT_LineToLine_Func(StartPos, EndPos, VC, VN, DLTLHT_Perpendicular);
 		if (R.Hit) {
 			Result.push_back(R);
 		}
@@ -161,7 +189,7 @@ std::vector<DT_Hit_Result> DT_LineToCustom_Func(glm::vec2 StartPos, glm::vec2 En
 /* Проверка коллизии: Линия с кастомной */
 HitResult DT_LineToCustom(GameObject Line, GameObject Custom) {
 	DT_Hit_Result R = DT_LineToCustom_Func(Line.GetLineStartPosition(), Line.GetLineEndPosition(), Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation))[0];
-	return R.Hit ? HitResult(&Custom, R.Pos, glm::distance(R.Pos, Line.GetLineEndPosition())) : HitResult();
+	return R.Hit ? HitResult(&Custom, R.Pos, R.Normal, glm::distance(R.Pos, Line.GetLineEndPosition())) : HitResult();
 }
 
 /* Проверка коллизии: Кастомной с кастомной */
@@ -171,6 +199,7 @@ HitResult DT_CustomToCustom(GameObject Custom1, GameObject Custom2) {
 
 	float MinDistance = std::numeric_limits<float>::max();
 	glm::vec2 ClosestPoint(0.0f);
+	glm::vec2 Normal(0.0f);
 	bool FoundCollision = false;
 
 	int size1 = Points1.size();
@@ -186,6 +215,7 @@ HitResult DT_CustomToCustom(GameObject Custom1, GameObject Custom2) {
 				if (Distance < MinDistance) {
 					MinDistance = Distance;
 					ClosestPoint = Hit.Pos;
+					Normal = Hit.Normal;
 				}
 			}
 		}
@@ -198,7 +228,7 @@ HitResult DT_CustomToCustom(GameObject Custom1, GameObject Custom2) {
 	}
 
 	if (FoundCollision) {
-		return HitResult(&Custom2, ClosestPoint, MinDistance);
+		return HitResult(&Custom2, ClosestPoint, Normal, MinDistance);
 	}
 
 	return HitResult();
@@ -273,8 +303,9 @@ void ResolveCollision(GameObject& OBJ, GameObject& OBJ2) {
 	if (!Hit.Hit) { return; }
 
 	Scene[1].Position = Hit.HitPosition;
+	PrintFast("NORMAL", ToStringVec2(Hit.Normal));
 
-	glm::vec2 Normal = glm::normalize(OBJ.Position - OBJ2.Position);
+	glm::vec2 Normal = Hit.Normal;//glm::normalize(Hit.HitPosition);//OBJ.Position - OBJ2.Position);
 	glm::vec2 RVelocity = OBJ2.GetVelocity() - OBJ.GetVelocity();
 	float VAN = glm::dot(RVelocity, Normal);
 
@@ -332,10 +363,17 @@ void Physic(GameObject& OBJ, int i) {
 		OBJ.SetPosition(PhysicalMousePosition);
 	}
 
-	if (OBJ.Name == "test") {
-		//OBJ.Impulse((PhysicalMousePosition - OBJ.Position) * glm::vec2(pdt, pdt));
-		//OBJ.Impulse(glm::vec2(0, -pdt));
-		//PrintFast("POS", ToStringVec2(OBJ.Position));
+	if (OBJ.Name == "test2") {
+		OBJ.SetLineEndPosition(PhysicalMousePosition);
+	}
+	else {
+		if (OBJ.Name != MouseDetectorName) {
+			HitResult HitLine = ObjectCollide(OBJ, Scene[3]);
+			if (HitLine.Hit) {
+				Scene[2].SetLinePosition(HitLine.HitPosition, HitLine.HitPosition + HitLine.Normal);
+				Scene[1].SetPosition(HitLine.HitPosition);
+			}
+		}
 	}
 
 	if (OBJ.Selectable && OBJ.Render) {
@@ -350,7 +388,7 @@ void Physic(GameObject& OBJ, int i) {
 	/* Обновление физики у объекта */
 	if (OBJ.Type == RO_Phys && SimulationSpeed != 0) {
 		if (!OBJ.Static) {
-			WorkPhysic(OBJ, i);
+			//WorkPhysic(OBJ, i);
 		}
 	}
 }
@@ -405,13 +443,20 @@ void CreateScene() {
 	GameObject TestHIT = GameObject("testhit");
 	TestHIT.BaseShader = 1;
 	TestHIT.BaseTexture = circle_texture;
-	TestHIT.Size = glm::vec2(0.3f, 0.3f);
+	TestHIT.Size = glm::vec2(0.1f, 0.1f);
 	TestHIT.Position = glm::vec2(-100, -100);
-	TestHIT.Color = glm::vec4(0, 0, 1, 1);
+	TestHIT.Color = glm::vec4(0, 1, 0, 1);
 	TestHIT.Layer = 1000;
 	Scene.push_back(TestHIT);
 
-	GameObject Test = GameObject("test", RO_Phys);
+	GameObject Test21 = GameObject("normal");
+	Test21.MakeItLine(glm::vec2(0, 0), glm::vec2(0, 0), 0.1f);
+	Test21.BaseTexture = 4;
+	Test21.Color = glm::vec4(1, 0, 0, 1);
+	Test21.Layer = 900;
+	Scene.push_back(Test21);
+
+	/*GameObject Test = GameObject("test", RO_Phys);
 	Test.BaseShader = 1;
 	Test.BaseTexture = square_texture;
 	Test.Position = glm::vec2(0, 3);
@@ -420,12 +465,26 @@ void CreateScene() {
 	GameObject Test2 = GameObject("test2", RO_Phys);
 	Test2.BaseShader = 1;
 	Test2.BaseTexture = square_texture;
-	//Test2.Size = glm::vec2(100, 100);
+	Test2.Size = glm::vec2(1000, 1);
 	Test2.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1);
-	Test2.Position = glm::vec2(0, 0);
+	Test2.Position = glm::vec2(0, -3);
 	Test2.Static = true;
 	Test2.Mass = 100;
+	Scene.push_back(Test2);*/
+
+	GameObject Test2 = GameObject("test2");
+	Test2.MakeItLine(glm::vec2(-10, 10), glm::vec2(0, 0), 0.1f);
+	Test2.Col = Collider(CLDR_Line);
+	Test2.BaseTexture = 4;
+	Test2.Color = glm::vec4(0, 0, 1, 1);
+	Test2.Layer = 100;
 	Scene.push_back(Test2);
+
+	GameObject Line = GameObject("line");
+	Line.BaseTexture = 4;
+	Line.MakeItLine(glm::vec2(-5, -5), glm::vec2(5, 5), 0.1f);
+	Line.Col = Collider(CLDR_Line);
+	Scene.push_back(Line);
 }
 
 /* Указать позицию курсора */

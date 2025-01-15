@@ -45,7 +45,7 @@ void UpdateDeltaTime(float DT) {
 /* ==== Глобальное ==== */
 
 /* Цвет заднего фона */
-glm::vec3 BackgroundColor = glm::vec3(0.2f, 0, 0);
+glm::vec3 BackgroundColor = glm::vec3(0.05f, 0.05f, 0.05f);
 
 /* ==== Вертиксы ==== */
 
