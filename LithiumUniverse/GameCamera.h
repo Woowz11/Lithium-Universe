@@ -30,7 +30,7 @@ public:
 
 	/* Двигать камеру */
 	void MoveCamera(float vel_x, float vel_y) {
-		Position = Position + glm::rotate(-glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt), glm::radians(Rotation));
+		Position = Position + glm::rotate(-glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt), Rotation);
 	}
 
 	/* Изменить масштаб камеры */

@@ -9,9 +9,7 @@
 #include "GlobalRender.h";
 #include "GameObject.h";
 #include "GameCamera.h";
-#include "HitResult.h";
 #include "GameData.h";
-#include "Collider.h";
 
 /* ==== Сцена ==== */
 
@@ -20,7 +18,10 @@ std::vector<GameObject> Scene = {};
 
 /* Создать сцену */
 void CreateScene() {
-
+	GameObject Test = GameObject("test", RO_Phys);
+	Test.BaseShader = 1;
+	Test.BaseTexture = 1;
+	Scene.push_back(Test);
 }
 
 /* Указать позицию курсора */
@@ -33,7 +34,7 @@ std::vector<GameObject>& UpdatePhysic() {
 	for (int i = 0; i < Scene.size(); i++) {
 		GameObject& OBJ = Scene[i];
 		if (OBJ.Active) {
-			
+			OBJ.AddRotation(0.0001f);
 		}
 	}
 

@@ -109,11 +109,5 @@
     <ClInclude Include="GameData.h">
       <Filter>Scripts</Filter>
     </ClInclude>
-    <ClInclude Include="Collider.h">
-      <Filter>Scripts\Physic</Filter>
-    </ClInclude>
-    <ClInclude Include="HitResult.h">
-      <Filter>Scripts\GameClasses</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

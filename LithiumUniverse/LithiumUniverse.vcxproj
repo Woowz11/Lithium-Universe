@@ -152,7 +152,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseConstants.h" />
-    <ClInclude Include="Collider.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="ExplorerActions.h" />
     <ClInclude Include="GameControls.h" />
@@ -160,7 +159,6 @@
     <ClInclude Include="GameInstalls.h" />
     <ClInclude Include="GlobalPhysic.h" />
     <ClInclude Include="GlobalRender.h" />
-    <ClInclude Include="HitResult.h" />
     <ClInclude Include="LithiumUniverse.h" />
     <ClInclude Include="StaticInfo.h" />
     <ClInclude Include="StringActions.h" />

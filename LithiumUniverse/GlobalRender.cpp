@@ -288,7 +288,7 @@ void RenderSquare(const GameObject& OBJ) {
     glm::mat4 ResultPosition = glm::mat4(1.0f);
 
     if (!OBJ.ThatUI) {
-        ResultPosition = glm::rotate(ResultPosition, -glm::radians(Camera->Rotation), glm::vec3(0, 0, 1));
+        ResultPosition = glm::rotate(ResultPosition, -Camera->Rotation, glm::vec3(0, 0, 1));
     }
 
     ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.Position, OBJ.Layer + (float)OBJ.GetID() / 10000));
@@ -296,7 +296,7 @@ void RenderSquare(const GameObject& OBJ) {
         ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
     }
 
-    ResultPosition = glm::rotate(ResultPosition, -glm::radians(OBJ.Orientation), glm::vec3(0, 0, 1));
+    ResultPosition = glm::rotate(ResultPosition, -OBJ.Orientation, glm::vec3(0, 0, 1));
     ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.Size, 1));
 
     CSS.setMat4("Position", ResultPosition);
@@ -338,7 +338,7 @@ void RenderLine(const GameObject& OBJ) {
     float rad = atan2(Direction.y, Direction.x) - glm::half_pi<float>();;
 
     if (!OBJ.ThatUI) {
-        ResultPosition = glm::rotate(ResultPosition, -glm::radians(Camera->Rotation), glm::vec3(0, 0, 1));
+        ResultPosition = glm::rotate(ResultPosition, -Camera->Rotation, glm::vec3(0, 0, 1));
     }
 
     ResultPosition = glm::translate(ResultPosition, glm::vec3(CenterPos.x, CenterPos.y, OBJ.Layer + (float)OBJ.GetID() / 10000));
@@ -405,7 +405,7 @@ glm::vec2 ScreenPositionToWorld(glm::vec2 Pos) {
     //800px => 20.0f / 3
     Result *= glm::vec2(20.0f / 3, 15.0f / -3);
     Result *= Camera->Zoom;
-    Result = glm::rotate(Result, glm::radians(Camera->Rotation));
+    Result = glm::rotate(Result, Camera->Rotation);
     Result -= Camera->Position;
     return Result;
 }
