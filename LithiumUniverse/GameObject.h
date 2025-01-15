@@ -23,14 +23,6 @@ enum ShapeType {
 	ST_Line    = 2  /* Линия   */
 };
 
-/* Форма объекта */
-enum ObjectForm {
-	OF_Cube   = 0, /* Куб (или плитка, зависит от размера) */
-	OF_Sphere = 1, /* Сфера                                */
-	OF_Bullet = 2, /* Пуля                                 */
-	OF_Stick  = 3  /* Копьё (или длинная палка)            */
-};
-
 /* Пустой объект, который можно рендерить */
 class GameObject {
 private:
@@ -72,11 +64,11 @@ public:
 
 	/* ==== Физические параметры (большая часть из них работает только с RO_Phys) ==== */
 
-	bool Static        = false;           /* Статичный?    */
-	glm::vec2 Velocity = glm::vec2(0, 0); /* Скорость      */
-	ObjectForm Form    = OF_Cube;         /* Форма объекта */
-	float Mass         = 1;               /* Вес объекта   */
-	float Restitution  = 0;               /* Упругость     */
+	bool Static           = false;           /* Статичный?        */
+	glm::vec2 Velocity    = glm::vec2(0, 0); /* Скорость          */
+	float Mass            = 1;               /* Вес объекта       */
+	float Restitution     = 0;               /* Упругость         */
+	float AngularVelocity = 0;               /* Скорость вращения */
 
 	GameObject(std::string Name_, RO_Type type) {
 		ID = TotalIDs++;
@@ -130,7 +122,7 @@ public:
 	/* Влияние формы объекта на воздух */
 	float AirResistanceDependentOnForm() {
 		float Result = 0;
-		switch (Form)
+		switch (Col.Form)
 		{
 			case OF_Cube:
 				Result = 1;

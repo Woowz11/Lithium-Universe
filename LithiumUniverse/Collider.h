@@ -17,6 +17,14 @@ enum CLDR_Type {
 	CLDR_Custom = 3
 };
 
+/* Форма объекта */
+enum ObjectForm {
+	OF_Cube   = 0, /* Куб (или плитка, зависит от размера) */
+	OF_Sphere = 1, /* Сфера                                */
+	OF_Bullet = 2, /* Пуля                                 */
+	OF_Stick  = 3  /* Копьё (или длинная палка)            */
+};
+
 class Collider {
 private:
 	const std::vector<glm::vec2> COLLIDER_SQUARE = {
@@ -32,7 +40,9 @@ private:
 
 	std::vector<glm::vec2> Points = COLLIDER_SQUARE;
 public:
-	CLDR_Type Type;
+	CLDR_Type Type;            /* Тип коллайдера */
+	ObjectForm Form = OF_Cube; /* Форма объекта  */
+	float Torque = 0;          /* ?              */
 
 	Collider(CLDR_Type type){
 		Type = type;

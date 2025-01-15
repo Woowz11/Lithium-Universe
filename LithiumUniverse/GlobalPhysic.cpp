@@ -254,7 +254,7 @@ HitResult DT_CustomToCustom(GameObject Custom1, GameObject Custom2) {
 		glm::vec2 VC1 = Points1[i];
 		glm::vec2 VN1 = Points1[j];
 
-		std::vector<DT_Hit_Result> Hits = DT_LineToCustom_Func(VC1, VN1, Points2, /*DLTLHT_FlowInvert*/ DLTLHT_PerpendicularInvert, false, glm::vec4(Custom1.Size.x, Custom1.Size.y, Custom2.Size.x, Custom2.Size.y), glm::vec2(Custom1.Orientation, Custom2.Orientation));
+		std::vector<DT_Hit_Result> Hits = DT_LineToCustom_Func(VC1, VN1, Points2, DLTLHT_PerpendicularInvert, false, glm::vec4(Custom1.Size.x, Custom1.Size.y, Custom2.Size.x, Custom2.Size.y), glm::vec2(Custom1.Orientation, Custom2.Orientation));
 		for (const auto& Hit : Hits) {
 			if (Hit.Hit) {
 				FoundCollision = true;
@@ -346,6 +346,18 @@ void ApplyGravity(GameObject& OBJ) {
 	OBJ.Velocity += Gravity * pdt;
 }
 
+void ApplyRotations(GameObject& OBJ) {
+	if (!OBJ.Static) {
+		float angularAcceleration = OBJ.Col.Torque / OBJ.Mass;
+
+		OBJ.AngularVelocity -= angularAcceleration /* * pdt*/;
+
+		OBJ.AddRotation(OBJ.AngularVelocity  * pdt);
+
+		OBJ.Col.Torque = 0;
+	}
+}
+
 void ResolveCollision(GameObject& OBJ, GameObject& OBJ2) {
 	HitResult Hit = ObjectCollide(OBJ, OBJ2);
 	if (!Hit.Hit) { return; }
@@ -366,6 +378,20 @@ void ResolveCollision(GameObject& OBJ, GameObject& OBJ2) {
 
 	OBJ.Impulse(-(I / OBJ.Mass));
 	OBJ2.Impulse(I / OBJ2.Mass);
+
+	
+	// Радиус-вектор от центра масс до точки столкновения
+	glm::vec2 r = Hit.HitPosition - OBJ.Position;
+	// Крутящий момент = r_x * F_y - r_y * F_x
+	float torque = r.x * I.y - r.y * I.x;
+	OBJ.Col.Torque += torque;  // Добавляем вычисленный Torque
+	
+
+	if (!OBJ2.Static) {
+		glm::vec2 r2 = Hit.HitPosition - OBJ2.Position;
+		float torque2 = r2.x * I.y - r2.y * I.x;
+		OBJ2.Col.Torque += torque2;
+	}
 
 	const float penetrationCorrection = 0.001f;
 
@@ -392,6 +418,7 @@ void WorkPhysic(GameObject& OBJ, int i) {
 		}
 	}
 	ApplyVelocities(OBJ);
+	ApplyRotations(OBJ);
 }
 
 /* Мышку навели на объект */
@@ -515,7 +542,7 @@ void CreateScene() {
 	Test2.Size = glm::vec2(1000, 1);
 	Test2.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1);
 	Test2.Position = glm::vec2(0, -3);
-	Test2.SetRotation(15);
+	//Test2.SetRotation(15);
 	Test2.Static = true;
 	Test2.Mass = 100;
 	Scene.push_back(Test2);
