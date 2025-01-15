@@ -7,13 +7,6 @@
 #include "GameData.h";
 #include "Collider.h";
 
-float dt = 0;
-float t = 0;
-void UpdateDeltaTime_PHYSIC(float DT, float Time_) {
-	dt = DT;
-	t = Time_;
-}
-
 /* Позиция мыши в мире */
 glm::vec2 PhysicalMousePosition = glm::vec2(0, 0);
 /* Название объекта мыши */
@@ -28,6 +21,31 @@ GameObject* MouseOnThisObject = nullptr;
 
 /* Сцена */
 std::vector<GameObject> Scene = {};
+
+/* Гравитация на сцене */
+glm::vec2 Gravity = glm::vec2(0, -10);
+
+/* Сопротивление воздуха */
+float AirResistance = 1;
+
+/* Скорость симуляции */
+float SimulationSpeed = 1;
+
+/* Установить время физики */
+void SetPhysicTime(float npt) {
+	SimulationSpeed = npt;
+}
+
+float dt = 0;
+float pdt = 0;
+float t = 0;
+void UpdateDeltaTime_PHYSIC(float DT, float Time_) {
+	dt = DT;
+	t = Time_;
+
+	pdt = dt * SimulationSpeed;
+}
+
 
 /* ==== Детект коллизий ==== */
 
@@ -143,7 +161,7 @@ std::vector<DT_Hit_Result> DT_LineToCustom_Func(glm::vec2 StartPos, glm::vec2 En
 /* Проверка коллизии: Линия с кастомной */
 HitResult DT_LineToCustom(GameObject Line, GameObject Custom) {
 	DT_Hit_Result R = DT_LineToCustom_Func(Line.GetLineStartPosition(), Line.GetLineEndPosition(), Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation))[0];
-	return R.Hit ? HitResult(&Custom, R.Pos) : HitResult();
+	return R.Hit ? HitResult(&Custom, R.Pos, glm::distance(R.Pos, Line.GetLineEndPosition())) : HitResult();
 }
 
 /* Проверка коллизии: Кастомной с кастомной */
@@ -157,9 +175,9 @@ HitResult DT_CustomToCustom(GameObject Custom1, GameObject Custom2) {
 		glm::vec2 VN = Points1[j];
 
 		DT_Hit_Result Hit = DT_LineToCustom_Func(VC, VN, Points2)[0];
-		if (Hit.Hit) { return HitResult(&Custom2, Hit.Pos); }
+		if (Hit.Hit) { return HitResult(&Custom2, Hit.Pos, glm::distance(Custom1.Position, Hit.Pos)); }
 
-		if (DT_PointToCustom_Func(Points2[0], Points1)) { return HitResult(&Custom2, Points2[0]); }
+		if (DT_PointToCustom_Func(Points2[0], Points1)) { return HitResult(&Custom2, Points2[0], glm::distance(Custom1.Position, Points2[0])); }
 	}
 	return HitResult();
 }
@@ -213,9 +231,41 @@ HitResult ObjectCollide(GameObject OBJ1, GameObject OBJ2) {
 
 /* ==== Физика ==== */
 
+/* Применить гравитацию */
+void ApplyGravity(GameObject& OBJ) {
+	glm::vec2 GravityForce = Gravity * OBJ.Mass;
+
+	glm::vec2 AirResistanceForce = -(AirResistance * OBJ.AirResistanceDependentOnForm()) * OBJ.Velocity * glm::length(OBJ.Velocity);
+
+	glm::vec2 Force = GravityForce + AirResistanceForce;
+
+	glm::vec2 A = Force / OBJ.Mass;
+
+	OBJ.Velocity += A * pdt;
+}
+
+void ResolveCollision(GameObject& OBJ) {
+	for (GameObject& OBJ2 : Scene) {
+		if (OBJ.GetID() != OBJ2.GetID() && OBJ2.Type == RO_Phys) {
+			HitResult Hit = ObjectCollide(OBJ, OBJ2);
+			if (Hit.Hit) {
+				OBJ.Color = glm::vec4(1, 0, 0, 1);
+			}
+		}
+	}
+}
+
+void ApplyVelocities(GameObject& OBJ) {
+	OBJ.Position += OBJ.Velocity * pdt;
+}
+
 /* Обработка физики */
 void WorkPhysic(GameObject& OBJ) {
-	OBJ.AddRotation(dt * 50);
+	ApplyGravity(OBJ);
+	ResolveCollision(OBJ);
+	if (!OBJ.Static) {
+		ApplyVelocities(OBJ);
+	}
 }
 
 /* Мышку навели на объект */
@@ -235,8 +285,10 @@ void Physic(GameObject& OBJ) {
 		OBJ.SetPosition(PhysicalMousePosition);
 	}
 
-	if (OBJ.Name == "line") {
-		OBJ.SetLineEndPosition(PhysicalMousePosition);
+	if (OBJ.Name == "test") {
+		//OBJ.Impulse((PhysicalMousePosition - OBJ.Position) * glm::vec2(pdt, pdt));
+		OBJ.Impulse(glm::vec2(0, -pdt));
+		PrintFast("POS", ToStringVec2(OBJ.Position));
 	}
 
 	if (OBJ.Selectable && OBJ.Render) {
@@ -246,15 +298,10 @@ void Physic(GameObject& OBJ) {
 				MouseOnThisObject_Result = &OBJ;
 			}
 		}
-
-		HitResult testhit = ObjectCollide(OBJ, Scene[2]);
-		if (testhit.Hit) {
-			Scene[1].Position = testhit.HitPosition;
-		}
 	}
 
 	/* Обновление физики у объекта */
-	if (OBJ.Type == RO_Phys) {
+	if (OBJ.Type == RO_Phys && SimulationSpeed != 0) {
 		WorkPhysic(OBJ);
 	}
 }
@@ -298,34 +345,21 @@ void CreateScene() {
 	int circle_texture = 3;
 	int cable_texture = 4;
 
-	GameObject TestHIT = GameObject("testhit");
-	TestHIT.BaseShader = 1;
-	TestHIT.BaseTexture = circle_texture;
-	TestHIT.Size = glm::vec2(0.3f, 0.3f);
-	TestHIT.Position = glm::vec2(-100, -100);
-	TestHIT.Color = glm::vec4(0, 0, 1, 1);
-	TestHIT.Layer = 1000;
-	Scene.push_back(TestHIT);
+	for (int i = 0; i < 1; i++) {
+		GameObject Test = GameObject("test", RO_Phys);
+		Test.BaseShader = 1;
+		Test.BaseTexture = square_texture;
+		Test.Position = glm::vec2(0, 3 + (i * 10));
+		Scene.push_back(Test);
+	}
 
-	GameObject Test3 = GameObject("line");
-	Test3.MakeItLine(glm::vec2(-10, 10), glm::vec2(0, 0), 0.1f);
-	Test3.Col = Collider(CLDR_Line);
-	Test3.BaseTexture = 4;
-	Test3.Color = glm::vec4(0, 0, 1, 1);
-	Test3.Layer = 100;
-	Scene.push_back(Test3);
-
-	GameObject Test = GameObject("test", RO_Phys);
-	Test.BaseShader = 1;
-	Test.BaseTexture = square_texture;
-	Test.Position = glm::vec2(0, 3);
-	Scene.push_back(Test);
-
-	GameObject Test2 = GameObject("test2");
+	GameObject Test2 = GameObject("test2", RO_Phys);
 	Test2.BaseShader = 1;
 	Test2.BaseTexture = square_texture;
 	Test2.Size = glm::vec2(10, 0.5f);
 	Test2.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1);
+	Test2.Position = glm::vec2(0, -3);
+	Test2.Static = true;
 	Scene.push_back(Test2);
 }
 

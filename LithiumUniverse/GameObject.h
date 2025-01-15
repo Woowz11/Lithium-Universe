@@ -9,16 +9,26 @@
 #include "Collider.h";
 #include "Console.h";
 
+/* Тип объекта */
 enum RO_Type {
-	RO_Default,
-	RO_UI,
-	RO_Phys
+	RO_Default = 0, /* Обычный объект  */
+	RO_UI      = 1, /* Интерфейс       */
+	RO_Phys    = 2  /* Физичный объект */
 };
 
+/* Тип рендера объекта */
 enum ShapeType {
 	ST_Square  = 1, /* Квадрат */
 	ST_Polygon = 0, /* Полигон */
 	ST_Line    = 2  /* Линия   */
+};
+
+/* Форма объекта */
+enum ObjectForm {
+	OF_Cube   = 0, /* Куб (или плитка, зависит от размера) */
+	OF_Sphere = 1, /* Сфера                                */
+	OF_Bullet = 2, /* Пуля                                 */
+	OF_Stick  = 3  /* Копьё (или длинная палка)            */
 };
 
 /* Пустой объект, который можно рендерить */
@@ -60,6 +70,13 @@ public:
 	Collider Col           = Collider(CLDR_None);    /* Коллизия                        */
 	bool Selectable        = false;                  /* Мышка реагирует на этот объект? */
 
+	/* ==== Физические параметры (большая часть из них работает только с RO_Phys) ==== */
+
+	bool Static        = false;           /* Статичный?    */
+	glm::vec2 Velocity = glm::vec2(0, 0); /* Скорость      */
+	ObjectForm Form    = OF_Cube;         /* Форма объекта */
+	float Mass         = 1;               /* Вес объекта   */
+
 	GameObject(std::string Name_, RO_Type type) {
 		ID = TotalIDs++;
 		Name = Name_;
@@ -87,9 +104,50 @@ public:
 		return ID;
 	}
 
+	/* Применить скорость */
+	void Impulse(glm::vec2 Vel) {
+		if (!Static) {
+			Velocity += Vel;
+		}
+	}
+
+	/* Получить скорость */
+	glm::vec2 GetVelocity() {
+		return Static ? glm::vec2(0,0) : Velocity;
+	}
+
 	/* Получить физическую позицию, она измеряется с верхнего левого угла, а не с центра фигуры */
 	glm::vec2 GetPhysicalPosition() {
 		return Position - glm::vec2(Size.x/2, Size.y/2);
+	}
+
+	/* Получить размер объекта */
+	float GetSize() {
+		return Size.x * Size.y;
+	}
+
+	/* Влияние формы объекта на воздух */
+	float AirResistanceDependentOnForm() {
+		float Result = 0;
+		switch (Form)
+		{
+			case OF_Cube:
+				Result = 1;
+				break;
+			case OF_Sphere:
+				Result = 0.9f;
+				break;
+			case OF_Bullet:
+				Result = 0.1f;
+				break;
+			case OF_Stick:
+				Result = 0.01f;
+				break;
+			default:
+				break;
+		}
+
+		return Result * GetSize();
 	}
 
 	/* Установить позицию объекту */

@@ -2,9 +2,11 @@
 #include <GLM/glm.hpp>
 
 #include "GlobalRender.h";
+#include "GlobalPhysic.h";
 #include "GameInstalls.h";
 #include "GameCamera.h";
 #include "GameData.h";
+
 /* Скрипт отвечающий за управление игроком */
 
 /* Курсор двигается */
@@ -13,7 +15,16 @@ void MouseMove(glm::vec2 Pos, glm::vec2 Pos2) {
 }
 
 /* Управление клавиатурой */
-void ControlsKeyboard() {
+bool SpacePressed = false;
+void ControlsKeyboard(int KEY, int ACTION) {
+	if (KEY == GLFW_KEY_SPACE && ACTION == GLFW_PRESS) {
+		SpacePressed = !SpacePressed;
+		SetPhysicTime(SpacePressed ? 0 : 1);
+	}
+}
+
+/* Управление клавиатурой (Каждый тик) */
+void ControlsKeyboardTick() {
 	if (KeyPressed(GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		ExitGame();
 	}
@@ -71,5 +82,5 @@ void ControlsKeyboard() {
 
 /* Управление */
 void Controls() {
-	ControlsKeyboard();
+	ControlsKeyboardTick();
 }

@@ -96,6 +96,9 @@ private:
 			CURRENT_WINDOW_HEIGHT_ = START_WINDOW_HEIGHT;
 			glfwSetFramebufferSizeCallback(Window, WindowSizeChanged);
 			UpdateWindowSize(START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
+			glfwSetKeyCallback(Window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+				ControlsKeyboard(key, action);
+			});
 		}
 	}
 
