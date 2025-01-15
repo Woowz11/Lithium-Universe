@@ -18,11 +18,11 @@
     <Filter Include="NotMy">
       <UniqueIdentifier>{dea607ac-2b93-45ee-ae82-74bb40ec0de5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scripts\GameObjects">
-      <UniqueIdentifier>{738e4b76-3c15-4c61-b42a-09196843ac81}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scripts\Physic">
       <UniqueIdentifier>{f84255f9-5910-496a-86f2-3b790799d594}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripts\GameClasses">
+      <UniqueIdentifier>{738e4b76-3c15-4c61-b42a-09196843ac81}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -60,7 +60,7 @@
       <Filter>Scripts</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.h">
-      <Filter>Scripts\GameObjects</Filter>
+      <Filter>Scripts\GameClasses</Filter>
     </ClCompile>
     <ClCompile Include="StaticInfo.cpp">
       <Filter>Scripts</Filter>
@@ -111,6 +111,9 @@
     </ClInclude>
     <ClInclude Include="Collider.h">
       <Filter>Scripts\Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="HitResult.h">
+      <Filter>Scripts\GameClasses</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

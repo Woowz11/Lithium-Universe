@@ -23,19 +23,14 @@ public:
 		dt = dt_;
 	}
 
-	/* Двигать камеру */
-	void MoveCamera(float vel_x, float vel_y) {
-		Position = Position + glm::rotate(-glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt), glm::radians(Rotation));
-	}
-
 	/* Установить позицию камере */
 	void SetCameraPosition(float x, float y) {
 		Position = glm::vec2(x, y);
 	}
 
-	/* Двигать масштаб камеры */
-	void MoveCameraZoom(float vel) {
-		Zoom += (-vel * 0.5f * dt) * Zoom;
+	/* Двигать камеру */
+	void MoveCamera(float vel_x, float vel_y) {
+		Position = Position + glm::rotate(-glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt), glm::radians(Rotation));
 	}
 
 	/* Изменить масштаб камеры */
@@ -43,15 +38,21 @@ public:
 		Zoom = z;
 	}
 
-	/* Повернуть камеру */
-	void MoveCameraRotation(float vel) {
-		SetCameraRotation(RealCameraRotation - (vel * 50 * dt));
+	/* Двигать масштаб камеры */
+	void MoveCameraZoom(float vel) {
+		Zoom += (-vel * 0.5f * dt) * Zoom;
 	}
 
 	/* Установить поворот камеры */
 	void SetCameraRotation(float deg) {
 		RealCameraRotation = deg;
-		Rotation = (floor(RealCameraRotation/15)*15);
+		Rotation = (floor(RealCameraRotation / 15) * 15);
+	}
+
+	/* Повернуть камеру */
+	void MoveCameraRotation(float vel) {
+		/* Опять нахуй MVS тупит, не обнволяет скрипт или не пойму почему когда я меняю + на - ничего не меняется */
+		SetCameraRotation(RealCameraRotation + (vel * 50 * dt));
 	}
 };
 

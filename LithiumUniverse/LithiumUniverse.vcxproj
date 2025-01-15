@@ -160,6 +160,7 @@
     <ClInclude Include="GameInstalls.h" />
     <ClInclude Include="GlobalPhysic.h" />
     <ClInclude Include="GlobalRender.h" />
+    <ClInclude Include="HitResult.h" />
     <ClInclude Include="LithiumUniverse.h" />
     <ClInclude Include="StaticInfo.h" />
     <ClInclude Include="StringActions.h" />
