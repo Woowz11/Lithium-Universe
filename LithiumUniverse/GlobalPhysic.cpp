@@ -3,6 +3,7 @@
 #include <GLM/glm.hpp>
 #include <GLM/gtx/rotate_vector.hpp>
 
+#include <algorithm>
 #include <vector>
 
 #include "GlobalRender.h";
@@ -133,11 +134,13 @@ DT_Hit_Result DT_LineToLine_Func(glm::vec2 Start1Pos, glm::vec2 End1Pos, glm::ve
 		}
 		return DT_Hit_Result(Start1Pos + Ut * DirA, glm::normalize(Normal));
 	}
+
+	return DT_Hit_Result();
 }
 
 /* Проверка коллизии: Линия с линией */
 HitResult DT_LineToLine(GameObject Line1, GameObject Line2) {
-	DT_Hit_Result R = DT_LineToLine_Func(Line1.GetLineStartPosition(), Line1.GetLineEndPosition(), Line2.GetLineStartPosition(), Line2.GetLineEndPosition(), DLTLHT_Ricochet);
+	DT_Hit_Result R = DT_LineToLine_Func(Line1.GetLineStartPosition(), Line1.GetLineEndPosition(), Line2.GetLineStartPosition(), Line2.GetLineEndPosition(), DLTLHT_Self);
 	return R.Hit ? HitResult(&Line2, R.Pos, R.Normal) : HitResult();
 }
 
@@ -176,20 +179,31 @@ std::vector<DT_Hit_Result> DT_LineToCustom_Func(glm::vec2 StartPos, glm::vec2 En
 		glm::vec2 VC = Points[i];
 		glm::vec2 VN = Points[j];
 
-		DT_Hit_Result R = DT_LineToLine_Func(StartPos, EndPos, VC, VN, DLTLHT_Perpendicular);
+		//DT_Hit_Result R = DT_LineToLine_Func(StartPos, EndPos, VC, VN, DLTLHT_Perpendicular);
+		DT_Hit_Result R = DT_LineToLine_Func(VC, VN, StartPos, EndPos, DLTLHT_Ricochet);
 		if (R.Hit) {
 			Result.push_back(R);
 		}
 	}
 
-	if (Result.size() == 0) { Result.push_back(DT_Hit_Result()); }
+	if (Result.empty()) { return { DT_Hit_Result() }; }
+
+	std::sort(Result.begin(), Result.end(), [StartPos](const DT_Hit_Result& a, const DT_Hit_Result& b) {
+		return glm::distance(StartPos, a.Pos) < glm::distance(StartPos, b.Pos);
+	});
+
 	return Result;
 }
 
 /* Проверка коллизии: Линия с кастомной */
 HitResult DT_LineToCustom(GameObject Line, GameObject Custom) {
-	DT_Hit_Result R = DT_LineToCustom_Func(Line.GetLineStartPosition(), Line.GetLineEndPosition(), Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation))[0];
-	return R.Hit ? HitResult(&Custom, R.Pos, R.Normal, glm::distance(R.Pos, Line.GetLineEndPosition())) : HitResult();
+	std::vector<DT_Hit_Result> R = DT_LineToCustom_Func(Line.GetLineStartPosition(), Line.GetLineEndPosition(), Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation));
+	for (const DT_Hit_Result& r : R) {
+		if (r.Hit) {
+			return HitResult(&Custom, r.Pos, r.Normal, glm::distance(r.Pos, Line.GetLineEndPosition()));
+		}
+	}
+	return HitResult();
 }
 
 /* Проверка коллизии: Кастомной с кастомной */
@@ -365,6 +379,7 @@ void Physic(GameObject& OBJ, int i) {
 
 	if (OBJ.Name == "test2") {
 		OBJ.SetLineEndPosition(PhysicalMousePosition);
+		OBJ.SetLineStartPosition(glm::rotate(glm::vec2(10, 0),glm::radians(t*20)));
 	}
 	else {
 		if (OBJ.Name != MouseDetectorName) {
@@ -480,11 +495,14 @@ void CreateScene() {
 	Test2.Layer = 100;
 	Scene.push_back(Test2);
 
-	GameObject Line = GameObject("line");
-	Line.BaseTexture = 4;
-	Line.MakeItLine(glm::vec2(-5, -5), glm::vec2(5, 5), 0.1f);
-	Line.Col = Collider(CLDR_Line);
-	Scene.push_back(Line);
+	GameObject Test = GameObject("test", RO_Phys);
+	Test.BaseShader = 1;
+	Test.BaseTexture = special_texture;
+	Test.Col.SetPoints({
+		glm::vec2(-1.0f,  1.0f), glm::vec2(1.0f,  1.0f),
+		glm::vec2(0.5f, -1.0f), glm::vec2(-0.5f, -1.0f)
+	});
+	Scene.push_back(Test);
 }
 
 /* Указать позицию курсора */
