@@ -102,9 +102,10 @@ enum DT_LineToLine_HitType {
 	DLTLHT_PerpendicularInvert = 1, /* Вернуть нормаль перпендикулярной второй линии (инвертированный) */
 	DLTLHT_Self = 2,                /* Вернуть нормаль паралельной первой линии                        */
 	DLTLHT_Ricochet = 3,            /* Вернуть нормаль отскакивающую от линии                          */
-	DLTLHT_Flow = 4                 /* Вернуть нормаль плавующую, будто в объекте                      */
+	DLTLHT_Flow = 4,                /* Вернуть нормаль плавующую, будто в объекте                      */
+	DLTLHT_FlowInvert = 5           /* Вернуть нормаль плавующую, будто в объекте (инвертированный)    */
 };
-DT_Hit_Result DT_LineToLine_Func(glm::vec2 Start1Pos, glm::vec2 End1Pos, glm::vec2 Start2Pos, glm::vec2 End2Pos, DT_LineToLine_HitType NormalType, float R1, float R2) {
+DT_Hit_Result DT_LineToLine_Func(glm::vec2 Start1Pos, glm::vec2 End1Pos, glm::vec2 Start2Pos, glm::vec2 End2Pos, DT_LineToLine_HitType NormalType, glm::vec4 Sizes, glm::vec2 Rotations) {
 	glm::vec2 DirA = End1Pos - Start1Pos;
 	glm::vec2 DirB = End2Pos - Start2Pos;
 
@@ -125,31 +126,40 @@ DT_Hit_Result DT_LineToLine_Func(glm::vec2 Start1Pos, glm::vec2 End1Pos, glm::ve
 			Normal = glm::normalize(-(-DirB - 2.0f * glm::dot(-DirB, glm::normalize(glm::vec2(-DirA.y, DirA.x))) * glm::normalize(glm::vec2(-DirA.y, DirA.x))));
 			break;
 		case DLTLHT_PerpendicularInvert:
-			Normal = -glm::vec2(-DirA.y, DirA.x);
+			Normal = glm::normalize(-glm::vec2(-DirA.y, DirA.x));
 			break;
 		case DLTLHT_Flow:
-			glm::vec2 RotatedDirA = glm::rotate(DirA, glm::radians(R1));
-			glm::vec2 RotatedDirB = glm::rotate(DirB, glm::radians(R2));
-			glm::vec2 TangentA = glm::normalize(glm::vec2(-RotatedDirA.y, RotatedDirA.x));
-			glm::vec2 TangentB = glm::normalize(glm::vec2(-RotatedDirB.y, RotatedDirB.x));
+			glm::vec2 RotatedDirA = glm::rotate(DirA, glm::radians(Rotations.x));
+			glm::vec2 RotatedDirB = glm::rotate(DirB, glm::radians(Rotations.y));
 
-			// Определяем направление нормали на основе вектора пересечения
-			if (std::abs(TangentB.x) > std::abs(TangentB.y)) {
-				if (TangentB.x > 0) {
-					Normal = glm::vec2(1.0f, 0.0f); // Нормаль вправо
-				}
-				else {
-					Normal = glm::vec2(-1.0f, 0.0f); // Нормаль влево
-				}
+			glm::vec2 TA = glm::normalize(glm::vec2(-RotatedDirA.y, RotatedDirA.x));
+			glm::vec2 TB = glm::normalize(glm::vec2(-RotatedDirB.y, RotatedDirB.x));
+
+			glm::vec2 ScaledA = TA * glm::vec2(Sizes.x, Sizes.y);
+			glm::vec2 ScaledB = TB * glm::vec2(Sizes.w, Sizes.z);
+
+			if (std::abs(ScaledA.x) + std::abs(ScaledB.x) > std::abs(ScaledA.y) + std::abs(ScaledB.y)) {
+				Normal = glm::vec2(TA.x + TB.x > 0 ? 1.0f : -1.0f, 0.0f);
 			}
 			else {
-				// Вертикальная линия приоритетна
-				if (TangentB.y > 0) {
-					Normal = glm::vec2(0.0f, 1.0f); // Нормаль вверх
-				}
-				else {
-					Normal = glm::vec2(0.0f, -1.0f); // Нормаль вниз
-				}
+				Normal = glm::vec2(0.0f, TA.y + TB.y > 0 ? 1.0f : -1.0f);
+			}
+			break;
+		case DLTLHT_FlowInvert:
+			glm::vec2 RotatedDirAi = glm::rotate(DirA, glm::radians(Rotations.x));
+			glm::vec2 RotatedDirBi = glm::rotate(DirB, glm::radians(Rotations.y));
+
+			glm::vec2 TAi = glm::normalize(glm::vec2(-RotatedDirAi.y, RotatedDirAi.x));
+			glm::vec2 TBi = glm::normalize(glm::vec2(-RotatedDirBi.y, RotatedDirBi.x));
+
+			glm::vec2 ScaledAi = TAi * glm::vec2(Sizes.x, Sizes.y);
+			glm::vec2 ScaledBi = TBi * glm::vec2(Sizes.w, Sizes.z);
+
+			if (std::abs(ScaledAi.x) + std::abs(ScaledBi.x) > std::abs(ScaledAi.y) + std::abs(ScaledBi.y)) {
+				Normal = -glm::vec2(TAi.x + TBi.x > 0 ? 1.0f : -1.0f, 0.0f);
+			}
+			else {
+				Normal = -glm::vec2(0.0f, TAi.y + TBi.y > 0 ? 1.0f : -1.0f);
 			}
 			break;
 		default:
@@ -162,7 +172,7 @@ DT_Hit_Result DT_LineToLine_Func(glm::vec2 Start1Pos, glm::vec2 End1Pos, glm::ve
 	return DT_Hit_Result();
 }
 DT_Hit_Result DT_LineToLine_Func(glm::vec2 Start1Pos, glm::vec2 End1Pos, glm::vec2 Start2Pos, glm::vec2 End2Pos, DT_LineToLine_HitType NormalType) {
-	return DT_LineToLine_Func(Start1Pos, End1Pos, Start2Pos, End2Pos, NormalType, 0, 0);
+	return DT_LineToLine_Func(Start1Pos, End1Pos, Start2Pos, End2Pos, NormalType, glm::vec4(1,1,1,1), glm::vec2(0,0));
 }
 
 /* Проверка коллизии: Линия с линией */
@@ -198,7 +208,7 @@ HitResult DT_PointToCustom(GameObject Point, GameObject Custom) {
 }
 
 /* Проверка коллизии: Линия с кастомной (Функция) */
-std::vector<DT_Hit_Result> DT_LineToCustom_Func(glm::vec2 StartPos, glm::vec2 EndPos, std::vector<glm::vec2> Points, DT_LineToLine_HitType HitType , bool Sort, float R1, float R2) {
+std::vector<DT_Hit_Result> DT_LineToCustom_Func(glm::vec2 StartPos, glm::vec2 EndPos, std::vector<glm::vec2> Points, DT_LineToLine_HitType HitType , bool Sort, glm::vec4 Sizes, glm::vec2 Rotations) {
 	std::vector<DT_Hit_Result> Result = {};
 	
 	int size = Points.size();
@@ -206,7 +216,7 @@ std::vector<DT_Hit_Result> DT_LineToCustom_Func(glm::vec2 StartPos, glm::vec2 En
 		glm::vec2 VC = Points[i];
 		glm::vec2 VN = Points[j];
 
-		DT_Hit_Result R = DT_LineToLine_Func(StartPos, EndPos, VC, VN, HitType, R1, R2);
+		DT_Hit_Result R = DT_LineToLine_Func(StartPos, EndPos, VC, VN, HitType, Sizes, Rotations);
 		if (R.Hit) {
 			Result.push_back(R);
 		}
@@ -225,7 +235,7 @@ std::vector<DT_Hit_Result> DT_LineToCustom_Func(glm::vec2 StartPos, glm::vec2 En
 
 /* Проверка коллизии: Линия с кастомной */
 HitResult DT_LineToCustom(GameObject Line, GameObject Custom) {
-	DT_Hit_Result R = DT_LineToCustom_Func(Line.GetLineStartPosition(), Line.GetLineEndPosition(), Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation), DLTLHT_Self, true, 0, Custom.Orientation)[0];
+	DT_Hit_Result R = DT_LineToCustom_Func(Line.GetLineStartPosition(), Line.GetLineEndPosition(), Custom.Col.GetPhysicalPoints(Custom.Position, Custom.Size, Custom.Orientation), DLTLHT_Self, true, glm::vec4(1,1, Custom.Size.x, Custom.Size.y), glm::vec2(0, Custom.Orientation))[0];
 	return R.Hit ? HitResult(&Custom, R.Pos, R.Normal, glm::distance(R.Pos, Line.GetLineEndPosition())) : HitResult();
 }
 
@@ -244,7 +254,7 @@ HitResult DT_CustomToCustom(GameObject Custom1, GameObject Custom2) {
 		glm::vec2 VC1 = Points1[i];
 		glm::vec2 VN1 = Points1[j];
 
-		std::vector<DT_Hit_Result> Hits = DT_LineToCustom_Func(VC1, VN1, Points2, DLTLHT_Flow, false, Custom1.Orientation, Custom2.Orientation);
+		std::vector<DT_Hit_Result> Hits = DT_LineToCustom_Func(VC1, VN1, Points2, /*DLTLHT_FlowInvert*/ DLTLHT_PerpendicularInvert, false, glm::vec4(Custom1.Size.x, Custom1.Size.y, Custom2.Size.x, Custom2.Size.y), glm::vec2(Custom1.Orientation, Custom2.Orientation));
 		for (const auto& Hit : Hits) {
 			if (Hit.Hit) {
 				FoundCollision = true;
@@ -341,25 +351,25 @@ void ResolveCollision(GameObject& OBJ, GameObject& OBJ2) {
 	if (!Hit.Hit) { return; }
 
 	Scene[1].Position = Hit.HitPosition;
-	PrintFast("NORMAL", ToStringVec2(Hit.Normal));
+	Scene[2].SetLineStartPosition(Hit.HitPosition);
+	Scene[2].SetLineEndPosition(Hit.HitPosition + Hit.Normal);
 
-	glm::vec2 Normal = Hit.Normal;
 	glm::vec2 RVelocity = OBJ2.GetVelocity() - OBJ.GetVelocity();
-	float VAN = glm::dot(RVelocity, Normal);
+	float VAN = glm::dot(RVelocity, Hit.Normal);
 
 	float E = std::min(OBJ.Restitution, OBJ2.Restitution);
 
 	float J = -(1 - E) * VAN;
 	J /= (1 / OBJ.Mass) + (1 / OBJ2.Mass);
 
-	glm::vec2 I = J * Normal;
+	glm::vec2 I = J * Hit.Normal;
 
 	OBJ.Impulse(-(I / OBJ.Mass));
 	OBJ2.Impulse(I / OBJ2.Mass);
 
 	const float penetrationCorrection = 0.001f;
 
-	glm::vec2 correction = penetrationCorrection * Hit.Depth * Normal;
+	glm::vec2 correction = penetrationCorrection * Hit.Depth * Hit.Normal;
 	OBJ.Position += correction * (1 / OBJ.Mass) / ((1 / OBJ.Mass) + (1 / OBJ.Mass));
 	if (!OBJ2.Static) {
 		OBJ2.Position -= correction * (1 / OBJ2.Mass) / ((1 / OBJ2.Mass) + (1 / OBJ2.Mass));
@@ -394,26 +404,28 @@ void MouseUnoverOnObject() {
 	//MouseOnThisObject->Color = glm::vec4(1, 1, 1, 1);
 }
 
+void RemoveGameObject(int i) {
+	if (i >= 0 && i < Scene.size()) {
+		Scene.erase(Scene.begin() + i);
+	}
+	else {
+		Error("SCENE", "Cannot delete GameObject because its i is outside the scene! RemoveGameObject(" + std::to_string(i) + ");");
+	}
+}
+
+void CreateObjectTest() {
+	GameObject Test = GameObject("test", RO_Phys);
+	Test.BaseShader = 1;
+	Test.BaseTexture = 1;
+	Test.Position = PhysicalMousePosition;
+	Scene.push_back(Test);
+}
+
 /* Выполнить физику для объекта */
 GameObject* MouseOnThisObject_Result = nullptr;
 void Physic(GameObject& OBJ, int i) {
 	if (OBJ.Name == MouseDetectorName) {
 		OBJ.SetPosition(PhysicalMousePosition);
-	}
-
-	if (OBJ.Name == "test2") {
-		OBJ.SetPosition(PhysicalMousePosition);
-		OBJ.AddRotation(dt * 40);
-	}
-	else {
-		if (OBJ.Name != MouseDetectorName) {
-			HitResult HitLine = ObjectCollide(OBJ, Scene[3]);
-			if (HitLine.Hit) {
-				//PrintFast("h","["+OBJ.Name+"] HIT "+ToStringVec2(HitLine.HitPosition));
-				Scene[2].SetLinePosition(HitLine.HitPosition, HitLine.HitPosition + HitLine.Normal);
-				Scene[1].SetPosition(HitLine.HitPosition);
-			}
-		}
 	}
 
 	if (OBJ.Selectable && OBJ.Render) {
@@ -428,7 +440,10 @@ void Physic(GameObject& OBJ, int i) {
 	/* Обновление физики у объекта */
 	if (OBJ.Type == RO_Phys && SimulationSpeed != 0) {
 		if (!OBJ.Static) {
-			//WorkPhysic(OBJ, i);
+			WorkPhysic(OBJ, i);
+			if (OBJ.Position.y <= -300) {
+				RemoveGameObject(i);
+			}
 		}
 	}
 }
@@ -454,14 +469,6 @@ void AfterPhysic() {
 	}
 
 	MouseOnThisObject_Result = nullptr;
-}
-
-void CreateObjectTest() {
-	GameObject Test = GameObject("test", RO_Phys);
-	Test.BaseShader = 1;
-	Test.BaseTexture = 1;
-	Test.Position = PhysicalMousePosition;
-	Scene.push_back(Test);
 }
 
 /* Создать сцену */
@@ -496,7 +503,7 @@ void CreateScene() {
 	Test21.Layer = 900;
 	Scene.push_back(Test21);
 
-	/*GameObject Test = GameObject("test", RO_Phys);
+	GameObject Test = GameObject("test", RO_Phys);
 	Test.BaseShader = 1;
 	Test.BaseTexture = square_texture;
 	Test.Position = glm::vec2(0, 3);
@@ -508,27 +515,10 @@ void CreateScene() {
 	Test2.Size = glm::vec2(1000, 1);
 	Test2.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1);
 	Test2.Position = glm::vec2(0, -3);
+	Test2.SetRotation(15);
 	Test2.Static = true;
 	Test2.Mass = 100;
-	Scene.push_back(Test2);*/
-
-	GameObject Test2 = GameObject("test2", RO_Phys);
-	Test2.BaseShader = 1;
-	Test2.BaseTexture = square_texture;
-	Test2.Color = glm::vec4(0, 0, 1, 1);
-	Test2.Layer = 100;
 	Scene.push_back(Test2);
-
-	GameObject Test = GameObject("test", RO_Phys);
-	Test.BaseShader = 1;
-	Test.BaseTexture = special_texture;
-	Test.Col.SetPoints({
-		glm::vec2(-1.0f,  1.0f), glm::vec2(1.0f,  1.0f),
-		glm::vec2(0.5f, -1.0f), glm::vec2(-0.5f, -1.0f)
-	});
-	Test.Orientation = 45;
-	Test.Size = glm::vec2(3, 3);
-	Scene.push_back(Test);
 }
 
 /* Указать позицию курсора */
