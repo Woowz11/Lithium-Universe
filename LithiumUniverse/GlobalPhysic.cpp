@@ -98,7 +98,7 @@ DT_Hit_Result DT_LineToLine_Func(glm::vec2 Start1Pos, glm::vec2 End1Pos, glm::ve
 		/
 		((End2Pos.y - Start2Pos.y) * (End1Pos.x - Start1Pos.x) - (End2Pos.x - Start2Pos.x) * (End1Pos.y - Start1Pos.y));
 
-	return (UA >= 0 && UA <= 1 && UB >= 0 && UB <= 1) ? DT_Hit_Result(glm::vec2(Start1Pos.x + (UA * (End1Pos.x - Start1Pos.x)), Start1Pos.y + (UA * (End1Pos.y - Start1Pos.y)))) : DT_Hit_Result();
+	return (UA >= 0 && UA <= 1 && UB >= 0 && UB <= 1) ? DT_Hit_Result(glm::vec2(Start1Pos.x + UA * (End1Pos.x - Start1Pos.x), Start1Pos.y + UA * (End1Pos.y - Start1Pos.y))) : DT_Hit_Result();
 }
 
 /* Проверка коллизии: Линия с линией */
@@ -169,16 +169,38 @@ HitResult DT_CustomToCustom(GameObject Custom1, GameObject Custom2) {
 	std::vector<glm::vec2> Points1 = Custom1.Col.GetPhysicalPoints(Custom1.Position, Custom1.Size, Custom1.Orientation);
 	std::vector<glm::vec2> Points2 = Custom2.Col.GetPhysicalPoints(Custom2.Position, Custom2.Size, Custom2.Orientation);
 
-	int size = Points1.size();
-	for (int i = 0, j = size - 1; i < size; j = i++) {
-		glm::vec2 VC = Points1[i];
-		glm::vec2 VN = Points1[j];
+	float MinDistance = std::numeric_limits<float>::max();
+	glm::vec2 ClosestPoint(0.0f);
+	bool FoundCollision = false;
 
-		DT_Hit_Result Hit = DT_LineToCustom_Func(VC, VN, Points2)[0];
-		if (Hit.Hit) { return HitResult(&Custom2, Hit.Pos, glm::distance(Custom1.Position, Hit.Pos)); }
+	int size1 = Points1.size();
+	for (int i = 0, j = size1 - 1; i < size1; j = i++) {
+		glm::vec2 VC1 = Points1[i];
+		glm::vec2 VN1 = Points1[j];
 
-		if (DT_PointToCustom_Func(Points2[0], Points1)) { return HitResult(&Custom2, Points2[0], glm::distance(Custom1.Position, Points2[0])); }
+		std::vector<DT_Hit_Result> Hits = DT_LineToCustom_Func(VC1, VN1, Points2);
+		for (const auto& Hit : Hits) {
+			if (Hit.Hit) {
+				FoundCollision = true;
+				float Distance = glm::distance(Custom1.Position, Hit.Pos);
+				if (Distance < MinDistance) {
+					MinDistance = Distance;
+					ClosestPoint = Hit.Pos;
+				}
+			}
+		}
 	}
+
+	if (!FoundCollision && DT_PointToCustom_Func(Points2[0], Points1)) {
+		FoundCollision = true;
+		ClosestPoint = Points2[0];
+		MinDistance = glm::distance(Custom1.Position, Points2[0]);
+	}
+
+	if (FoundCollision) {
+		return HitResult(&Custom2, ClosestPoint, MinDistance);
+	}
+
 	return HitResult();
 }
 
@@ -233,25 +255,45 @@ HitResult ObjectCollide(GameObject OBJ1, GameObject OBJ2) {
 
 /* Применить гравитацию */
 void ApplyGravity(GameObject& OBJ) {
-	glm::vec2 GravityForce = Gravity * OBJ.Mass;
+	/*glm::vec2 GravityForce = Gravity * OBJ.Mass;
 
-	glm::vec2 AirResistanceForce = -(AirResistance * OBJ.AirResistanceDependentOnForm()) * OBJ.Velocity * glm::length(OBJ.Velocity);
+	glm::vec2 AirResistanceForce = -(AirResistance * OBJ.Velocity * glm::length(OBJ.Velocity));
 
-	glm::vec2 Force = GravityForce + AirResistanceForce;
+	glm::vec2 NetForce = GravityForce + AirResistanceForce;
 
-	glm::vec2 A = Force / OBJ.Mass;
+	glm::vec2 Acceleration = NetForce / OBJ.Mass;
 
-	OBJ.Velocity += A * pdt;
+	OBJ.Velocity += Acceleration * pdt;*/
+
+	OBJ.Velocity += Gravity * pdt;
 }
 
-void ResolveCollision(GameObject& OBJ) {
-	for (GameObject& OBJ2 : Scene) {
-		if (OBJ.GetID() != OBJ2.GetID() && OBJ2.Type == RO_Phys) {
-			HitResult Hit = ObjectCollide(OBJ, OBJ2);
-			if (Hit.Hit) {
-				OBJ.Color = glm::vec4(1, 0, 0, 1);
-			}
-		}
+void ResolveCollision(GameObject& OBJ, GameObject& OBJ2) {
+	HitResult Hit = ObjectCollide(OBJ, OBJ2);
+	if (!Hit.Hit) { return; }
+
+	Scene[1].Position = Hit.HitPosition;
+
+	glm::vec2 Normal = glm::normalize(OBJ.Position - OBJ2.Position);
+	glm::vec2 RVelocity = OBJ2.GetVelocity() - OBJ.GetVelocity();
+	float VAN = glm::dot(RVelocity, Normal);
+
+	float E = std::min(OBJ.Restitution, OBJ2.Restitution);
+
+	float J = -(1 - E) * VAN;
+	J /= (1 / OBJ.Mass) + (1 / OBJ2.Mass);
+
+	glm::vec2 I = J * Normal;
+
+	OBJ.Impulse(-(I / OBJ.Mass));
+	OBJ2.Impulse(I / OBJ2.Mass);
+
+	const float penetrationCorrection = 0.001f;
+
+	glm::vec2 correction = penetrationCorrection * Hit.Depth * Normal;
+	OBJ.Position += correction * (1 / OBJ.Mass) / ((1 / OBJ.Mass) + (1 / OBJ.Mass));
+	if (!OBJ2.Static) {
+		OBJ2.Position -= correction * (1 / OBJ2.Mass) / ((1 / OBJ2.Mass) + (1 / OBJ2.Mass));
 	}
 }
 
@@ -260,12 +302,17 @@ void ApplyVelocities(GameObject& OBJ) {
 }
 
 /* Обработка физики */
-void WorkPhysic(GameObject& OBJ) {
+void WorkPhysic(GameObject& OBJ, int i) {
 	ApplyGravity(OBJ);
-	ResolveCollision(OBJ);
-	if (!OBJ.Static) {
-		ApplyVelocities(OBJ);
+	for (int j = 0; j < Scene.size(); j++) {
+		if (i != j) {
+			GameObject& OBJ2 = Scene[j];
+			if (OBJ2.Type == RO_Phys) {
+				ResolveCollision(OBJ, OBJ2);
+			}
+		}
 	}
+	ApplyVelocities(OBJ);
 }
 
 /* Мышку навели на объект */
@@ -280,15 +327,15 @@ void MouseUnoverOnObject() {
 
 /* Выполнить физику для объекта */
 GameObject* MouseOnThisObject_Result = nullptr;
-void Physic(GameObject& OBJ) {
+void Physic(GameObject& OBJ, int i) {
 	if (OBJ.Name == MouseDetectorName) {
 		OBJ.SetPosition(PhysicalMousePosition);
 	}
 
 	if (OBJ.Name == "test") {
 		//OBJ.Impulse((PhysicalMousePosition - OBJ.Position) * glm::vec2(pdt, pdt));
-		OBJ.Impulse(glm::vec2(0, -pdt));
-		PrintFast("POS", ToStringVec2(OBJ.Position));
+		//OBJ.Impulse(glm::vec2(0, -pdt));
+		//PrintFast("POS", ToStringVec2(OBJ.Position));
 	}
 
 	if (OBJ.Selectable && OBJ.Render) {
@@ -302,7 +349,9 @@ void Physic(GameObject& OBJ) {
 
 	/* Обновление физики у объекта */
 	if (OBJ.Type == RO_Phys && SimulationSpeed != 0) {
-		WorkPhysic(OBJ);
+		if (!OBJ.Static) {
+			WorkPhysic(OBJ, i);
+		}
 	}
 }
 
@@ -329,6 +378,14 @@ void AfterPhysic() {
 	MouseOnThisObject_Result = nullptr;
 }
 
+void CreateObjectTest() {
+	GameObject Test = GameObject("test", RO_Phys);
+	Test.BaseShader = 1;
+	Test.BaseTexture = 1;
+	Test.Position = PhysicalMousePosition;
+	Scene.push_back(Test);
+}
+
 /* Создать сцену */
 void CreateScene() {
 
@@ -345,21 +402,29 @@ void CreateScene() {
 	int circle_texture = 3;
 	int cable_texture = 4;
 
-	for (int i = 0; i < 1; i++) {
-		GameObject Test = GameObject("test", RO_Phys);
-		Test.BaseShader = 1;
-		Test.BaseTexture = square_texture;
-		Test.Position = glm::vec2(0, 3 + (i * 10));
-		Scene.push_back(Test);
-	}
+	GameObject TestHIT = GameObject("testhit");
+	TestHIT.BaseShader = 1;
+	TestHIT.BaseTexture = circle_texture;
+	TestHIT.Size = glm::vec2(0.3f, 0.3f);
+	TestHIT.Position = glm::vec2(-100, -100);
+	TestHIT.Color = glm::vec4(0, 0, 1, 1);
+	TestHIT.Layer = 1000;
+	Scene.push_back(TestHIT);
+
+	GameObject Test = GameObject("test", RO_Phys);
+	Test.BaseShader = 1;
+	Test.BaseTexture = square_texture;
+	Test.Position = glm::vec2(0, 3);
+	Scene.push_back(Test);
 
 	GameObject Test2 = GameObject("test2", RO_Phys);
 	Test2.BaseShader = 1;
 	Test2.BaseTexture = square_texture;
-	Test2.Size = glm::vec2(10, 0.5f);
+	//Test2.Size = glm::vec2(100, 100);
 	Test2.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1);
-	Test2.Position = glm::vec2(0, -3);
+	Test2.Position = glm::vec2(0, 0);
 	Test2.Static = true;
+	Test2.Mass = 100;
 	Scene.push_back(Test2);
 }
 
@@ -370,9 +435,10 @@ void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2) {
 
 /* Обновить физику */
 std::vector<GameObject>& UpdatePhysic() {
-	for (GameObject& OBJ : Scene) {
+	for (int i = 0; i < Scene.size(); i++) {
+		GameObject& OBJ = Scene[i];
 		if (OBJ.Active) {
-			Physic(OBJ);
+			Physic(OBJ, i);
 		}
 	}
 	AfterPhysic();

@@ -76,6 +76,7 @@ public:
 	glm::vec2 Velocity = glm::vec2(0, 0); /* Скорость      */
 	ObjectForm Form    = OF_Cube;         /* Форма объекта */
 	float Mass         = 1;               /* Вес объекта   */
+	float Restitution  = 0;               /* Упругость     */
 
 	GameObject(std::string Name_, RO_Type type) {
 		ID = TotalIDs++;
