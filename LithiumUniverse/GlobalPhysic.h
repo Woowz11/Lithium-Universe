@@ -11,4 +11,4 @@ std::vector<GameObject>& UpdatePhysic();
 void SetSimulationSpeed(float sp);
 float GetSimulationSpeed();
 void UpdateDeltaTimePhysic(float dt_);
-void CreateTestObject();
+void CreateTestObject(int type);

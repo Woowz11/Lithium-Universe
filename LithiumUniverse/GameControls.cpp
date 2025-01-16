@@ -22,13 +22,17 @@ void ControlsKeyboard(int KEY, int ACTION) {
 		SetSimulationSpeed(SpacePressed ? 0 : 1);
 	}
 
-	if (KEY == GLFW_KEY_1 && ACTION == GLFW_PRESS) {
+	if (KEY == GLFW_KEY_Q && ACTION == GLFW_PRESS) {
 		SpacePressed = false;
 		SetSimulationSpeed(0.1f);
 	}
 
-	if (KEY == GLFW_KEY_Q && ACTION == GLFW_PRESS) {
-		CreateTestObject();
+	if (KEY == GLFW_KEY_1 && ACTION == GLFW_PRESS) {
+		CreateTestObject(0);
+	}
+
+	if (KEY == GLFW_KEY_2 && ACTION == GLFW_PRESS) {
+		CreateTestObject(1);
 	}
 }
 

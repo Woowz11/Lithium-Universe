@@ -51,7 +51,7 @@ public:
 
 	/* Повернуть камеру */
 	void MoveCameraRotation(float vel) {
-		SetCameraRotation(RealCameraRotation + (vel * 50 * dt));
+		SetCameraRotation(RealCameraRotation + (vel * dt));
 	}
 };
 
