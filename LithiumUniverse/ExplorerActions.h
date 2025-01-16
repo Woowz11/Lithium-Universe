@@ -2,8 +2,6 @@
 #include <fstream>
 #include <string>
 
-extern const std::string Base;
-
 std::string FixPath(std::string Path);
 void CreateFolder(std::string Path);
 std::string RemoveLastFileInPath(std::string Path);

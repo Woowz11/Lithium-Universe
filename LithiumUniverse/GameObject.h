@@ -26,114 +26,69 @@ enum ShapeType {
 /* Пустой объект, который можно рендерить */
 class GameObject {
 private:
-	int ID;
-
-	void CheckOrientationLimits() {
-		float z = Orientation;
-		if (z > 360) {
-			z = 0;
-		}
-		if (z < 0) {
-			z = 360;
-		}
-		Orientation = z;
-	}
-
+	int ID = -1;
 public:
-	std::string Name;
 
-	RO_Type Type; /* Тип объекта */
+	/* ==== Основные настройки ==== */
+	std::string Name;          /* Название объекта  */
+	RO_Type Type = RO_Default; /* Тип объекта       */
+	bool Active = true;        /* Объект активен?   */
+	bool Deleted = false;	   /* Объект удалённый? */
 
-	bool Active = true; /* Объект активен? */
+	/* ==== Настройки рендера ==== */
+	int BaseTexture              = 1;                      /* Базовая текстура                */
+	int BaseShader               = 1;                      /* Базовый шейдер                  */
+	glm::vec2 PositionVisual     = glm::vec2(0, 0);        /* Позиция объекта                 */
+	glm::vec4 LinePositionVisual = glm::vec4(-1, 0, 1, 0); /* Позиция начала и конца линии    */
+	glm::vec2 SizeVisual         = glm::vec2(1, 1);        /* Размер объекта                  */
+	float OrientationVisual      = 0;                      /* Поворот объекта                 */
+	glm::vec4 Color              = glm::vec4(1, 1, 1, 1);  /* Цвет объекта                    */
+	float Layer                  = 0;                      /* Слой объекта                    */
+	bool Render                  = true;                   /* Рендерить объект?               */
+	ShapeType Shape              = ST_Square;              /* Какие вертиксы рендерить?       */
 
-	int BaseTexture = 1; /* Базовая текстура */
-	int BaseShader  = 1; /* Базовый шейдер   */
+	bool ThatUI = false;                  /* Прикрепить объект к камере?     */
+	bool Resize = false;                  /* Менять размер вместе с экраном? */
 
-	glm::vec2 Position     = glm::vec2(0, 0);        /* Позиция объекта                 */
-	glm::vec4 LinePosition = glm::vec4(-1, 0, 1, 0); /* Позиция начала и конца линии    */
-	glm::vec2 Size         = glm::vec2(1, 1);        /* Размер объекта                  */
-	float Orientation      = 0;                      /* Поворот объекта                 */
-	glm::vec4 Color        = glm::vec4(1, 1, 1, 1);  /* Цвет объекта                    */
-	float Layer            = 0;                      /* Слой объекта                    */
-	bool Render            = true;                   /* Рендерить объект?               */
-	ShapeType Shape        = ST_Square;              /* Какие вертиксы рендерить?       */
-	bool ThatUI            = false;                  /* Прикрепить объект к камере?     */
-	bool Resize            = false;                  /* Менять размер вместе с экраном? */
+	/* ==== Настройки физики ==== */
 	bool Selectable        = false;                  /* Мышка реагирует на этот объект? */
 	int BodyID             = -1;                     /* Айди b2::Body                   */
 	bool Static            = false;                  /* Объект статичный?               */
 
-	GameObject(std::string Name_, RO_Type type) {
-		ID = TotalIDs++;
+	GameObject(std::string Name_, int ID_) {
+		ID = ID_;
 		Name = Name_;
-		Type = type;
-
-		switch (type)
-		{
-		case RO_UI:
-			Resize = true;
-			ThatUI = true;
-			Selectable = true;
-			Layer  = 500;
-			break;
-		default:
-			break;
-		}
 	}
-	GameObject(std::string Name_) : GameObject(Name_, RO_Default) {}
 
 	int GetID() const {
 		return ID;
 	}
 
-	/* Получить физическую позицию, она измеряется с верхнего левого угла, а не с центра фигуры */
-	glm::vec2 GetPhysicalPosition() {
-		return Position - glm::vec2(Size.x/2, Size.y/2);
+	void Delete() {
+		Deleted = true;
+		PositionVisual = glm::vec2(0, 0);
+		LinePositionVisual = glm::vec4(0, 0, 0, 0);
+		SizeVisual = glm::vec2(0, 0);
+		Color = glm::vec4(0, 0, 0, 0);
 	}
 
-	/* Получить размер объекта */
-	float GetSize() {
-		return Size.x * Size.y;
-	}
-
-	/* Установить позицию объекту */
-	void SetPosition(float x, float y) {
-		Position = glm::vec2(x, y);
-	}
-	void SetPosition(glm::vec2 pos) {
-		Position = pos;
-	}
-
-	/* Добавить позицию объекту */
-	void AddPosition(float x, float y) {
-		Position += glm::vec2(x, y);
-	}
-
-	/* Повернуть объект */
-	void SetRotation(float deg) {
-		Orientation = deg;
-		CheckOrientationLimits();
-	}
-
-	/* Постепенно поварачивать объект */
-	void AddRotation(float deg) {
-		Orientation += deg;
-		CheckOrientationLimits();
+	std::string ToString() {
+		return "GameObject(" + Name + "," + std::to_string(GetID()) + ");";
 	}
 
 	/* Установить ширину линии */
 	void SetLineThickness(float th) {
-		Size = glm::vec2(th,0);
+		SizeVisual = glm::vec2(th,0);
 	}
 
 	/* Получить ширину линии */
 	float GetLineThickness() {
-		return Size.x;
+		return SizeVisual.x;
 	}
 
 	/* Установить позицию линии */
 	void SetLinePosition(glm::vec2 StartPos, glm::vec2 EndPos) {
-		LinePosition = glm::vec4(StartPos.x, StartPos.y, EndPos.x, EndPos.y);
+		LinePositionVisual = glm::vec4(StartPos.x, StartPos.y, EndPos.x, EndPos.y);
 	}
 
 	/* Установить позицию началу линии */
@@ -157,12 +112,12 @@ public:
 
 	/* Получить стартовую позицию точки */
 	glm::vec2 GetLineStartPosition() {
-		return glm::vec2(LinePosition.x, LinePosition.y);
+		return glm::vec2(LinePositionVisual.x, LinePositionVisual.y);
 	}
 
 	/* Получить конечную позицию точки */
 	glm::vec2 GetLineEndPosition() {
-		return glm::vec2(LinePosition.z, LinePosition.w);
+		return glm::vec2(LinePositionVisual.z, LinePositionVisual.w);
 	}
 };
 

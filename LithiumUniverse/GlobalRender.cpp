@@ -13,6 +13,7 @@
 #include <iostream>
 #include <chrono>
 
+#include "GameObjectActions.h";
 #include "ExplorerActions.h";
 #include "GlobalPhysic.h";
 #include "GameCamera.h";
@@ -52,10 +53,10 @@ glm::vec3 BackgroundColor = glm::vec3(0.05f, 0.05f, 0.05f);
 unsigned int VBO, VAO;
 
 float square[] = {
-    -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,    1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,    0.0f, 1.0f
+    -1.0f, -1.0f, -1.0f,    0.0f, 0.0f,
+     1.0f, -1.0f, -1.0f,    1.0f, 0.0f,
+     1.0f,  1.0f, -1.0f,    1.0f, 1.0f,
+    -1.0f,  1.0f, -1.0f,    0.0f, 1.0f
 };
 int square_l = 4; /* Кол-во строк в square */
 
@@ -292,13 +293,13 @@ void RenderSquare(const GameObject& OBJ) {
         ResultPosition = glm::rotate(ResultPosition, -Camera->Rotation, glm::vec3(0, 0, 1));
     }
 
-    ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.Position, OBJ.Layer + (float)OBJ.GetID() / 10000));
+    ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.PositionVisual, OBJ.Layer + (float)OBJ.GetID() / 10000));
     if (!OBJ.ThatUI) {
         ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
     }
 
-    ResultPosition = glm::rotate(ResultPosition, -OBJ.Orientation, glm::vec3(0, 0, 1));
-    ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.Size, 1));
+    ResultPosition = glm::rotate(ResultPosition, -OBJ.OrientationVisual, glm::vec3(0, 0, 1));
+    ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.SizeVisual, 1));
 
     CSS.setMat4("Position", ResultPosition);
 
@@ -328,9 +329,9 @@ void RenderLine(const GameObject& OBJ) {
 
     glBindVertexArray(VAO);
 
-    float Thickness = OBJ.Size.x;
-    glm::vec2 StartPos = glm::vec2(OBJ.LinePosition.x, OBJ.LinePosition.y);
-    glm::vec2 EndPos = glm::vec2(OBJ.LinePosition.z, OBJ.LinePosition.w);
+    float Thickness = OBJ.SizeVisual.x;
+    glm::vec2 StartPos = glm::vec2(OBJ.LinePositionVisual.x, OBJ.LinePositionVisual.y);
+    glm::vec2 EndPos = glm::vec2(OBJ.LinePositionVisual.z, OBJ.LinePositionVisual.w);
     glm::vec2 CenterPos = StartPos / glm::vec2(2, 2) + EndPos / glm::vec2(2, 2);
 
     glm::mat4 ResultPosition = glm::mat4(1.0f);
@@ -365,7 +366,7 @@ void Render(std::vector<GameObject>& Scene) {
 
     /* ==== Рендер объектов ==== */
     for (const GameObject& OBJ : Scene) {
-        if (OBJ.Active && OBJ.Render) {
+        if (!OBJ.Deleted && OBJ.Active && OBJ.Render) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, OBJ.BaseTexture);
 

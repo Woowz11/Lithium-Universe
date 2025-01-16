@@ -74,6 +74,9 @@
     <ClCompile Include="GameData.cpp">
       <Filter>Scripts</Filter>
     </ClCompile>
+    <ClCompile Include="GameObjectActions.cpp">
+      <Filter>Scripts\Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -108,6 +111,9 @@
     </ClInclude>
     <ClInclude Include="GameData.h">
       <Filter>Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectActions.h">
+      <Filter>Scripts\Foundation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

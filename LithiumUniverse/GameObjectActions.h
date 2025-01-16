@@ -1,0 +1,29 @@
+#pragma once
+#define GLM_ENABLE_EXPERIMENTAL
+#define GLM_FORCE_RADIANS
+#include <GLM/glm.hpp>
+
+#include <vector>
+#include <box2cpp/box2cpp.h>
+
+#include "GameObject.h";
+
+extern std::vector<GameObject> Scene;
+extern std::vector<b2::Body> Bodies;
+
+glm::vec2 BVec2ToVec2(b2Vec2 v);
+b2Vec2 Vec2ToBVec2(glm::vec2 v);
+b2Rot Makeb2Rot(float o);
+float MakeOrientation(b2Rot r);
+
+int CreateGameObject(std::string Name, bool Physic);
+void SetGameObjectStatic(int i, bool b);
+glm::vec4 GetGameObjectColor(int i);
+void SetGameObjectColor(int i, glm::vec4 c);
+glm::vec2 GetGameObjectPosition(int i);
+void SetGameObjectPosition(int i, glm::vec2 p);
+float GetGameObjectOrientation(int i);
+void SetGameObjectOrientation(int i, float r);
+void SetGameObjectTransform(int i, glm::vec2 p, float r);
+glm::vec2 GetGameObjectSize(int i);
+void SetGameObjectSize(int i, glm::vec2 s);

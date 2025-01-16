@@ -4,11 +4,12 @@
 #include <iostream>
 #include <string>
 
+#include "GameObject.h";
 #include "Console.h";
 
 /* Скрипт позволяющий более углублённо управлять строками */
 
-const std::string Base = "StringActions";
+const std::string Base_SA = "StringActions";
 
 /* Убрать пробелы из начала и конца */
 std::string Trim(std::string Target) {
@@ -63,7 +64,7 @@ char GetLastSymbol(std::string Target) {
 /* Удалить последний символ строки */
 std::string RemoveLastSymbol(std::string Target) {
 	if (Target.empty()) {
-		Warn(Base, "Cannot delete the last character in a string because the string is empty! RemoveLastSymbol(\""+Target+"\");");
+		Warn(Base_SA, "Cannot delete the last character in a string because the string is empty! RemoveLastSymbol(\""+Target+"\");");
 		return Target;
 	}
 	else {
@@ -76,4 +77,12 @@ std::string RemoveLastSymbol(std::string Target) {
 
 std::string ToStringVec2(glm::vec2 target) {
 	return "glm::vec2(" + std::to_string(target.x) + "," + std::to_string(target.y) + ")";
+}
+
+std::string ToStringVec4(glm::vec4 target) {
+	return "glm::vec4(" + std::to_string(target.x) + "," + std::to_string(target.y) + "," + std::to_string(target.z) + "," + std::to_string(target.w) + ")";
+}
+
+std::string ToStringBool(bool target) {
+	return target ? "true" : "false";
 }

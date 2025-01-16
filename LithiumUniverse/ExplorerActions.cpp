@@ -10,7 +10,7 @@
 
 /* Пути указываются чертой / а не \ */
 
-const std::string Base = "ExplorerActions";
+const std::string Base_EA = "ExplorerActions";
 
 /* Исправить чёрточки в пути */
 std::string FixPath(std::string Path) {
@@ -30,7 +30,7 @@ std::string RemoveLastFileInPath(std::string Path) {
 		return Result;
 	}
 	else {
-		Warn(Base,"Cannot remove last element from path because it was not found! RemoveLastFileInPath(\""+Path+"\");");
+		Warn(Base_EA,"Cannot remove last element from path because it was not found! RemoveLastFileInPath(\""+Path+"\");");
 		return Path;
 	}
 }
@@ -72,6 +72,6 @@ void AddToFile(std::ofstream& File, std::string AddThat) {
 		File << AddThat;
 	}
 	else {
-		ErrorFromLog(Base,"It is not possible to add data to the file because it is not open! AddToFile(?,\""+AddThat+"\");");
+		ErrorFromLog(Base_EA,"It is not possible to add data to the file because it is not open! AddToFile(?,\""+AddThat+"\");");
 	}
 }
