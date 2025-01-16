@@ -46,12 +46,11 @@ public:
 	/* Установить поворот камеры */
 	void SetCameraRotation(float deg) {
 		RealCameraRotation = deg;
-		Rotation = (floor(RealCameraRotation / 15) * 15);
+		Rotation = glm::radians(floor(glm::degrees(RealCameraRotation) / 15) * 15);
 	}
 
 	/* Повернуть камеру */
 	void MoveCameraRotation(float vel) {
-		/* Опять нахуй MVS тупит, не обнволяет скрипт или не пойму почему когда я меняю + на - ничего не меняется */
 		SetCameraRotation(RealCameraRotation + (vel * 50 * dt));
 	}
 };

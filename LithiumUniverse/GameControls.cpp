@@ -15,8 +15,21 @@ void MouseMove(glm::vec2 Pos, glm::vec2 Pos2) {
 }
 
 /* Управление клавиатурой */
+bool SpacePressed = false;
 void ControlsKeyboard(int KEY, int ACTION) {
+	if (KEY == GLFW_KEY_SPACE && ACTION == GLFW_PRESS) {
+		SpacePressed = !SpacePressed;
+		SetSimulationSpeed(SpacePressed ? 0 : 1);
+	}
 
+	if (KEY == GLFW_KEY_1 && ACTION == GLFW_PRESS) {
+		SpacePressed = false;
+		SetSimulationSpeed(0.1f);
+	}
+
+	if (KEY == GLFW_KEY_Q && ACTION == GLFW_PRESS) {
+		CreateTestObject();
+	}
 }
 
 /* Управление клавиатурой (Каждый тик) */

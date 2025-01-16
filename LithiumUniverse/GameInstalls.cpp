@@ -22,6 +22,7 @@
 #include "LithiumUniverse.h";
 #include "BaseConstants.h";
 #include "GlobalRender.h";
+#include "GlobalPhysic.h";
 #include "GameControls.h";
 #include "GameData.h";
 #include "Console.h";
@@ -62,7 +63,7 @@ public:
 	}
 
 	std::string GetGameTitle() {
-		return "LithiumUniverse (" + GetGameVersion() + ") FPS: "+std::to_string(FPS);
+		return "LithiumUniverse (" + GetGameVersion() + ") FPS: " + FillString(std::to_string(FPS),' ',10,false) + " SP: " + std::to_string(GetSimulationSpeed());
 	}
 
 	/* ==== Управление, другие функции ==== */
