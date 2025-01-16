@@ -6,6 +6,7 @@
 
 #include "StringActions.h";
 #include "StaticInfo.h";
+#include "GameData.h";
 #include "Console.h";
 
 /* Тип объекта */
@@ -59,6 +60,8 @@ public:
 	bool ThatUI            = false;                  /* Прикрепить объект к камере?     */
 	bool Resize            = false;                  /* Менять размер вместе с экраном? */
 	bool Selectable        = false;                  /* Мышка реагирует на этот объект? */
+	int BodyID             = -1;                     /* Айди b2::Body                   */
+	bool Static            = false;                  /* Объект статичный?               */
 
 	GameObject(std::string Name_, RO_Type type) {
 		ID = TotalIDs++;
@@ -72,9 +75,6 @@ public:
 			ThatUI = true;
 			Selectable = true;
 			Layer  = 500;
-			break;
-		case RO_Phys:
-			Selectable = true;
 			break;
 		default:
 			break;
