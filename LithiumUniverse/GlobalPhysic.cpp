@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <vector>
 
+#include <box2cpp/box2cpp.h>
+
 #include "GlobalRender.h";
 #include "GameObject.h";
 #include "GameCamera.h";
@@ -15,6 +17,11 @@
 
 /* Сцена */
 std::vector<GameObject> Scene = {};
+
+/* Создать мир для Box2D */
+void InstallBox2D() {
+	b2::World w(b2::World::Params{});
+}
 
 /* Создать сцену */
 void CreateScene() {
@@ -43,5 +50,6 @@ std::vector<GameObject>& UpdatePhysic() {
 
 /* Установить физику */
 void InstallPhysic() {
+	InstallBox2D();
 	CreateScene();
 }
