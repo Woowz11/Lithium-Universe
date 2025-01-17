@@ -1780,12 +1780,10 @@ namespace b2
     class MaybeConstBodyRef : public BasicBodyInterface<BodyRef, IsConstRef>
     {
         template <typename, bool>
-        friend class BasicBodyInterface;
-
-      protected:
-        b2BodyId id{};
+        friend class BasicBodyInterface
 
       public:
+        b2BodyId id{};
         static constexpr bool IsOwning = false;
         static constexpr bool IsConst = IsConstRef;
 

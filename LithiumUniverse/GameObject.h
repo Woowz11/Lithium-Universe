@@ -23,6 +23,14 @@ enum ShapeType {
 	ST_Line    = 2  /* Линия   */
 };
 
+/* Тип коллизии */
+enum ColliderType {
+	CT_None,   /* Отсутвует */
+	CT_Box,    /* Прямоугольная */
+	CT_Circle, /* Круг */
+	CT_Custom  /* Кастомная */
+};
+
 /* Пустой объект, который можно рендерить */
 class GameObject {
 private:
@@ -54,6 +62,7 @@ public:
 	bool Selectable        = false;                  /* Мышка реагирует на этот объект? */
 	int BodyID             = -1;                     /* Айди b2::Body                   */
 	bool Static            = false;                  /* Объект статичный?               */
+	ColliderType Collider  = CT_Box;                 /* Тип коллизии                    */
 
 	GameObject(std::string Name_, int ID_) {
 		ID = ID_;

@@ -11,21 +11,43 @@
 #include "GameData.h";
 #include "Console.h";
 
+GameObject ErrorGameObject = GameObject("ERROR", -1);
+
 /* ==== Сцена ==== */
 
 /* Сцена */
 std::vector<GameObject> Scene = {};
 
 /* Физичные объекты */
-std::vector<b2::Body> Bodies = {};
+std::vector<b2::Body>    Bodies    = {};
+std::vector<b2::BodyRef> BodiesRef = {};
 
 /* Обновить коллизию объекта (private) */
 void RefreshGameObjectCollider__(GameObject& OBJ) {
-	Bodies[OBJ.BodyID].CreateShape(
-		b2::DestroyWithParent,
-		b2::Shape::Params{},
-		b2MakeBox(OBJ.SizeVisual.x, OBJ.SizeVisual.y)
-	);
+	switch (OBJ.Collider)
+	{
+	case CT_Box:
+		Bodies[OBJ.BodyID].CreateShape(
+			b2::DestroyWithParent,
+			b2::Shape::Params{},
+			b2MakeBox(OBJ.SizeVisual.x, OBJ.SizeVisual.y)
+		);
+		break;
+	case CT_Circle:
+		Bodies[OBJ.BodyID].CreateShape(
+			b2::DestroyWithParent,
+			b2::Shape::Params{},
+			b2Circle(b2Vec2(0,0), OBJ.SizeVisual.x)
+		);
+		break;
+	default:
+		Bodies[OBJ.BodyID].CreateShape(
+			b2::DestroyWithParent,
+			b2::Shape::Params{},
+			b2MakeBox(OBJ.SizeVisual.x, OBJ.SizeVisual.y)
+		);
+		break;
+	}
 }
 
 glm::vec2 BVec2ToVec2(b2Vec2 v) {
@@ -39,6 +61,34 @@ b2Rot Makeb2Rot(float o) {
 }
 float MakeOrientation(b2Rot r) {
 	return -atan2(r.s, r.c);
+}
+
+b2::Body& GetBody(int id) {
+	return Bodies[id];
+}
+
+/* Получить объект через физический объект */
+GameObject& GetGameObjectFromBody(b2::Body b) {
+	auto it = std::find_if(Bodies.begin(), Bodies.end(),
+		[&b](const b2::Body& body) { return &body == &b; });
+	if (it != Bodies.end()) {
+		return Scene[std::distance(Bodies.begin(), it)];
+	}
+	else {
+		Error("GameObject", "GameObject not found via b2::Body! GetGameObjectFromBody(?);");
+		return ErrorGameObject;
+	}
+}
+GameObject& GetGameObjectFromBodyRef(b2::BodyRef b) {
+	auto it = std::find_if(BodiesRef.begin(), BodiesRef.end(),
+		[&b](const b2::BodyRef& body) { return &body == &b; }); /* КОРОЧЕ, Я СПАТЬ, СМОТРИ, УДАЛЯЙ НАХУЙ BOX2DCPP, ДЕЛАЙ НА ЧИСТОМ BOX2D */
+	if (it != BodiesRef.end()) {
+		return Scene[std::distance(BodiesRef.begin(), it)];
+	}
+	else {
+		Error("GameObject","GameObject not found via b2::BodyRef! GetGameObjectFromBodyRef(?);");
+		return ErrorGameObject;
+	}
 }
 
 /* Предупредить, что объект не подходит для физики (private) */
@@ -63,6 +113,7 @@ void MakeGameObjectPhysical__(GameObject& OBJ) {
 	P.type = b2_dynamicBody;
 
 	Bodies.push_back(World->CreateBody(b2::OwningHandle, P));
+	BodiesRef.push_back(Bodies[BodyID]);
 	RefreshGameObjectCollider__(OBJ);
 }
 
@@ -99,6 +150,11 @@ void SetGameObjectSize(int i, glm::vec2 s) {
 	else {
 		GameObjectDeleted__(OBJ, "SetGameObjectSize(" + std::to_string(i) + "," + ToStringVec2(s) + ");");
 	}
+}
+
+/* Установить, рендерить ли объект? */
+void SetGameObjectRenderable(int i, bool b) {
+	Scene[i].Render = b;
 }
 
 /* Получить позицию объекта */

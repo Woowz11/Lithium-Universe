@@ -36,21 +36,43 @@ void UpdateDeltaTimePhysic(float dt_) {
 /* Позиция мыши в мире */
 glm::vec2 MouseWorldPosition = glm::vec2(0, 0);
 
+/* Объект физичной мыши */
+int MouseObject = -1;
+
+/* Создать мир для Box2D */
+void InstallBox2D() {
+	b2Version B2Version = b2GetVersion();
+	Print("Box2D", "Box2D (" + std::to_string(B2Version.major) + "." + std::to_string(B2Version.minor) + "." + std::to_string(B2Version.revision) + ")");
+
+	World = new b2::World(b2::World::Params{});
+	World->SetGravity(b2Vec2(0, -9.8f));
+}
+
 /* Обновить данные с физики объекта */
 void UpdatePhysicObject(GameObject& OBJ) {
-	b2::Body& Body = Bodies[OBJ.BodyID];
+	b2::Body& Body = GetBody(OBJ.BodyID);
 
 	OBJ.PositionVisual = BVec2ToVec2(Body.GetPosition());
 	OBJ.OrientationVisual = MakeOrientation(Body.GetRotation());
 }
 
-/* Создать мир для Box2D */
-void InstallBox2D() {
-	b2Version B2Version = b2GetVersion();
-	Print("Box2D","Box2D (" + std::to_string(B2Version.major) + "." + std::to_string(B2Version.minor) + "." + std::to_string(B2Version.revision) + ")");
+/* Выполнять после обновления физики */
+void AfterUpdatePhysic() {
+	//SetGameObjectPosition(MouseObject, MouseWorldPosition);
+	//b2Polygon  b2MakeSquare(0.0001f);
 
-	World = new b2::World(b2::World::Params{});
-	World->SetGravity(b2Vec2(0, -9.8f));
+	b2AABB MouseDetector;
+	MouseDetector.lowerBound = b2Vec2(MouseWorldPosition.x - 0.0001f, MouseWorldPosition.y - 0.0001f);
+	MouseDetector.upperBound = b2Vec2(MouseWorldPosition.x + 0.0001f, MouseWorldPosition.y + 0.0001f);
+
+	World->Overlap(MouseDetector, b2DefaultQueryFilter(), 
+	[&](b2::ShapeRef shape)
+	{
+		(void)shape;
+		GameObject& OBJ = GetGameObjectFromBodyRef(shape.GetBody());
+		PrintFast("d",OBJ.Name);
+		return true;
+	});
 }
 
 void CreateTestObject(int type) {
@@ -63,6 +85,11 @@ void CreateTestObject(int type) {
 
 /* Создать сцену */
 void CreateScene() {
+	//MouseObject = CreateGameObject("[LU] MouseObject", true);
+	//SetGameObjectStatic(MouseObject, true);
+	
+	//SetGameObjectRenderable(MouseObject, false);
+
 	int box = CreateGameObject("box", true);
 
 	int platform = CreateGameObject("platform", true);
@@ -85,6 +112,7 @@ std::vector<GameObject>& UpdatePhysic() {
 			UpdatePhysicObject(OBJ);
 		}
 	}
+	AfterUpdatePhysic();
 	return Scene;
 }
 

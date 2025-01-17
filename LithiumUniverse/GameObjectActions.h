@@ -8,13 +8,17 @@
 
 #include "GameObject.h";
 
-extern std::vector<GameObject> Scene;
-extern std::vector<b2::Body> Bodies;
+extern std::vector<GameObject>  Scene;
+extern std::vector<b2::Body>    Bodies;
+extern std::vector<b2::BodyRef> BodiesRef;
 
 glm::vec2 BVec2ToVec2(b2Vec2 v);
 b2Vec2 Vec2ToBVec2(glm::vec2 v);
 b2Rot Makeb2Rot(float o);
 float MakeOrientation(b2Rot r);
+GameObject& GetGameObjectFromBody(b2::Body b);
+GameObject& GetGameObjectFromBodyRef(b2::BodyRef b);
+b2::Body& GetBody(int id);
 
 int CreateGameObject(std::string Name, bool Physic);
 void SetGameObjectStatic(int i, bool b);
@@ -27,3 +31,4 @@ void SetGameObjectOrientation(int i, float r);
 void SetGameObjectTransform(int i, glm::vec2 p, float r);
 glm::vec2 GetGameObjectSize(int i);
 void SetGameObjectSize(int i, glm::vec2 s);
+void SetGameObjectRenderable(int i, bool b);
