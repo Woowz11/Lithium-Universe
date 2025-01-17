@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <vector>
 
-#include <box2cpp/box2cpp.h>
+#include <box2d/box2d.h>
 
 #include "GameObjectActions.h";
 #include "GlobalRender.h";
@@ -39,21 +39,27 @@ glm::vec2 MouseWorldPosition = glm::vec2(0, 0);
 /* Объект физичной мыши */
 int MouseObject = -1;
 
+/* Очистить Box2D */
+void ClearBox2D() {
+	b2DestroyWorld(World);
+}
+
 /* Создать мир для Box2D */
 void InstallBox2D() {
 	b2Version B2Version = b2GetVersion();
 	Print("Box2D", "Box2D (" + std::to_string(B2Version.major) + "." + std::to_string(B2Version.minor) + "." + std::to_string(B2Version.revision) + ")");
 
-	World = new b2::World(b2::World::Params{});
-	World->SetGravity(b2Vec2(0, -9.8f));
+	b2WorldDef WorldInfo = b2DefaultWorldDef();
+	WorldInfo.gravity = b2Vec2(0, -9.8f);
+	World = b2CreateWorld(&WorldInfo);
 }
 
 /* Обновить данные с физики объекта */
 void UpdatePhysicObject(GameObject& OBJ) {
-	b2::Body& Body = GetBody(OBJ.BodyID);
+	b2BodyId Body = GetBody(OBJ.BodyID);
 
-	OBJ.PositionVisual = BVec2ToVec2(Body.GetPosition());
-	OBJ.OrientationVisual = MakeOrientation(Body.GetRotation());
+	OBJ.PositionVisual = BVec2ToVec2(b2Body_GetPosition(Body));
+	OBJ.OrientationVisual = MakeOrientation(b2Body_GetRotation(Body));
 }
 
 /* Выполнять после обновления физики */
@@ -65,14 +71,24 @@ void AfterUpdatePhysic() {
 	MouseDetector.lowerBound = b2Vec2(MouseWorldPosition.x - 0.0001f, MouseWorldPosition.y - 0.0001f);
 	MouseDetector.upperBound = b2Vec2(MouseWorldPosition.x + 0.0001f, MouseWorldPosition.y + 0.0001f);
 
-	World->Overlap(MouseDetector, b2DefaultQueryFilter(), 
+	b2World_OverlapAABB(World, MouseDetector, b2DefaultQueryFilter(), [](b2ShapeId shapeId, void* context) {
+		b2BodyId bodyId = b2Shape_GetBody(shapeId);
+		b2Body_SetAwake(bodyId, true);
+
+		GameObject& OBJ = GetGameObjectFromBody(bodyId);
+		PrintFast("d", OBJ.Name);
+
+		return true;
+		}, nullptr);
+
+	/*World->Overlap(MouseDetector, b2DefaultQueryFilter(),
 	[&](b2::ShapeRef shape)
 	{
 		(void)shape;
 		GameObject& OBJ = GetGameObjectFromBodyRef(shape.GetBody());
 		PrintFast("d",OBJ.Name);
 		return true;
-	});
+	});*/
 }
 
 void CreateTestObject(int type) {
@@ -85,11 +101,6 @@ void CreateTestObject(int type) {
 
 /* Создать сцену */
 void CreateScene() {
-	//MouseObject = CreateGameObject("[LU] MouseObject", true);
-	//SetGameObjectStatic(MouseObject, true);
-	
-	//SetGameObjectRenderable(MouseObject, false);
-
 	int box = CreateGameObject("box", true);
 
 	int platform = CreateGameObject("platform", true);
@@ -106,7 +117,7 @@ void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2) {
 
 /* Обновить физику */
 std::vector<GameObject>& UpdatePhysic() {
-	World->Step(pdt, 4);
+	b2World_Step(World, pdt, 4);
 	for (GameObject& OBJ : Scene) {
 		if (!OBJ.Deleted && OBJ.Type == RO_Phys) {
 			UpdatePhysicObject(OBJ);
@@ -114,6 +125,11 @@ std::vector<GameObject>& UpdatePhysic() {
 	}
 	AfterUpdatePhysic();
 	return Scene;
+}
+
+/* Очистить физику */
+void ClearPhysic() {
+	ClearBox2D();
 }
 
 /* Установить физику */

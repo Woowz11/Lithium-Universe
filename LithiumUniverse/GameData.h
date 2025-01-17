@@ -1,8 +1,8 @@
 #pragma once
-#include <box2cpp/box2cpp.h>
+#include <box2d/box2d.h>
 #include "GameCamera.h";
 
 extern GameCamera* Camera;
-extern b2::World* World;
+extern b2WorldId World;
 
 void ClearData();

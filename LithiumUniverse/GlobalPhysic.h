@@ -5,6 +5,7 @@
 #include "GameObject.h";
 
 void InstallPhysic();
+void ClearPhysic();
 void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2);
 void CreateScene();
 std::vector<GameObject>& UpdatePhysic();

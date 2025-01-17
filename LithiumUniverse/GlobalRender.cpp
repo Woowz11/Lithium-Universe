@@ -257,6 +257,8 @@ void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
 
 /* Удалить всё что осталось после рендера */
 void ClearRender() {
+    ClearPhysic();
+
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
 }
