@@ -37,7 +37,13 @@ void UpdateDeltaTimePhysic(float dt_) {
 glm::vec2 MouseWorldPosition = glm::vec2(0, 0);
 
 /* Объект физичной мыши */
+int MouseObjectConnector = -1;
+
+/* Объект на который наведена мышь */
 int MouseObject = -1;
+int GetMouseObject() {
+	return MouseObject;
+}
 
 /* Очистить Box2D */
 void ClearBox2D() {
@@ -64,31 +70,11 @@ void UpdatePhysicObject(GameObject& OBJ) {
 
 /* Выполнять после обновления физики */
 void AfterUpdatePhysic() {
-	//SetGameObjectPosition(MouseObject, MouseWorldPosition);
-	//b2Polygon  b2MakeSquare(0.0001f);
-
-	b2AABB MouseDetector;
-	MouseDetector.lowerBound = b2Vec2(MouseWorldPosition.x - 0.0001f, MouseWorldPosition.y - 0.0001f);
-	MouseDetector.upperBound = b2Vec2(MouseWorldPosition.x + 0.0001f, MouseWorldPosition.y + 0.0001f);
-
-	b2World_OverlapAABB(World, MouseDetector, b2DefaultQueryFilter(), [](b2ShapeId shapeId, void* context) {
-		b2BodyId bodyId = b2Shape_GetBody(shapeId);
-		b2Body_SetAwake(bodyId, true);
-
-		GameObject& OBJ = GetGameObjectFromBody(bodyId);
-		PrintFast("d", OBJ.Name);
-
-		return true;
-		}, nullptr);
-
-	/*World->Overlap(MouseDetector, b2DefaultQueryFilter(),
-	[&](b2::ShapeRef shape)
-	{
-		(void)shape;
-		GameObject& OBJ = GetGameObjectFromBodyRef(shape.GetBody());
-		PrintFast("d",OBJ.Name);
-		return true;
-	});*/
+	SetGameObjectPosition(MouseObjectConnector, MouseWorldPosition);
+	MouseObject = GetGameObjectFromPoint(MouseWorldPosition);
+	if (MouseObject != -1) {
+		//PrintFast("g", GetGameObject(MouseObject).Name);
+	}
 }
 
 void CreateTestObject(int type) {
@@ -97,10 +83,20 @@ void CreateTestObject(int type) {
 	if (type == 1) {
 		SetGameObjectStatic(box, true);
 	}
+	else {
+		SetGameObjectTexture(box, 2);
+	}
 }
 
 /* Создать сцену */
 void CreateScene() {
+	MouseObjectConnector = CreateGameObject("[LU] MouseObjectConnector", true);
+	SetGameObjectStatic(MouseObjectConnector, true);
+	SetGameObjectSelectable(MouseObjectConnector, false);
+	SetGameObjectSize(MouseObjectConnector, glm::vec2(0.01f, 0.01f));
+	SetGameObjectCollider(MouseObjectConnector, CT_None);
+	SetGameObjectActive(MouseObjectConnector, false);
+
 	int box = CreateGameObject("box", true);
 
 	int platform = CreateGameObject("platform", true);

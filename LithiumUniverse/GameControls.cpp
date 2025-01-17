@@ -9,9 +9,42 @@
 
 /* Скрипт отвечающий за управление игроком */
 
+/* Объект который держит игрок мышкой */
+int PickupedObject = -1;
+
+/* Поднять объект */
+void MousePickupGO(int i) {
+	if (i != PickupedObject) {
+		PickupedObject = i;
+	}
+}
+
+/* Бросить объект */
+void MouseDropGO() {
+	PickupedObject = -1;
+}
+
+/* ==== Основа ==== */
+
 /* Курсор двигается */
 void MouseMove(glm::vec2 Pos, glm::vec2 Pos2) {
 	
+}
+
+/* Кнопка на мыши нажата */
+void MouseClick(int KEY, int ACTION) {
+	if (KEY == GLFW_MOUSE_BUTTON_RIGHT && ACTION == GLFW_PRESS) {
+		CreateTestObject(0);
+	}
+
+	if (KEY == GLFW_MOUSE_BUTTON_LEFT && ACTION == GLFW_PRESS) {
+		if (ACTION == GLFW_PRESS) {
+			MousePickupGO(GetMouseObject());
+		}
+		if (ACTION == GLFW_RELEASE) {
+			MouseDropGO();
+		}
+	}
 }
 
 /* Управление клавиатурой */

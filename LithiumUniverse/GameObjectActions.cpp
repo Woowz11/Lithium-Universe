@@ -13,6 +13,13 @@
 
 GameObject ErrorGameObject = GameObject("ERROR", -1);
 
+/* Слои */
+enum Filteres
+{
+	F_All      = 1 >> 0,
+	F_Disabled = 1 >> 1
+};
+
 /* ==== Сцена ==== */
 
 /* Сцена */
@@ -24,14 +31,17 @@ std::vector<b2BodyId> Bodies = {};
 /* Обновить коллизию объекта (private) */
 void RefreshGameObjectCollider__(GameObject& OBJ) {
 	b2ShapeDef ShapeInfo = b2DefaultShapeDef();
+	ShapeInfo.filter.categoryBits = OBJ.Collider == CT_None ? F_Disabled : F_All;
+	ShapeInfo.filter.maskBits = OBJ.Collider == CT_None ? 0 : F_All;
+	//PrintFast("u", "upd col " + OBJ.Name);
 	
 	switch (OBJ.Collider)
 	{
 	case CT_Box:
-		b2Polygon Col = b2MakeBox(OBJ.SizeVisual.x, OBJ.SizeVisual.y);
+		b2Polygon ColBox = b2MakeBox(OBJ.SizeVisual.x, OBJ.SizeVisual.y);
 		b2CreatePolygonShape(Bodies[OBJ.BodyID],
 			&ShapeInfo,
-			&Col
+			&ColBox
 		);
 		break;
 	case CT_Circle:
@@ -41,11 +51,11 @@ void RefreshGameObjectCollider__(GameObject& OBJ) {
 		);*/
 		break;
 	default:
-		/*Bodies[OBJ.BodyID].CreateShape(
-			b2::DestroyWithParent,
-			b2::Shape::Params{},
-			b2MakeBox(OBJ.SizeVisual.x, OBJ.SizeVisual.y)
-		);*/
+		b2Polygon ColNone = b2MakeBox(0.01f, 0.01f);
+		b2CreatePolygonShape(Bodies[OBJ.BodyID],
+			&ShapeInfo,
+			&ColNone
+		);
 		break;
 	}
 }
@@ -75,7 +85,7 @@ GameObject& GetGameObjectFromBody(b2BodyId b) {
 		return Scene[std::distance(Bodies.begin(), it)];
 	}
 	else {
-		Error("GameObject", "GameObject not found via b2::Body! GetGameObjectFromBody(?);");
+		Error("GameObject", "GameObject not found via b2BodyId! GetGameObjectFromBody(?);");
 		return ErrorGameObject;
 	}
 }
@@ -92,11 +102,6 @@ void GameObjectDeleted__(GameObject& OBJ, std::string Func) {
 
 /* Сделать объект физичным (private) */
 void MakeGameObjectPhysical__(GameObject& OBJ) {
-	/*if (World == {0}) {
-		Error("GameObject","It is impossible to make a " + OBJ.ToString() + " physical because World does not exist! MakeGameObjectPhysical__(" + OBJ.ToString() + ")");
-		return;
-	}*/
-
 	OBJ.Type = RO_Phys;
 	OBJ.Selectable = true;
 
@@ -105,11 +110,97 @@ void MakeGameObjectPhysical__(GameObject& OBJ) {
 
 	b2BodyDef BodyInfo = b2DefaultBodyDef();
 	BodyInfo.type = b2_dynamicBody;
-	PrintFast("g", std::to_string(World.index1));
 	b2BodyId Body = b2CreateBody(World, &BodyInfo);
 
 	Bodies.push_back(Body);
 	RefreshGameObjectCollider__(OBJ);
+}
+
+/* Получить игровой объект находящийся на этой точке */
+int GetGameObjectFromPoint(glm::vec2 PointPos) {
+	float PointSize = 0.00001f;
+	b2Vec2 v1 = Vec2ToBVec2(PointPos);
+	b2Vec2 v2 = b2Vec2(PointSize, PointSize);
+	b2AABB MouseDetector(b2Sub(v1,v2), b2Add(v1,v2));
+
+	int result = -1;
+
+	b2World_OverlapAABB(World, MouseDetector, b2DefaultQueryFilter(), [](b2ShapeId shapeId, void* context) {
+		b2BodyId bodyId = b2Shape_GetBody(shapeId);
+		b2Body_SetAwake(bodyId, true);
+		GameObject& OBJ = GetGameObjectFromBody(bodyId);
+		
+		if (OBJ.Selectable) {
+			int* resultPtr = static_cast<int*>(context);
+
+			*resultPtr = OBJ.GetID();
+
+			return true;
+		}
+		else {
+			return false;
+		}
+	}, &result);
+
+	return result;
+}
+
+/* Получить игровой объект */
+GameObject& GetGameObject(int i) {
+	return Scene[i];
+}
+
+/* Установить текстуру объекту */
+void SetGameObjectTexture(int i, int t) {
+	GameObject& OBJ = Scene[i];
+	if (!OBJ.Deleted) {
+		OBJ.BaseTexture = t;
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectTexture(" + std::to_string(i) + "," + std::to_string(t) + ");");
+	}
+}
+
+/* Установить, ативный ли объект? */
+void SetGameObjectActive(int i, bool b) {
+	GameObject& OBJ = Scene[i];
+	if (!OBJ.Deleted) {
+		OBJ.Active = b;
+		if (OBJ.Type == RO_Phys) {
+			if (b) {
+				b2Body_Enable(Bodies[OBJ.BodyID]);
+			}
+			else {
+				b2Body_Disable(Bodies[OBJ.BodyID]);
+			}
+		}
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectActive(" + std::to_string(i) + "," + ToStringBool(b) + ");");
+	}
+}
+
+/* Установить тип коллизии */
+void SetGameObjectCollider(int i, ColliderType CT) {
+	GameObject& OBJ = Scene[i];
+	if (!OBJ.Deleted && OBJ.Type == RO_Phys) {
+		OBJ.Collider = CT;
+		RefreshGameObjectCollider__(OBJ);
+	}
+	else {
+		GameObjectNotSuitableForPhysics__(OBJ, "SetGameObjectCollider(" + std::to_string(i) + "," + std::to_string(CT) + ");");
+	}
+}
+
+/* Сделать объект выделяемым */
+void SetGameObjectSelectable(int i, bool b) {
+	GameObject& OBJ = Scene[i];
+	if (!OBJ.Deleted) {
+		OBJ.Selectable = b;
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectSelectable(" + std::to_string(i) + "," + ToStringBool(b) + ");");
+	}
 }
 
 /* Получить цвет объекта */
@@ -220,8 +311,6 @@ void SetGameObjectStatic(int i, bool b) {
 /* Создать объект */
 int CreateGameObject(std::string Name = "[New GameObject]", bool Physic = false) {
 	GameObject OBJ = GameObject(Name, Scene.size());
-	OBJ.BaseShader = 1;
-	OBJ.BaseTexture = 1;
 	if (Physic) {
 		MakeGameObjectPhysical__(OBJ);
 	}

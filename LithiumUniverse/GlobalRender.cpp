@@ -19,6 +19,7 @@
 #include "GameCamera.h";
 #include "GameObject.h";
 #include "GameData.h";
+#include "Texture.h";
 #include "Console.h";
 #include "Shader.h";
 
@@ -33,6 +34,7 @@ void UpdateWindowSize(uint32_t W, uint32_t H) {
 
 LARGE_INTEGER AppTimeFrequency, AppTimeStart, AppTimeEnd;
 
+/* Путь до игры */
 std::string GamePath;
 
 float DeltaTime = 0;
@@ -163,52 +165,16 @@ void CreateShaders() {
 
 /* ==== Текстуры ==== */
 
-unsigned int DefaultTexture;
-unsigned int Default2Texture;
-unsigned int CircleTexture;
-unsigned int CableTexture;
-
-/* Создать текстуру */
-void CreateTexture(std::string Path, unsigned int& Texture) {
-    if (HasFile(Path)) {
-        glGenTextures(1, &Texture);
-        glBindTexture(GL_TEXTURE_2D, Texture);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST /*GL_LINEAR*/);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST /*GL_LINEAR*/);
-
-        int width, height, channels;
-        unsigned char* data = stbi_load(Path.c_str(), &width, &height, &channels, 0);
-        if (data)
-        {
-            glTexImage2D(GL_TEXTURE_2D, 0, channels==4? GL_RGBA: GL_RGB, width, height, 0, channels == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
-            Print("TEXTURE", "Texture ($$Y" + Path + "$$_ ($$B" + std::to_string(Texture) + "$$_)) $$Gcreated$$_!");
-        }
-        else
-        {
-            Error("TEXTURE", "Failed to load texture! Path: " + Path);
-        }
-        stbi_image_free(data);
-    }
-    else {
-        Error("TEXTURE", "The required texture was not found! Path: " + Path);
-        Texture = -1;
-    }
-}
-
 /* Создать текстуры */
 void CreateTextures() {
     std::string VanillaTexturesFolder = AddFileToPath(AddFileToPath(GamePath, "Resources"), "Textures");
     CreateFolder(VanillaTexturesFolder);
 
-    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default.png"), DefaultTexture);
-    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default2.png"), Default2Texture);
-    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Circle.png"), CircleTexture);
-    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Cable.png"), CableTexture);
+    CreateTexture(AddFileToPath(VanillaTexturesFolder, "NotSelected.png"), "Base"   );
+    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default.png"    ), "Vanilla");
+    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default2.png"   ), "Vanilla");
+    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Circle.png"     ), "Vanilla");
+    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Cable.png"      ), "Vanilla");
 }
 
 /* Установить всё для рендера */

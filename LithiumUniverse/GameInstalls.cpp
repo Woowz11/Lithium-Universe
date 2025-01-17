@@ -100,6 +100,9 @@ private:
 			glfwSetKeyCallback(Window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 				ControlsKeyboard(key, action);
 			});
+			glfwSetMouseButtonCallback(Window, [](GLFWwindow* window, int button, int action, int mods) {
+				MouseClick(button, action);
+			});
 		}
 	}
 

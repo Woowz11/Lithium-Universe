@@ -152,6 +152,7 @@
     <ClCompile Include="Start.cpp" />
     <ClCompile Include="StaticInfo.cpp" />
     <ClCompile Include="StringActions.cpp" />
+    <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseConstants.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="LithiumUniverse.h" />
     <ClInclude Include="StaticInfo.h" />
     <ClInclude Include="StringActions.h" />
+    <ClInclude Include="Texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

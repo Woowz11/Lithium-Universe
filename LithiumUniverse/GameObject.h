@@ -7,6 +7,7 @@
 #include "StringActions.h";
 #include "StaticInfo.h";
 #include "GameData.h";
+#include "Texture.h";
 #include "Console.h";
 
 /* Тип объекта */
@@ -44,7 +45,7 @@ public:
 	bool Deleted = false;	   /* Объект удалённый? */
 
 	/* ==== Настройки рендера ==== */
-	int BaseTexture              = 1;                      /* Базовая текстура                */
+	int BaseTexture              = NotSelectedTexture;     /* Базовая текстура                */
 	int BaseShader               = 1;                      /* Базовый шейдер                  */
 	glm::vec2 PositionVisual     = glm::vec2(0, 0);        /* Позиция объекта                 */
 	glm::vec4 LinePositionVisual = glm::vec4(-1, 0, 1, 0); /* Позиция начала и конца линии    */
