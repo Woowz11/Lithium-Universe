@@ -72,9 +72,6 @@ void UpdatePhysicObject(GameObject& OBJ) {
 void AfterUpdatePhysic() {
 	SetGameObjectPosition(MouseObjectConnector, MouseWorldPosition);
 	MouseObject = GetGameObjectFromPoint(MouseWorldPosition);
-	if (MouseObject != -1) {
-		//PrintFast("g", GetGameObject(MouseObject).Name);
-	}
 }
 
 void CreateTestObject(int type) {
@@ -93,9 +90,8 @@ void CreateScene() {
 	MouseObjectConnector = CreateGameObject("[LU] MouseObjectConnector", true);
 	SetGameObjectStatic(MouseObjectConnector, true);
 	SetGameObjectSelectable(MouseObjectConnector, false);
-	SetGameObjectSize(MouseObjectConnector, glm::vec2(0.01f, 0.01f));
 	SetGameObjectCollider(MouseObjectConnector, CT_None);
-	SetGameObjectActive(MouseObjectConnector, false);
+	SetGameObjectRenderable(MouseObjectConnector, false);
 
 	int box = CreateGameObject("box", true);
 

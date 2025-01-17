@@ -16,8 +16,11 @@ GameObject ErrorGameObject = GameObject("ERROR", -1);
 /* Слои */
 enum Filteres
 {
-	F_All      = 1 >> 0,
-	F_Disabled = 1 >> 1
+	F_None     = 0,
+	F_All      = (~0u),
+	F_World    = 0x00000001,
+	F_Default  = 0x00000002,
+	F_Disabled = 0x00000004
 };
 
 /* ==== Сцена ==== */
@@ -28,13 +31,29 @@ std::vector<GameObject> Scene = {};
 /* Физичные объекты */
 std::vector<b2BodyId> Bodies = {};
 
+/* Удалить коллизию объекта (private) */
+void RemoveGameObjectCollider__(GameObject& OBJ) {
+	b2BodyId Body = Bodies[OBJ.BodyID];
+	int i = b2Body_GetShapeCount(Body);
+	b2ShapeId* shapes = new b2ShapeId[i];
+	b2Body_GetShapes(Body, shapes, i);
+	for (int j = 0; j < i; ++j) {
+		b2ShapeId s = shapes[j];
+		b2DestroyShape(s, true);
+	}
+	delete[] shapes;
+}
+
 /* Обновить коллизию объекта (private) */
 void RefreshGameObjectCollider__(GameObject& OBJ) {
+	RemoveGameObjectCollider__(OBJ);
+
 	b2ShapeDef ShapeInfo = b2DefaultShapeDef();
-	ShapeInfo.filter.categoryBits = OBJ.Collider == CT_None ? F_Disabled : F_All;
-	ShapeInfo.filter.maskBits = OBJ.Collider == CT_None ? 0 : F_All;
-	//PrintFast("u", "upd col " + OBJ.Name);
-	
+	/* Чем сам по себе является? */
+	ShapeInfo.filter.categoryBits = OBJ.Collider == CT_None ? F_Disabled : (OBJ.Static ? F_World : F_Default);
+	/* С кем коллайдится */
+	ShapeInfo.filter.maskBits     = OBJ.Collider == CT_None ? F_None : OBJ.Static ? F_World | F_Default : F_World | F_Default;
+
 	switch (OBJ.Collider)
 	{
 	case CT_Box:
@@ -45,10 +64,7 @@ void RefreshGameObjectCollider__(GameObject& OBJ) {
 		);
 		break;
 	case CT_Circle:
-		/*b2CreateCircleShape(Bodies[OBJ.BodyID],
-			&ShapeInfo,
-			&b2Circle(b2Vec2(0, 0), OBJ.SizeVisual.x)
-		);*/
+		
 		break;
 	default:
 		b2Polygon ColNone = b2MakeBox(0.01f, 0.01f);

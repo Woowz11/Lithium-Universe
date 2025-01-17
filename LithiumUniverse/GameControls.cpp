@@ -1,6 +1,9 @@
 ﻿#include <GLFW/glfw3.h>
 #include <GLM/glm.hpp>
 
+#include <box2d/box2d.h>
+
+#include "GameObjectActions.h";
 #include "GlobalRender.h";
 #include "GlobalPhysic.h";
 #include "GameInstalls.h";
@@ -12,23 +15,57 @@
 /* Объект который держит игрок мышкой */
 int PickupedObject = -1;
 
+/* Джоинт мыши */
+bool HasMouseJoint = false;
+b2JointId MouseJoint = b2_nullJointId;
+
+/* Обновить джоин мыши */
+void UpdateMouseJoint() {
+	if (HasMouseJoint) {
+		b2DestroyJoint(MouseJoint);
+		HasMouseJoint = false;
+	}
+
+	if (PickupedObject != -1) {
+		b2MouseJointDef J = b2DefaultMouseJointDef();
+		b2BodyId Body = GetBody(PickupedObject);
+		J.bodyIdA = GetBody(MouseObjectConnector);
+		J.bodyIdB = Body;
+		J.target = Vec2ToBVec2(MouseWorldPosition);
+		J.hertz = 5.0f;
+		J.dampingRatio = 0.7f;
+		J.maxForce = 10000.f * b2Body_GetMass(Body);
+		//J.localAnchorA = b2Vec2(0, 0);
+		//J.localAnchorB = b2Body_GetLocalPoint(Body, Vec2ToBVec2(MouseWorldPosition));
+		MouseJoint = b2CreateMouseJoint(World, &J);
+
+		b2Body_SetAwake(Body, true);
+
+		HasMouseJoint = true;
+	}
+}
+
 /* Поднять объект */
 void MousePickupGO(int i) {
 	if (i != PickupedObject) {
 		PickupedObject = i;
+		UpdateMouseJoint();
 	}
 }
 
 /* Бросить объект */
 void MouseDropGO() {
 	PickupedObject = -1;
+	UpdateMouseJoint();
 }
 
 /* ==== Основа ==== */
 
 /* Курсор двигается */
 void MouseMove(glm::vec2 Pos, glm::vec2 Pos2) {
-	
+	if (HasMouseJoint) {
+		b2MouseJoint_SetTarget(MouseJoint, Vec2ToBVec2(MouseWorldPosition));
+	}
 }
 
 /* Кнопка на мыши нажата */
@@ -37,7 +74,7 @@ void MouseClick(int KEY, int ACTION) {
 		CreateTestObject(0);
 	}
 
-	if (KEY == GLFW_MOUSE_BUTTON_LEFT && ACTION == GLFW_PRESS) {
+	if (KEY == GLFW_MOUSE_BUTTON_LEFT) {
 		if (ACTION == GLFW_PRESS) {
 			MousePickupGO(GetMouseObject());
 		}

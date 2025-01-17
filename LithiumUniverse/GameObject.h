@@ -8,7 +8,6 @@
 #include "StaticInfo.h";
 #include "GameData.h";
 #include "Texture.h";
-#include "Console.h";
 
 /* Тип объекта */
 enum RO_Type {
@@ -26,10 +25,10 @@ enum ShapeType {
 
 /* Тип коллизии */
 enum ColliderType {
-	CT_None,   /* Отсутвует */
-	CT_Box,    /* Прямоугольная */
-	CT_Circle, /* Круг */
-	CT_Custom  /* Кастомная */
+	CT_None   = 0, /* Отсутвует */
+	CT_Box    = 1, /* Прямоугольная */
+	CT_Circle = 2, /* Круг */
+	CT_Custom = 3  /* Кастомная */
 };
 
 /* Пустой объект, который можно рендерить */

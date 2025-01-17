@@ -4,6 +4,9 @@
 
 #include "GameObject.h";
 
+extern int MouseObjectConnector;
+extern glm::vec2 MouseWorldPosition;
+
 void InstallPhysic();
 void ClearPhysic();
 void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2);
