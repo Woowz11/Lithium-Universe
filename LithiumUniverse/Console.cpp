@@ -14,36 +14,44 @@
 /* Скрипт [Вывод сообщений в консоль и логирование их] */
 
 /* Начало цветового кода */
-const std::string ColorCodePrefix = "$$";
+const std::string CodePrefix = "$$";
+
+/* Проверить текстовые кода */
+const bool DebugCodePrefixs = false;
 
 /* Массив цветовых кодов */
-const std::map<std::string, std::string> ColorCodes = {
-	{ColorCodePrefix + "_","\u001b[37m"       }, /* Белый (ресет) */
-	{ColorCodePrefix + "R","\u001b[31m"       }, /* Тёмн. Красный */
-	{ColorCodePrefix + "G","\u001b[38;5;10m"  }, /* Зелёный       */
-	{ColorCodePrefix + "B","\u001b[38;5;4m"   }, /* Синий         */
-	{ColorCodePrefix + "Y","\u001b[38;5;226m" }, /* Жёлтый        */
-	{ColorCodePrefix + "A","\u001b[38;5;14m"  }, /* Голубой       */
-	{ColorCodePrefix + "P","\u001b[35m"       }, /* Фиолетовый    */
-	{ColorCodePrefix + "L","\u001b[38;5;8m"   }, /* Серый         */
-	{ColorCodePrefix + "W","\u001b[38;5;248m" }, /* Светл. Серый  */
-	{ColorCodePrefix + "F","\u001b[38;5;9m"   }, /* Красный       */
-	{ColorCodePrefix + "O","\u001b[38;5;202m" }, /* Оранжевый     */
-	{ColorCodePrefix + "C","\u001b[38;5;11m"  }, /* Светл. Жёлтый */
+const std::map<std::string, WORD> TextCodes = {
+	{CodePrefix + "_", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE                       }, /* Дефолтный       */
+
+	{CodePrefix + "W", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY}, /* Белый           */
+	{CodePrefix + "R", FOREGROUND_RED | FOREGROUND_INTENSITY                                     }, /* Красный         */
+	{CodePrefix + "G", FOREGROUND_GREEN | FOREGROUND_INTENSITY                                   }, /* Зелёный         */
+	{CodePrefix + "B", FOREGROUND_BLUE | FOREGROUND_INTENSITY                                    }, /* Синий           */
+	{CodePrefix + "Y", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY                  }, /* Жёлтый          */
+	{CodePrefix + "P", FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY                   }, /* Фиолетовый      */
+	{CodePrefix + "A", FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY                 }, /* Голубой         */
+	{CodePrefix + "w", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE                       }, /* Белый (т.)      */
+	{CodePrefix + "r", FOREGROUND_RED                                                            }, /* Красный (т.)    */
+	{CodePrefix + "g", FOREGROUND_GREEN                                                          }, /* Зелёный (т.)    */
+	{CodePrefix + "b", FOREGROUND_BLUE                                                           }, /* Синий (т.)      */
+	{CodePrefix + "y", FOREGROUND_RED | FOREGROUND_GREEN                                         }, /* Жёлтый (т.)     */
+	{CodePrefix + "p", FOREGROUND_RED | FOREGROUND_BLUE                                          }, /* Фиолетовый (т.) */
+	{CodePrefix + "a", FOREGROUND_GREEN | FOREGROUND_BLUE                                        }, /* Голубой (т.)    */
 };
 
 /* Приставки к типу сообщения (связано с SendLogType) */
 const std::vector<std::string> LogTypePrefixes = {
-	"W I",
+	"_ I",
 	"AIM",
-	"C W",
-	"OWS",
+	"y W",
+	"YWS",
 	"R E",
-	"F F",
-	"RDR",
-	"BDG",
-	"GDB",
-	"YDY"
+	"r F",
+	"W D",
+	"rDR",
+	"GDG",
+	"BDB",
+	"yDY"
 };
 
 /* Консоль */
@@ -67,24 +75,73 @@ bool LogFileCorrupted = false;
 /* Сообщения были хоть раз отправлены? */
 bool MessagesHaveBeenSentBeforeThis = false;
 
-/* Заменить свои префиксы цветовые на настоящие цветовые */
-std::string ReplaceColorCodesToRealColors(std::string Message, bool ThatLog) {
+/* Удалить коды из текста */
+std::string RemoveTextCodes(std::string Message) {
 	std::string Result = Message;
-	for (const auto& color : ColorCodes) {
+	for (const auto& color : TextCodes) {
 		size_t pos = 0;
 		while ((pos = Result.find(color.first, pos)) != std::string::npos) {
-			Result.replace(pos, color.first.length(), ThatLog? "" : color.second);
-			if (!ThatLog) {
-				pos += color.second.length();
-			}
+			Result.replace(pos, color.first.length(), "");
 		}
 	}
 	return Result;
 }
 
+/* Разделить строку на коды и текст */
+std::vector<std::string> ExtractCodesAndText(const std::string& input) {
+	std::vector<std::string> result;
+	std::string currentText;
+	bool inCode = false;
+	std::string currentCode;
+
+	for (size_t i = 0; i < input.size(); ++i) {
+		char ch = input[i];
+
+		if (ch == '$' && i + 1 < input.size() && input[i + 1] == '$') {
+			if (!currentText.empty()) {
+				result.push_back(currentText);
+				currentText.clear();
+			}
+
+			inCode = true;
+			currentCode = CodePrefix;
+			i++;
+		}
+		else if (inCode) {
+			currentCode += ch;
+			result.push_back(currentCode);
+			inCode = false;
+		}
+		else {
+			currentText += ch;
+		}
+	}
+
+	if (!currentText.empty()) {
+		result.push_back(currentText);
+	}
+
+	return result;
+}
+
+
 /* Отправить сообщение в консоль с цветами */
-void CoutWithColors(std::string Message) {
-	std::cout << ReplaceColorCodesToRealColors(Message,false).c_str();
+void CoutWithCodes(std::string Message) {
+	std::vector<std::string> Extracted = ExtractCodesAndText(Message);
+	for (const auto& p : Extracted) {
+		if (TextCodes.find(p) != TextCodes.end()) {
+			#ifdef NDEBUG
+			#else
+			if (DebugCodePrefixs) {
+				std::cout << "{" << p << "}";
+			}
+			#endif
+			SetConsoleTextAttribute(Console, TextCodes.at(p));
+		}
+		else {
+			std::cout << p;
+		}
+	}
 }
 
 /* Создать название лог файлу */
@@ -102,7 +159,8 @@ std::string GenerateLogFileName() {
 	int month   = l.tm_mon+1;
 	int year    = l.tm_year+1900;
 
-	Result = std::to_string(year)                         + "-" +
+	Result = 
+		std::to_string(year)                              + "-" +
 		FillString(std::to_string(month),   '0', 2, true) + "-" +
 		FillString(std::to_string(days),    '0', 2, true) + "-" +
 		FillString(std::to_string(hours),   '0', 2, true) + "-" +
@@ -123,7 +181,7 @@ std::string GetPrintMessageBaseDecorations(std::string Base, SendLogType SLT, bo
 	std::string LogTypePrefix = LogTypePrefixes[SLT];
 	std::string FirstChar(1,LogTypePrefix[0]);
 
-	Result += ColorCodePrefix + LogTypePrefix + ColorCodePrefix + "_:";
+	Result += CodePrefix + LogTypePrefix + CodePrefix + "_:";
 
 	/* Время в сообщении */
 	auto now = std::chrono::system_clock::now().time_since_epoch();
@@ -136,13 +194,17 @@ std::string GetPrintMessageBaseDecorations(std::string Base, SendLogType SLT, bo
 	int minutes      = l.tm_min;
 	int hours        = l.tm_hour;
 
-	std::string TimePart = FillString(std::to_string(hours), ' ', 2, true) + ":" + FillString(std::to_string(minutes), '0', 2, true) + ":" + FillString(std::to_string(seconds), '0', 2, true) + ":" + FillString(std::to_string(milliseconds), '0', 3, true);
+	std::string TimePart = 
+		FillString(std::to_string(hours       ), ' ', 2, true) + ":" + 
+		FillString(std::to_string(minutes     ), '0', 2, true) + ":" + 
+		FillString(std::to_string(seconds     ), '0', 2, true) + ":" + 
+		FillString(std::to_string(milliseconds), '0', 3, true);
 
-	Result += "[" + ColorCodePrefix + FirstChar + TimePart + ColorCodePrefix + "_]";
+	Result += "[" + CodePrefix + FirstChar + TimePart + CodePrefix + "_]";
 
-	Result += "[" + ColorCodePrefix + FirstChar + FillString(Base, ' ', 7, false) + ColorCodePrefix + "_]";
+	Result += "[" + CodePrefix + FirstChar + FillString(Base, ' ', 7, false) + CodePrefix + "_]";
 
-	return Result+": ";
+	return Result + ": ";
 }
 
 /* Отправить сообщение в логи (основа) */
@@ -150,7 +212,7 @@ void PrintLogBase(std::string Base, SendLogType SLT, std::string Message) {
 	if (!LogFileCorrupted) {
 		if (HasFile(CurrentLogPath)) {
 			std::string Decor = GetPrintMessageBaseDecorations(Base, SLT, true);
-			std::string Result = ReplaceColorCodesToRealColors(Decor + ReplaceCharsToString(Message, '\n', Decor), true);
+			std::string Result = RemoveTextCodes(Decor + ReplaceCharsToString(Message, '\n', Decor));
 			AddToFile(LogFile, Result);
 		}
 		else {
@@ -166,7 +228,7 @@ void PrintLogBase(std::string Base, SendLogType SLT, std::string Message) {
 void PrintConsoleBase(std::string Base, SendLogType SLT, std::string Message) {
 	std::string Decor = GetPrintMessageBaseDecorations(Base, SLT, false);
 	std::string Result = Decor + ReplaceCharsToString(Message,'\n',Decor);
-	CoutWithColors(Result);
+	CoutWithCodes(Result);
 }
 
 /* Отправить сообщение (основа) */
@@ -227,6 +289,46 @@ void ErrorFromLog(std::string Base, std::string Message) {
 /* Отправить фатальную ошибку */
 void Fatal(std::string Base, std::string Message) {
 	PrintBase(Base, Both, SLT_Fatal, Message);
+}
+
+/* Отправить отладочное сообщение */
+void PrintDebug(std::string Base, std::string Message) {
+#ifdef NDEBUG
+#else
+	PrintBase(Base, OnlyConsole, SLT_Debug, Message);
+#endif
+}
+
+/* Отправить отладочное сообщение (красное) */
+void PrintDebugR(std::string Base, std::string Message) {
+#ifdef NDEBUG
+#else
+	PrintBase(Base, OnlyConsole, SLT_DebugRed, Message);
+#endif
+}
+
+/* Отправить отладочное сообщение (зелёное) */
+void PrintDebugG(std::string Base, std::string Message) {
+#ifdef NDEBUG
+#else
+	PrintBase(Base, OnlyConsole, SLT_DebugGreen, Message);
+#endif
+}
+
+/* Отправить отладочное сообщение (синее) */
+void PrintDebugB(std::string Base, std::string Message) {
+#ifdef NDEBUG
+#else
+	PrintBase(Base, OnlyConsole, SLT_DebugBlue, Message);
+#endif
+}
+
+/* Отправить отладочное сообщение (жёлтое) */
+void PrintDebugY(std::string Base, std::string Message) {
+#ifdef NDEBUG
+#else
+	PrintBase(Base, OnlyConsole, SLT_DebugYellow, Message);
+#endif
 }
 
 /* ==== Работа с консолью ==== */

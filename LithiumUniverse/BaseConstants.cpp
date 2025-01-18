@@ -7,7 +7,7 @@
  * z - Номер отладочной сборки (точнее отправки коммита на гит)
  */
 const int GameVersionMajor = 0;
-const int GameVersionMinor = 1;
+const int GameVersionMinor = 3;
 const int GameVersionPatch = 38;
 
 std::string GetGameVersionPatchWithLetters() {

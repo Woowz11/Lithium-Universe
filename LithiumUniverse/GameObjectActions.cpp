@@ -92,32 +92,30 @@ float MakeOrientation(b2Rot r) {
 }
 
 b2BodyId GetBody(int i) {
-	if (DeveloperVersion) {
-		if (i >= 0 && i <= Bodies.size()) {
-			return Bodies[i];
-		}
-		else {
-			Error("GAMEOBJ/BODY", "It is not possible to get the b2BodyId because it cannot be found by ID in the bodies! GetBody(" + std::to_string(i) + ");");
-			return { 0 };
-		}
-	}
-	else {
+#ifdef NDEBUG
+	return Bodies[i];
+#else
+	if (i >= 0 && i <= Bodies.size()) {
 		return Bodies[i];
 	}
+	else {
+		Error("GAMEOBJ/BODY", "It is not possible to get the b2BodyId because it cannot be found by ID in the bodies! GetBody(" + std::to_string(i) + ");");
+		return { 0 };
+	}
+#endif
 }
 GameObject& GetGameObject(int i, std::string message) {
-	if (DeveloperVersion) {
-		if (i >= 0 && i <= Scene.size()) {
-			return Scene[i];
-		}
-		else {
-			Error("GAMEOBJ", "It is not possible to get the GameObject because it cannot be found by ID in the scene! GetGameObject(" + std::to_string(i) + "); + " + message);
-			return ErrorGameObject;
-		}
-	}
-	else {
+#ifdef NDEBUG
+	return Scene[i];
+#else
+	if (i >= 0 && i <= Scene.size()) {
 		return Scene[i];
 	}
+	else {
+		Error("GAMEOBJ", "It is not possible to get the GameObject because it cannot be found by ID in the scene! GetGameObject(" + std::to_string(i) + "); + " + message);
+		return ErrorGameObject;
+	}
+#endif
 }
 
 /* Получить объект через физический объект */

@@ -155,6 +155,9 @@ private:
 
 			glEnable(GL_DEBUG_OUTPUT);
 			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+#ifdef NDEBUG
+#else
 			glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* msg, const void* data) {
 				std::string _source;
 				std::string _type;
@@ -228,6 +231,7 @@ private:
 					break;
 				}
 			}, NULL);
+#endif
 		}
 	}
 
@@ -304,7 +308,7 @@ private:
 /* Запуск игры */
 GameInstalls Game;
 int Run(std::string GamePath_) {
-	Print("LU", "Run LithiumUniverse (" + GetGameVersion() + (Game.DeveloperVersion ? " $$CDEV$$_" : "") + ")!");
+	Print("LU", "Run LithiumUniverse (" + GetGameVersion() + (Game.DeveloperVersion ? " $$YDEV$$_" : "") + ")!");
 
 	try {
 		Game.Run(GamePath_);
@@ -312,7 +316,7 @@ int Run(std::string GamePath_) {
 	catch (const std::exception& e) {
 		std::string Error = e.what();
 		Fatal("LU CRASH", Error);
-		Fatal("LU CRASH", "$$RThe game was terminated with an error!$$_");
+		Fatal("LU CRASH", "$$rThe game was terminated with an error!$$_");
 		return EXIT_FAILURE;
 	}
 	Print("LU", "$$GGame has been exit successfully!$$_");
