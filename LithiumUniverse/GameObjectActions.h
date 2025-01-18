@@ -16,15 +16,15 @@ b2Vec2 Vec2ToBVec2(glm::vec2 v);
 b2Rot Makeb2Rot(float o);
 float MakeOrientation(b2Rot r);
 GameObject& GetGameObjectFromBody(b2BodyId b);
-b2BodyId GetBody(int id);
+b2BodyId GetBody(int i);
+GameObject& GetGameObject(int i, std::string message);
 
 void SetGameObjectTexture(int i, int t);
 void SetGameObjectActive(int i, bool b);
 void SetGameObjectCollider(int i, ColliderType CT);
 void SetGameObjectSelectable(int i, bool b);
-GameObject& GetGameObject(int i);
 int GetGameObjectFromPoint(glm::vec2 PointPos);
-int CreateGameObject(std::string Name, bool Physic);
+int CreateGameObject(std::string Name, RO_Type ObjectType);
 void SetGameObjectStatic(int i, bool b);
 glm::vec4 GetGameObjectColor(int i);
 void SetGameObjectColor(int i, glm::vec4 c);

@@ -24,6 +24,7 @@
 #include "GlobalRender.h";
 #include "GlobalPhysic.h";
 #include "GameControls.h";
+#include "GlobalUI.h";
 #include "GameData.h";
 #include "Console.h";
 
@@ -97,11 +98,23 @@ private:
 			CURRENT_WINDOW_HEIGHT_ = START_WINDOW_HEIGHT;
 			glfwSetFramebufferSizeCallback(Window, WindowSizeChanged);
 			UpdateWindowSize(START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
+			glfwSetWindowFocusCallback(Window, [](GLFWwindow* window, int focused) {
+				GameInFocus = focused;
+			});
 			glfwSetKeyCallback(Window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-				ControlsKeyboard(key, action);
+				if (GameInFocus) {
+					ControlsKeyboard(key, action);
+				}
 			});
 			glfwSetMouseButtonCallback(Window, [](GLFWwindow* window, int button, int action, int mods) {
-				MouseClick(button, action);
+				if (GameInFocus) {
+					MouseClick(button, action);
+				}
+			});
+			glfwSetScrollCallback(Window, [](GLFWwindow* window, double xoffset, double yoffset) {
+				if (GameInFocus) {
+					MouseScroll(yoffset);
+				}
 			});
 		}
 	}
@@ -222,7 +235,7 @@ private:
 	void RunAll() {
 		RunGLFW();
 		RunGLAD();
-		InstallRender(GamePath,START_WINDOW_WIDTH,START_WINDOW_HEIGHT);
+		InstallRender(GamePath, START_WINDOW_WIDTH, START_WINDOW_HEIGHT, DeveloperVersion);
 
 		Print("LU", "All started, and start Loop()!");
 		Print("LU", "=============== [RUNTIME] ===============");

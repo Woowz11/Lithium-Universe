@@ -146,6 +146,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="GlobalPhysic.cpp" />
     <ClCompile Include="GlobalRender.cpp" />
+    <ClCompile Include="GlobalUI.cpp" />
     <ClCompile Include="LithiumUniverse.cpp" />
     <ClCompile Include="GameObject.h" />
     <ClCompile Include="Shader.h" />
@@ -164,6 +165,7 @@
     <ClInclude Include="GameObjectActions.h" />
     <ClInclude Include="GlobalPhysic.h" />
     <ClInclude Include="GlobalRender.h" />
+    <ClInclude Include="GlobalUI.h" />
     <ClInclude Include="LithiumUniverse.h" />
     <ClInclude Include="StaticInfo.h" />
     <ClInclude Include="StringActions.h" />

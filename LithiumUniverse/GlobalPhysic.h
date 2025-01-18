@@ -6,8 +6,9 @@
 
 extern int MouseObjectConnector;
 extern glm::vec2 MouseWorldPosition;
+extern bool DeveloperVersion;
 
-void InstallPhysic();
+void InstallPhysic(bool DV);
 void ClearPhysic();
 void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2);
 void CreateScene();

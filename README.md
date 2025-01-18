@@ -4,3 +4,6 @@
 Разработчик: Woowz11
 
 Информация: [Info.md](https://github.com/Woowz11/Lithium-Universe/blob/main/Info.md)
+
+Играли в игру:
+* Wldoui

@@ -178,7 +178,7 @@ void CreateTextures() {
 }
 
 /* Установить всё для рендера */
-void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
+void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH, bool DV) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -218,7 +218,7 @@ void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH) {
 
     /* ==== Физика ==== */
 
-    InstallPhysic();
+    InstallPhysic(DV);
 }
 
 /* Удалить всё что осталось после рендера */

@@ -12,6 +12,7 @@
 #include "GlobalRender.h";
 #include "GameObject.h";
 #include "GameCamera.h";
+#include "GlobalUI.h";
 #include "GameData.h";
 
 /* Скорость симуляции */
@@ -22,6 +23,9 @@ void SetSimulationSpeed(float sp) {
 float GetSimulationSpeed() {
 	return SimulationSpeed;
 }
+
+/* Версия разработчика */
+bool DeveloperVersion = false;
 
 /* DeltaTime умноженный на скорость симуляции */
 float pdt = 0;
@@ -75,7 +79,7 @@ void AfterUpdatePhysic() {
 }
 
 void CreateTestObject(int type) {
-	int box = CreateGameObject("box", true);
+	int box = CreateGameObject("box", RO_Phys);
 	SetGameObjectPosition(box, MouseWorldPosition);
 	if (type == 1) {
 		SetGameObjectStatic(box, true);
@@ -87,15 +91,15 @@ void CreateTestObject(int type) {
 
 /* Создать сцену */
 void CreateScene() {
-	MouseObjectConnector = CreateGameObject("[LU] MouseObjectConnector", true);
+	MouseObjectConnector = CreateGameObject("[LU] MouseObjectConnector", RO_Phys);
 	SetGameObjectStatic(MouseObjectConnector, true);
 	SetGameObjectSelectable(MouseObjectConnector, false);
 	SetGameObjectCollider(MouseObjectConnector, CT_None);
 	SetGameObjectRenderable(MouseObjectConnector, false);
 
-	int box = CreateGameObject("box", true);
+	int box = CreateGameObject("box", RO_Phys);
 
-	int platform = CreateGameObject("platform", true);
+	int platform = CreateGameObject("platform", RO_Phys);
 	SetGameObjectStatic(platform, true);
 	SetGameObjectPosition(platform ,glm::vec2(0, -3));
 	SetGameObjectSize(platform, glm::vec2(100, 1));
@@ -109,7 +113,8 @@ void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2) {
 
 /* Обновить физику */
 std::vector<GameObject>& UpdatePhysic() {
-	b2World_Step(World, pdt, 4);
+	float step = GameInFocus ? pdt : 0;
+	b2World_Step(World, step, 4);
 	for (GameObject& OBJ : Scene) {
 		if (!OBJ.Deleted && OBJ.Type == RO_Phys) {
 			UpdatePhysicObject(OBJ);
@@ -125,7 +130,9 @@ void ClearPhysic() {
 }
 
 /* Установить физику */
-void InstallPhysic() {
+void InstallPhysic(bool DV) {
+	DeveloperVersion = DV;
 	InstallBox2D();
+	CreateUI();
 	CreateScene();
 }

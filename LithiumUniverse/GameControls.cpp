@@ -34,9 +34,7 @@ void UpdateMouseJoint() {
 		J.target = Vec2ToBVec2(MouseWorldPosition);
 		J.hertz = 5.0f;
 		J.dampingRatio = 0.7f;
-		J.maxForce = 10000.f * b2Body_GetMass(Body);
-		//J.localAnchorA = b2Vec2(0, 0);
-		//J.localAnchorB = b2Body_GetLocalPoint(Body, Vec2ToBVec2(MouseWorldPosition));
+		J.maxForce = 1000000.f * b2Body_GetMass(Body);
 		MouseJoint = b2CreateMouseJoint(World, &J);
 
 		b2Body_SetAwake(Body, true);
@@ -61,6 +59,9 @@ void MouseDropGO() {
 
 /* ==== Основа ==== */
 
+bool SHIFT = false;
+bool CONTROL = false;
+
 /* Курсор двигается */
 void MouseMove(glm::vec2 Pos, glm::vec2 Pos2) {
 	if (HasMouseJoint) {
@@ -84,6 +85,12 @@ void MouseClick(int KEY, int ACTION) {
 	}
 }
 
+/* Колёсико мышки двигается */
+void MouseScroll(float scroll) {
+	/* КОГДА ФПС МАЛО ЕМУ ПЛОХО */
+	Camera->MoveCameraZoom(scroll* (SHIFT ? 3 : (CONTROL ? 0.3f : 1)) * 150);
+}
+
 /* Управление клавиатурой */
 bool SpacePressed = false;
 void ControlsKeyboard(int KEY, int ACTION) {
@@ -92,7 +99,7 @@ void ControlsKeyboard(int KEY, int ACTION) {
 		SetSimulationSpeed(SpacePressed ? 0 : 1);
 	}
 
-	if (KEY == GLFW_KEY_Q && ACTION == GLFW_PRESS) {
+	if (KEY == GLFW_KEY_G && ACTION == GLFW_PRESS) {
 		SpacePressed = false;
 		SetSimulationSpeed(0.1f);
 	}
@@ -123,8 +130,8 @@ void ControlsKeyboardTick() {
 	bool D = KeyPressed(GLFW_KEY_D) == GLFW_PRESS;
 	bool A = KeyPressed(GLFW_KEY_A) == GLFW_PRESS;
 
-	bool SHIFT   = KeyPressed(GLFW_KEY_LEFT_SHIFT  ) == GLFW_PRESS;
-	bool CONTROL = KeyPressed(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS;
+	SHIFT   = KeyPressed(GLFW_KEY_LEFT_SHIFT  ) == GLFW_PRESS;
+	CONTROL = KeyPressed(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS;
 
 	float speed = (SHIFT ? 3 : (CONTROL ? 0.3f : 1));
 
