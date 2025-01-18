@@ -7,6 +7,7 @@
 extern int MouseObjectConnector;
 extern glm::vec2 MouseWorldPosition;
 extern bool DeveloperVersion;
+extern float pdt;
 
 void InstallPhysic(bool DV);
 void ClearPhysic();

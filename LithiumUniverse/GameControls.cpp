@@ -88,7 +88,7 @@ void MouseClick(int KEY, int ACTION) {
 /* Колёсико мышки двигается */
 void MouseScroll(float scroll) {
 	/* КОГДА ФПС МАЛО ЕМУ ПЛОХО */
-	Camera->MoveCameraZoom(scroll* (SHIFT ? 3 : (CONTROL ? 0.3f : 1)) * 150);
+	Camera->MoveCameraZoom(scroll* (SHIFT ? 3 : (CONTROL ? 0.3f : 1)) * 150, DeltaTime);
 }
 
 /* Управление клавиатурой */
@@ -136,37 +136,37 @@ void ControlsKeyboardTick() {
 	float speed = (SHIFT ? 3 : (CONTROL ? 0.3f : 1));
 
 	if (W && !S) {
-		Camera->MoveCamera(0, speed);
+		Camera->MoveCamera(0, speed, DeltaTime);
 	}
 	if (S && !W) {
-		Camera->MoveCamera(0, -speed);
+		Camera->MoveCamera(0, -speed, DeltaTime);
 	}
 
 	if (D && !A) {
-		Camera->MoveCamera(speed, 0);
+		Camera->MoveCamera(speed, 0, DeltaTime);
 	}
 	if (A && !D) {
-		Camera->MoveCamera(-speed, 0);
+		Camera->MoveCamera(-speed, 0, DeltaTime);
 	}
 
 	bool PLUS  = KeyPressed(GLFW_KEY_EQUAL) == GLFW_PRESS;
 	bool MINUS = KeyPressed(GLFW_KEY_MINUS) == GLFW_PRESS;
 
 	if (PLUS && !MINUS) {
-		Camera->MoveCameraZoom(speed);
+		Camera->MoveCameraZoom(speed, DeltaTime);
 	}
 	if (MINUS && !PLUS) {
-		Camera->MoveCameraZoom(-speed);
+		Camera->MoveCameraZoom(-speed, DeltaTime);
 	}
 
 	bool RIGHT = KeyPressed(GLFW_KEY_RIGHT) == GLFW_PRESS;
 	bool LEFT  = KeyPressed(GLFW_KEY_LEFT ) == GLFW_PRESS;
 
 	if (RIGHT && !LEFT) {
-		Camera->MoveCameraRotation(speed);
+		Camera->MoveCameraRotation(speed, DeltaTime);
 	}
 	if (LEFT && !RIGHT) {
-		Camera->MoveCameraRotation(-speed);
+		Camera->MoveCameraRotation(-speed, DeltaTime);
 	}
 }
 

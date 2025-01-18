@@ -1,1 +1,0 @@
-int TotalIDs = 0;

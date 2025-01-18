@@ -4,6 +4,7 @@
 #include <GLM/gtx/rotate_vector.hpp>
 
 #include "GameObjectActions.h";
+#include "GlobalPhysic.h";
 
 enum Screen {
 	MainMenu = 0, /* Главное меню */
@@ -21,9 +22,8 @@ void MakeGameObjectUI__(int i) {
 	GameObject& OBJ = GetGameObject(i, "MakeGameObjectUI__(" + std::to_string(i) + ");");
 	OBJ.Type = RO_UI;
 	SetGameObjectSelectable(i, false);
-	OBJ.ThatUI = true;
 	OBJ.Resize = true;
-	OBJ.Layer = 10000;
+	SetGameObjectLayer(i, 1000);
 }
 
 /* Точка пересекает прямоугольник? */
@@ -37,7 +37,16 @@ bool PointOverBox(glm::vec2 Point, glm::vec2 Pos, glm::vec2 Size) {
 	);
 }
 
+/* Обновление интерфейса */
+int ui_test = -1;
+void UpdateUI() {
+	SetGameObjectPosition(ui_test, glm::vec2(sinf(Time), cosf(Time)));
+}
+
 /* Создать интерфейс */
 void CreateUI() {
-	//int ui = CreateGameObject("ui", RO_UI);
+	int ui = CreateGameObject("ui", RO_UI);
+	//SetGameObjectPosition(ui, glm::vec2(-1, 1));
+
+	ui_test = ui;
 }

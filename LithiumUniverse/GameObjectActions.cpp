@@ -187,6 +187,17 @@ int GetGameObjectFromPoint(glm::vec2 PointPos) {
 	return result;
 }
 
+/* Установить визуальный слой объекта */
+void SetGameObjectLayer(int i, float l) {
+	GameObject& OBJ = GetGameObject(i, "SetGameObjectLayer(" + std::to_string(i) + "," + std::to_string(l) + ");");
+	if (!OBJ.Deleted) {
+		OBJ.Layer = l;
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectLayer(" + std::to_string(i) + "," + std::to_string(l) + ");");
+	}
+}
+
 /* Установить текстуру объекту */
 void SetGameObjectTexture(int i, int t) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectTexture(" + std::to_string(i) + "," + std::to_string(t) + ");");

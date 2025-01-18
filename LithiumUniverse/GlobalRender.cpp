@@ -37,13 +37,9 @@ LARGE_INTEGER AppTimeFrequency, AppTimeStart, AppTimeEnd;
 /* Путь до игры */
 std::string GamePath;
 
-float DeltaTime = 0;
-float Time = 0;
-void UpdateDeltaTime(float DT) {
-    Camera->SetDeltaTime(DT);
-    DeltaTime = DT;
-    UpdateDeltaTimePhysic(DT);
-}
+/* Константа на размер окна */
+const glm::vec2 ScreenScale    = glm::vec2(10.0f / 3, 7.5f / 3);
+const glm::vec2 ScreenScaleTwo = ScreenScale * glm::vec2(2.0f,2.0f);
 
 /* ==== Глобальное ==== */
 
@@ -236,7 +232,7 @@ Shader CSS;
 void RenderSquare(const GameObject& OBJ) {
     /* ==== Трансформация ==== */
     glm::mat4 Projection = glm::mat4(1.0f);
-    float Zoom = 1 / (OBJ.ThatUI ? 1 : Camera->Zoom);
+    float Zoom = 1 / (OBJ.Type == RO_UI ? 1 : Camera->Zoom);
 
     float WIN_WIDTH = OBJ.Resize ? (float)START_WINDOW_WIDTH : (float)CURRENT_WINDOW_WIDTH;
     float WIN_HEIGHT = OBJ.Resize ? (float)START_WINDOW_HEIGHT : (float)CURRENT_WINDOW_HEIGHT;
@@ -257,12 +253,12 @@ void RenderSquare(const GameObject& OBJ) {
 
     glm::mat4 ResultPosition = glm::mat4(1.0f);
 
-    if (!OBJ.ThatUI) {
+    if (OBJ.Type != RO_UI) {
         ResultPosition = glm::rotate(ResultPosition, -Camera->Rotation, glm::vec3(0, 0, 1));
     }
 
-    ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.PositionVisual, OBJ.Layer + (float)OBJ.GetID() / 10000));
-    if (!OBJ.ThatUI) {
+    ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.PositionVisual * (OBJ.Type == RO_UI ? ScreenScale : glm::vec2(1,1)), (OBJ.Layer + (float)OBJ.GetID() / 10000) / 100));
+    if (OBJ.Type != RO_UI) {
         ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
     }
 
@@ -278,7 +274,7 @@ void RenderSquare(const GameObject& OBJ) {
 void RenderLine(const GameObject& OBJ) {
     /* ==== Трансформация ==== */
     glm::mat4 Projection = glm::mat4(1.0f);
-    float Zoom = 1 / (OBJ.ThatUI ? 1 : Camera->Zoom);
+    float Zoom = 1 / (OBJ.Type == RO_UI ? 1 : Camera->Zoom);
 
     float WIN_WIDTH = OBJ.Resize ? (float)START_WINDOW_WIDTH : (float)CURRENT_WINDOW_WIDTH;
     float WIN_HEIGHT = OBJ.Resize ? (float)START_WINDOW_HEIGHT : (float)CURRENT_WINDOW_HEIGHT;
@@ -307,13 +303,13 @@ void RenderLine(const GameObject& OBJ) {
     glm::vec2 Direction = EndPos - StartPos;
     float rad = atan2(Direction.y, Direction.x) - glm::half_pi<float>();;
 
-    if (!OBJ.ThatUI) {
+    if (OBJ.Type != RO_UI) {
         ResultPosition = glm::rotate(ResultPosition, -Camera->Rotation, glm::vec3(0, 0, 1));
     }
 
-    ResultPosition = glm::translate(ResultPosition, glm::vec3(CenterPos.x, CenterPos.y, OBJ.Layer + (float)OBJ.GetID() / 10000));
+    ResultPosition = glm::translate(ResultPosition, glm::vec3(CenterPos.x, CenterPos.y, (OBJ.Layer + (float)OBJ.GetID() / 10000) / 100 ));
 
-    if (!OBJ.ThatUI) {
+    if (OBJ.Type != RO_UI) {
         ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
     }
 
@@ -364,16 +360,11 @@ void Render(std::vector<GameObject>& Scene) {
     }
 }
 
-/* Рендер и обновление физики */
-void RenderAndPhysic() {
-    Render(UpdatePhysic());
-}
-
 /* Позицию экранную в мировую */
 glm::vec2 ScreenPositionToWorld(glm::vec2 Pos) {
     glm::vec2 Result = Pos - glm::vec2(0.5f, 0.5f);
     //800px => 20.0f / 3
-    Result *= glm::vec2(20.0f / 3, 15.0f / -3);
+    Result *= ScreenScaleTwo * glm::vec2(1,-1);
     Result *= Camera->Zoom;
     Result = glm::rotate(Result, Camera->Rotation);
     Result -= Camera->Position;

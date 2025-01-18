@@ -59,9 +59,6 @@
     <ClCompile Include="GameObject.h">
       <Filter>Scripts\GameClasses</Filter>
     </ClCompile>
-    <ClCompile Include="StaticInfo.cpp">
-      <Filter>Scripts</Filter>
-    </ClCompile>
     <ClCompile Include="GlobalPhysic.cpp">
       <Filter>Scripts\Global</Filter>
     </ClCompile>
@@ -104,9 +101,6 @@
       <Filter>Scripts\Foundation</Filter>
     </ClInclude>
     <ClInclude Include="GameControls.h">
-      <Filter>Scripts</Filter>
-    </ClInclude>
-    <ClInclude Include="StaticInfo.h">
       <Filter>Scripts</Filter>
     </ClInclude>
     <ClInclude Include="GlobalPhysic.h">

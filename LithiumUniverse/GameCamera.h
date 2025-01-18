@@ -5,11 +5,11 @@
 #include <GLM/glm.hpp>
 #include <GLM/gtx/rotate_vector.hpp>
 #include <iostream>
+
 #include "Console.h";
 
 class GameCamera {
 private:
-	float dt = 0;
 	float RealCameraRotation = 0;
 public:
 	glm::vec2 Position = glm::vec2(0,0);
@@ -18,18 +18,13 @@ public:
 
 	GameCamera() {}
 
-	/* Установить DeltaTime для камеры */
-	void SetDeltaTime(float dt_) {
-		dt = dt_;
-	}
-
 	/* Установить позицию камере */
 	void SetCameraPosition(float x, float y) {
 		Position = glm::vec2(x, y);
 	}
 
 	/* Двигать камеру */
-	void MoveCamera(float vel_x, float vel_y) {
+	void MoveCamera(float vel_x, float vel_y, float dt) {
 		Position = Position + glm::rotate(-glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt), Rotation);
 	}
 
@@ -39,7 +34,7 @@ public:
 	}
 
 	/* Двигать масштаб камеры */
-	void MoveCameraZoom(float vel) {
+	void MoveCameraZoom(float vel, float dt) {
 		Zoom += (-vel * 0.5f * dt) * Zoom;
 	}
 
@@ -50,7 +45,7 @@ public:
 	}
 
 	/* Повернуть камеру */
-	void MoveCameraRotation(float vel) {
+	void MoveCameraRotation(float vel, float dt) {
 		SetCameraRotation(RealCameraRotation - (vel * dt));
 	}
 };

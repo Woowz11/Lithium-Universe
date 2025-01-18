@@ -24,28 +24,23 @@
 #include "GlobalRender.h";
 #include "GlobalPhysic.h";
 #include "GameControls.h";
+#include "GameObject.h";
 #include "GlobalUI.h";
 #include "GameData.h";
 #include "Console.h";
 
 enum GameInstallError {
-	SUCCESS = 0,
+	SUCCESS                = 0,
 	GLFW_NOT_CREATE_WINDOW = 1,
-	GLAD_NOT_LOADED_GL = 2,
-	GLFW_NOT_LOADED = 3
+	GLAD_NOT_LOADED_GL     = 2,
+	GLFW_NOT_LOADED        = 3
 };
 
-uint32_t CURRENT_WINDOW_WIDTH_ = 0;
+uint32_t CURRENT_WINDOW_WIDTH_  = 0;
 uint32_t CURRENT_WINDOW_HEIGHT_ = 0;
 
 class GameInstalls {
 public:
-#ifdef NDEBUG
-	const bool DeveloperVersion = false;
-#else
-	const bool DeveloperVersion = true;
-#endif
-
 	std::string GamePath;
 	const uint32_t START_WINDOW_WIDTH = 800;
 	const uint32_t START_WINDOW_HEIGHT = 600;
@@ -249,11 +244,11 @@ private:
 	float LastFPSTime = 0.0f;
 	float LastFPSTimeForSecond = 0.0f;
 	void CalculateFPS() {
-		float currentTime = glfwGetTime();
-		float deltaTime = currentTime - LastFPSTime;
-		LastFPSTime = currentTime;
-		FPS = (1 / deltaTime);
-		UpdateDeltaTime(deltaTime);
+		Time = glfwGetTime();
+		DeltaTime = Time - LastFPSTime;
+		LastFPSTime = Time;
+		FPS = (1 / DeltaTime);
+		GameDeltaTime = DeltaTime * GetSimulationSpeed();
 	}
 
 	/* Цикл GLFW */
@@ -281,7 +276,8 @@ private:
 		while (!glfwWindowShouldClose(Window)) {
 			Controls();
 
-			RenderAndPhysic();
+			UpdateUI();
+			Render(UpdatePhysic());
 			CalculateFPS();
 
 			LoopGLFW();
@@ -308,7 +304,13 @@ private:
 /* Запуск игры */
 GameInstalls Game;
 int Run(std::string GamePath_) {
-	Print("LU", "Run LithiumUniverse (" + GetGameVersion() + (Game.DeveloperVersion ? " $$YDEV$$_" : "") + ")!");
+#ifdef NDEBUG
+	DeveloperVersion = false;
+#else
+	DeveloperVersion = true;
+#endif
+
+	Print("LU", "Run LithiumUniverse (" + GetGameVersion() + (DeveloperVersion ? " $$YDEV$$_" : "") + ")!");
 
 	try {
 		Game.Run(GamePath_);

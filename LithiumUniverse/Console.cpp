@@ -13,13 +13,13 @@
 
 /* Скрипт [Вывод сообщений в консоль и логирование их] */
 
-/* Начало цветового кода */
+/* Начало текстового кода */
 const std::string CodePrefix = "$$";
 
 /* Проверить текстовые кода */
 const bool DebugCodePrefixs = false;
 
-/* Массив цветовых кодов */
+/* Массив текстовых кодов */
 const std::map<std::string, WORD> TextCodes = {
 	{CodePrefix + "_", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE                       }, /* Дефолтный       */
 
@@ -125,7 +125,7 @@ std::vector<std::string> ExtractCodesAndText(const std::string& input) {
 }
 
 
-/* Отправить сообщение в консоль с цветами */
+/* Отправить сообщение в консоль с кодами */
 void CoutWithCodes(std::string Message) {
 	std::vector<std::string> Extracted = ExtractCodesAndText(Message);
 	for (const auto& p : Extracted) {
@@ -259,6 +259,11 @@ void Print(std::string Base, std::string Message) {
 /* Отправить обычное сообщение (кроме логов) */
 void PrintFast(std::string Base, std::string Message) {
 	PrintBase(Base, OnlyConsole, SLT_Info, Message);
+}
+
+/* Отправить очень успрощённое сообщение (очень быстрое) */
+void PrintVeryFast(std::string Message) {
+	std::cout << Message << std::endl;
 }
 
 /* Отправить важное сообщение */

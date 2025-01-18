@@ -24,19 +24,6 @@ float GetSimulationSpeed() {
 	return SimulationSpeed;
 }
 
-/* Версия разработчика */
-bool DeveloperVersion = false;
-
-/* DeltaTime умноженный на скорость симуляции */
-float pdt = 0;
-
-/* DeltaTime */
-float dt = 0;
-void UpdateDeltaTimePhysic(float dt_) {
-	dt = dt_;
-	pdt = dt_ * SimulationSpeed;
-}
-
 /* Позиция мыши в мире */
 glm::vec2 MouseWorldPosition = glm::vec2(0, 0);
 
@@ -97,7 +84,7 @@ void CreateScene() {
 	SetGameObjectCollider(MouseObjectConnector, CT_None);
 	SetGameObjectRenderable(MouseObjectConnector, false);
 
-	int box = CreateGameObject("box", RO_Phys);
+	//int box = CreateGameObject("box", RO_Phys);
 
 	int platform = CreateGameObject("platform", RO_Phys);
 	SetGameObjectStatic(platform, true);
@@ -113,7 +100,7 @@ void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2) {
 
 /* Обновить физику */
 std::vector<GameObject>& UpdatePhysic() {
-	float step = GameInFocus ? pdt : 0;
+	float step = GameInFocus ? GameDeltaTime : 0;
 	b2World_Step(World, step, 4);
 	for (GameObject& OBJ : Scene) {
 		if (!OBJ.Deleted && OBJ.Type == RO_Phys) {

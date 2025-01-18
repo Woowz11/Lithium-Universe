@@ -2,9 +2,11 @@
 #include <GLM/glm.hpp>
 #include <string>
 #include <vector>
-#include "GameCamera.h";
 
-void RenderAndPhysic();
+#include "GameCamera.h";
+#include "GameObject.h";
+
+void Render(std::vector<GameObject>& Scene);
 void InstallRender(std::string GamePath_, uint32_t SWW, uint32_t SWH, bool DV);
 void ClearRender();
 void UpdateDeltaTime(float DT);

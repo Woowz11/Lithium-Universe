@@ -5,7 +5,6 @@
 #include <GLM/glm.hpp>
 
 #include "StringActions.h";
-#include "StaticInfo.h";
 #include "GameData.h";
 #include "Texture.h";
 
@@ -54,12 +53,12 @@ public:
 	float Layer                  = 0;                      /* Слой объекта                    */
 	bool Render                  = true;                   /* Рендерить объект?               */
 	ShapeType Shape              = ST_Square;              /* Какие вертиксы рендерить?       */
+	bool Selectable              = false;                  /* Мышка реагирует на этот объект? */
 
-	bool ThatUI = false;                  /* Прикрепить объект к камере?     */
+	/* ==== Настройки интерфейса ==== */
 	bool Resize = false;                  /* Менять размер вместе с экраном? */
 
 	/* ==== Настройки физики ==== */
-	bool Selectable        = false;                  /* Мышка реагирует на этот объект? */
 	int BodyID             = -1;                     /* Айди b2::Body                   */
 	bool Static            = false;                  /* Объект статичный?               */
 	ColliderType Collider  = CT_Box;                 /* Тип коллизии                    */

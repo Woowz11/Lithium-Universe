@@ -8,7 +8,7 @@
  */
 const int GameVersionMajor = 0;
 const int GameVersionMinor = 3;
-const int GameVersionPatch = 38;
+const int GameVersionPatch = 39;
 
 std::string GetGameVersionPatchWithLetters() {
     const std::string alphabet = "ABCDEFGHIJKLMNoPQRSTUVWXYZ";

@@ -151,7 +151,6 @@
     <ClCompile Include="GameObject.h" />
     <ClCompile Include="Shader.h" />
     <ClCompile Include="Start.cpp" />
-    <ClCompile Include="StaticInfo.cpp" />
     <ClCompile Include="StringActions.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
@@ -167,7 +166,6 @@
     <ClInclude Include="GlobalRender.h" />
     <ClInclude Include="GlobalUI.h" />
     <ClInclude Include="LithiumUniverse.h" />
-    <ClInclude Include="StaticInfo.h" />
     <ClInclude Include="StringActions.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
