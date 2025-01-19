@@ -83,6 +83,15 @@
     <ClCompile Include="DebugGetter.cpp">
       <Filter>Scripts</Filter>
     </ClCompile>
+    <ClCompile Include="GlobalMods.cpp">
+      <Filter>Scripts\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalResources.cpp">
+      <Filter>Scripts\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalLua.cpp">
+      <Filter>Scripts\Global</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -126,6 +135,9 @@
     </ClInclude>
     <ClInclude Include="DebugGetter.h">
       <Filter>Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalLua.h">
+      <Filter>Scripts\Global</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

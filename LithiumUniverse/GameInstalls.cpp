@@ -26,6 +26,7 @@
 #include "GameControls.h";
 #include "DebugGetter.h";
 #include "GameObject.h";
+#include "GlobalLua.h";
 #include "GlobalUI.h";
 #include "GameData.h";
 #include "Console.h";
@@ -231,7 +232,7 @@ private:
 
 	/* Загрузка всего */
 	void RunAll() {
-		InstallDebug();
+		InstallLua();
 		RunGLFW();
 		RunGLAD();
 		InstallRender(START_WINDOW_WIDTH, START_WINDOW_HEIGHT, DeveloperVersion);
