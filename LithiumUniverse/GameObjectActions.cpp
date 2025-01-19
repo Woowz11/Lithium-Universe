@@ -187,6 +187,17 @@ int GetGameObjectFromPoint(glm::vec2 PointPos) {
 	return result;
 }
 
+/* Установить, менять ли размер объекту взависимости от размера экрана? */
+void SetGameObjectResize(int i, bool b) {
+	GameObject& OBJ = GetGameObject(i, "SetGameObjectResize(" + std::to_string(i) + "," + ToStringBool(b) + ");");
+	if (!OBJ.Deleted) {
+		OBJ.Resize = b;
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectResize(" + std::to_string(i) + "," + ToStringBool(b) + ");");
+	}
+}
+
 /* Установить визуальный слой объекта */
 void SetGameObjectLayer(int i, float l) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectLayer(" + std::to_string(i) + "," + std::to_string(l) + ");");

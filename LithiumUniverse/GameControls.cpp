@@ -63,7 +63,7 @@ bool SHIFT = false;
 bool CONTROL = false;
 
 /* Курсор двигается */
-void MouseMove(glm::vec2 Pos, glm::vec2 Pos2) {
+void MouseMove() {
 	if (HasMouseJoint) {
 		b2MouseJoint_SetTarget(MouseJoint, Vec2ToBVec2(MouseWorldPosition));
 	}

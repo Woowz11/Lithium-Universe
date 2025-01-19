@@ -19,6 +19,7 @@ GameObject& GetGameObjectFromBody(b2BodyId b);
 b2BodyId GetBody(int i);
 GameObject& GetGameObject(int i, std::string message);
 
+void SetGameObjectResize(int i, bool b);
 void SetGameObjectLayer(int i, float l);
 void SetGameObjectTexture(int i, int t);
 void SetGameObjectActive(int i, bool b);

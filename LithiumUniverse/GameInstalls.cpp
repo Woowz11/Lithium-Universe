@@ -264,11 +264,13 @@ private:
 
 		double xpos, ypos;
 		glfwGetCursorPos(Window, &xpos, &ypos);
-		glm::vec2 Pos = glm::vec2(xpos / (double)CURRENT_WINDOW_WIDTH_, ypos / (double)CURRENT_WINDOW_HEIGHT_);
-		glm::vec2 Pos2 = glm::vec2(xpos / (double)START_WINDOW_WIDTH, ypos / (double)START_WINDOW_HEIGHT);
-		Pos2 += glm::vec2(0.5f-((double)CURRENT_WINDOW_WIDTH_ / (double)START_WINDOW_WIDTH / 2), 0.5f - ((double)CURRENT_WINDOW_HEIGHT_ / (double)START_WINDOW_HEIGHT / 2));
-		MouseRenderMove(Pos, Pos2);
-		MouseMove(Pos, Pos2);
+		glm::vec2 Pos  = (glm::vec2(xpos / (double)CURRENT_WINDOW_WIDTH_, ypos / (double)CURRENT_WINDOW_HEIGHT_) * glm::vec2(1,-1) - glm::vec2(0.5f, -0.5f)) * glm::vec2(2,2);
+		glm::vec2 Pos2 = (glm::vec2(xpos / (double)START_WINDOW_WIDTH, ypos / (double)START_WINDOW_HEIGHT) * glm::vec2(1, -1) - glm::vec2(0.5f, -0.5f)) * glm::vec2(2, 2);
+		glm::vec2 Pos3 = Pos2 + glm::vec2(1 - (double)CURRENT_WINDOW_WIDTH_ / (double)START_WINDOW_WIDTH, -(1 - (double)CURRENT_WINDOW_HEIGHT_ / (double)START_WINDOW_HEIGHT));
+		MousePosition = Pos;
+		MousePositionNonResize = Pos3;
+		MouseWorldPosition = ScreenPositionToWorld(Pos3, false);
+		MouseMove();
 	}
 
 	/* Цикл всего */

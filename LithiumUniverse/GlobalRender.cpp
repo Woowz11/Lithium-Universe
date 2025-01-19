@@ -39,7 +39,6 @@ std::string GamePath;
 
 /* Константа на размер окна */
 const glm::vec2 ScreenScale    = glm::vec2(10.0f / 3, 7.5f / 3);
-const glm::vec2 ScreenScaleTwo = ScreenScale * glm::vec2(2.0f,2.0f);
 
 /* ==== Глобальное ==== */
 
@@ -242,10 +241,10 @@ void RenderSquare(const GameObject& OBJ) {
     float Down = -WIN_HEIGHT / 240;
     float Up = WIN_HEIGHT / 240;
     Projection = glm::ortho(
-        Left / Zoom,
+        Left  / Zoom,
         Right / Zoom,
-        Down / Zoom,
-        Up / Zoom,
+        Down  / Zoom,
+        Up    / Zoom,
         -1000.0f, 1000.0f);
     CSS.setMat4("Projection", Projection);
 
@@ -307,7 +306,8 @@ void RenderLine(const GameObject& OBJ) {
         ResultPosition = glm::rotate(ResultPosition, -Camera->Rotation, glm::vec3(0, 0, 1));
     }
 
-    ResultPosition = glm::translate(ResultPosition, glm::vec3(CenterPos.x, CenterPos.y, (OBJ.Layer + (float)OBJ.GetID() / 10000) / 100 ));
+    glm::vec2 Pos = CenterPos * (OBJ.Type == RO_UI ? ScreenScale : glm::vec2(1, 1));
+    ResultPosition = glm::translate(ResultPosition, glm::vec3(Pos, (OBJ.Layer + (float)OBJ.GetID() / 10000) / 100 ));
 
     if (OBJ.Type != RO_UI) {
         ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
@@ -361,17 +361,14 @@ void Render(std::vector<GameObject>& Scene) {
 }
 
 /* Позицию экранную в мировую */
-glm::vec2 ScreenPositionToWorld(glm::vec2 Pos) {
-    glm::vec2 Result = Pos - glm::vec2(0.5f, 0.5f);
+glm::vec2 ScreenPositionToWorld(glm::vec2 Pos, bool IgnoreCamera) {
+    glm::vec2 Result = Pos;
     //800px => 20.0f / 3
-    Result *= ScreenScaleTwo * glm::vec2(1,-1);
-    Result *= Camera->Zoom;
-    Result = glm::rotate(Result, Camera->Rotation);
-    Result -= Camera->Position;
+    Result *= ScreenScale;
+    if (!IgnoreCamera) {
+        Result *= Camera->Zoom;
+        Result = glm::rotate(Result, Camera->Rotation);
+        Result -= Camera->Position;
+    }
     return Result;
-}
-
-/* Курсор двигается */
-void MouseRenderMove(glm::vec2 Pos, glm::vec2 Pos2) {
-    UpdateMousePhysic(Pos, Pos2);
 }

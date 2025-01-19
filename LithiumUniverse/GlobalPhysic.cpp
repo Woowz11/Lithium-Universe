@@ -24,9 +24,6 @@ float GetSimulationSpeed() {
 	return SimulationSpeed;
 }
 
-/* Позиция мыши в мире */
-glm::vec2 MouseWorldPosition = glm::vec2(0, 0);
-
 /* Объект физичной мыши */
 int MouseObjectConnector = -1;
 
@@ -91,11 +88,6 @@ void CreateScene() {
 	SetGameObjectPosition(platform ,glm::vec2(0, -3));
 	SetGameObjectSize(platform, glm::vec2(100, 1));
 	SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
-}
-
-/* Указать позицию курсора */
-void UpdateMousePhysic(glm::vec2 Pos, glm::vec2 Pos2) {
-	MouseWorldPosition = ScreenPositionToWorld(Pos2);
 }
 
 /* Обновить физику */
