@@ -15,6 +15,7 @@
 
 #include "GameObjectActions.h";
 #include "ExplorerActions.h";
+#include "GlobalResources.h";
 #include "GlobalPhysic.h";
 #include "GameCamera.h";
 #include "GameObject.h";
@@ -168,23 +169,6 @@ void CreateShaders() {
     Shaders.push_back(LineShader);
 }
 
-/* ==== Текстуры ==== */
-
-/* Создать текстуры */
-void CreateTextures() {
-    std::string VanillaTexturesFolder = AddFileToPath(AddFileToPath(GamePath, "Resources"), "Textures");
-    CreateFolder(VanillaTexturesFolder);
-
-    /* 1 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "NotSelected.png"), "Base");
-    /* 2 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default.png"    ), "Vanilla");
-    /* 3 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default2.png"   ), "Vanilla");
-    /* 4 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "Circle.png"     ), "Vanilla");
-    /* 5 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "Cable.png"      ), "Vanilla");
-
-    /* 6 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "Button.png"     ), "BaseUI");
-    /* 7 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "ButtonHover.png"), "BaseUI");
-}
-
 /* Установить всё для рендера */
 void InstallRender(uint32_t SWW, uint32_t SWH, bool DV) {
     glEnable(GL_BLEND);
@@ -215,10 +199,6 @@ void InstallRender(uint32_t SWW, uint32_t SWH, bool DV) {
 
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-
-    /* ==== Текстуры ==== */
-
-    CreateTextures();
 
     glUseProgram(DefaultShader.ID);
     DefaultShader.setInt("Texture", 0);
@@ -355,14 +335,14 @@ void Render(std::vector<GameObject>& Scene) {
     /* ==== Рендер объектов ==== */
     for (const GameObject& OBJ : Scene) {
         if (!OBJ.Deleted && OBJ.Active && OBJ.Render) {
-            int OBJ_Texture = OBJ.BaseTexture;
+            int OBJ_Texture = Resources[OBJ.BaseTextureRes].AssetID;
             if (OBJ_Texture != TEX) {
                 TEX = OBJ_Texture;
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, TEX);
             }
 
-            Shader OBJ_Shader = Shaders[OBJ.BaseShader];
+            Shader OBJ_Shader = Shaders[/*OBJ.BaseShader*/ 1];
             if (CSS.RealID != OBJ_Shader.RealID) {
                 CSS = OBJ_Shader;
                 glUseProgram(CSS.ID);

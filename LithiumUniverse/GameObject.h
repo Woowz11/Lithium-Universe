@@ -5,6 +5,7 @@
 #include <GLM/glm.hpp>
 
 #include "StringActions.h";
+#include "GameResource.h";
 #include "GameData.h";
 #include "Texture.h";
 
@@ -44,8 +45,8 @@ public:
 	bool DontDelete = false;   /* Не удалять объект */
 
 	/* ==== Настройки рендера ==== */
-	int BaseTexture              = NotSelectedTexture;     /* Базовая текстура                */
-	int BaseShader               = 1;                      /* Базовый шейдер                  */
+	int BaseTextureRes           = 1;                     /* Базовая текстура                */
+	int BaseShaderRes            = 1;                     /* Базовый шейдер                  */
 	glm::vec2 PositionVisual     = glm::vec2(0, 0);        /* Позиция объекта                 */
 	glm::vec4 LinePositionVisual = glm::vec4(-1, 0, 1, 0); /* Позиция начала и конца линии    */
 	glm::vec2 SizeVisual         = glm::vec2(1, 1);        /* Размер объекта                  */
@@ -61,7 +62,7 @@ public:
 	int ButtonID = -1;                     /* Является ли компонент кнопкой?  */
 
 	/* ==== Настройки физики ==== */
-	int BodyID             = -1;                     /* Айди b2::Body                   */
+	int BodyID             = -1;                     /* Айди b2BodyId                   */
 	bool Static            = false;                  /* Объект статичный?               */
 	ColliderType Collider  = CT_Box;                 /* Тип коллизии                    */
 
@@ -114,7 +115,7 @@ public:
 	/* Сделать линией */
 	void MakeItLine(glm::vec2 StartPos, glm::vec2 EndPos, float th) {
 		Shape = ST_Line;
-		BaseShader = 2;
+		//BaseShader = 2;
 
 		SetLineThickness(th);
 		SetLinePosition(StartPos, EndPos);

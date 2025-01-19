@@ -14,8 +14,13 @@ std::vector<Texture> Texturies = {};
 
 int NotSelectedTexture = 1;
 
+/* Удалить текстуру */
+void DeleteTexture(unsigned int TextureID) {
+    glDeleteTextures(1, &TextureID);
+}
+
 /* Создать текстуру */
-void CreateTexture(std::string Path, std::string Atlas) {
+Texture CreateTexture(std::string Path, std::string Atlas) {
     if (HasFile(Path)) {
         Texture info = Texture(Path, Atlas);
 
@@ -48,9 +53,10 @@ void CreateTexture(std::string Path, std::string Atlas) {
         }
         stbi_image_free(data);
 
-        Texturies.push_back(info);
+        return info;
     }
     else {
         Error("TEXTURE", "The required texture was not found! Path: " + Path);
     }
+    return Texture("","");
 }

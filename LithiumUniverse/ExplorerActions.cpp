@@ -1,6 +1,7 @@
 ﻿#include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include <string>
 
 #include "StringActions.h";
@@ -66,6 +67,11 @@ bool HasFile(std::string Path) {
 	return f.good();
 }
 
+/* Папка существует по пути? */
+bool HasFolder(std::string Path) {
+	return std::filesystem::exists(FixPath(Path)) && std::filesystem::is_directory(FixPath(Path));
+}
+
 /* Добавить текст в файл (длинным путём) */
 void AddToFileLongWay(std::string FilePath, std::string AddThat) {
 	if (HasFile(FilePath)) {
@@ -96,7 +102,7 @@ void ClearFileLongWay(std::string FilePath) {
 		File.close();
 	}
 	else {
-		ErrorFromLog(Base_EA, "he file cannot be cleared because file does not exist! ClearFileLongWay(\"" + FilePath + "\");");
+		ErrorFromLog(Base_EA, "The file cannot be cleared because file does not exist! ClearFileLongWay(\"" + FilePath + "\");");
 	}
 }
 
@@ -108,4 +114,50 @@ void ClearFile(std::ofstream& File) {
 	else {
 		ErrorFromLog(Base_EA, "The file cannot be cleared because it is not open! ClearFile(?);");
 	}
+}
+
+/* Получить массив папок внутри папки */
+std::vector<std::string> GetFolders(std::string Path) {
+	std::vector<std::string> Result = {};
+	if (HasFolder(Path)) {
+		for (const auto& e : std::filesystem::directory_iterator(Path)) {
+			if (std::filesystem::is_directory(e)) {
+				Result.push_back(FixPath(e.path().string()));
+			}
+		}
+	}
+	else {
+		ErrorFromLog(Base_EA, "Unable to get folders because main folder does not exist! GetFolders(\"" + Path + "\");");
+	}
+	return Result;
+}
+
+/* Получить массив файлов внутри папки и подпапок */
+std::vector<std::string> GetFilesIncludeSubFolders(std::string Path) {
+	std::vector<std::string> Result = {};
+	if (HasFolder(Path)) {
+		for (const auto& e : std::filesystem::recursive_directory_iterator(Path)) {
+			if (std::filesystem::is_regular_file(e)) {
+				Result.push_back(FixPath(e.path().string()));
+			}
+		}
+	}
+	else {
+		ErrorFromLog(Base_EA, "Unable to get files because main folder does not exist! GetFilesIncludeSubFolders(\"" + Path + "\");");
+	}
+	return Result;
+}
+
+/* Получить расширение файла */
+std::string GetFileType(std::string FilePath) {
+	if (HasFile(FilePath)) {
+		std::filesystem::path path(FilePath);
+		std::string extension = path.extension().string();
+		if (extension == "" || extension == ".") { return ""; }
+		return RemoveFirstSymbol(extension);
+	}
+	else {
+		ErrorFromLog(Base_EA, "Unable to determine file type because file does not exist! GetFileType(\"" + FilePath + "\");");
+	}
+	return "";
 }

@@ -139,5 +139,14 @@
     <ClInclude Include="GlobalLua.h">
       <Filter>Scripts\Global</Filter>
     </ClInclude>
+    <ClInclude Include="GlobalMods.h">
+      <Filter>Scripts\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalResources.h">
+      <Filter>Scripts\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="GameResource.h">
+      <Filter>Scripts\Foundation</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

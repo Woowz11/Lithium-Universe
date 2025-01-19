@@ -64,12 +64,23 @@ char GetLastSymbol(std::string Target) {
 /* Удалить последний символ строки */
 std::string RemoveLastSymbol(std::string Target) {
 	if (Target.empty()) {
-		Warn(Base_SA, "Cannot delete the last character in a string because the string is empty! RemoveLastSymbol(\""+Target+"\");");
+		Warn(Base_SA, "Cannot delete the last character in a string because the string is empty! RemoveLastSymbol(\"" + Target + "\");");
 		return Target;
 	}
 	else {
 		Target.pop_back();
 		return Target;
+	}
+}
+
+/* Удалить первый символ строки */
+std::string RemoveFirstSymbol(std::string Target) {
+	if (Target.empty()) {
+		Warn(Base_SA, "Cannot delete the first character in a string because the string is empty! RemoveFirstSymbol(\"" + Target + "\");");
+		return Target;
+	}
+	else {
+		return Target.substr(1, Target.length()-1);
 	}
 }
 

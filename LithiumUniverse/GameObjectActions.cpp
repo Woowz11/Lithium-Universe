@@ -6,6 +6,7 @@
 #include <vector>
 #include <box2d/box2d.h>
 
+#include "GlobalResources.h";
 #include "StringActions.h";
 #include "GlobalPhysic.h";
 #include "GameObject.h";
@@ -241,7 +242,7 @@ void SetGameObjectLayer(int i, float l) {
 void SetGameObjectTexture(int i, int t) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectTexture(" + std::to_string(i) + "," + std::to_string(t) + ");");
 	if (!OBJ.Deleted) {
-		OBJ.BaseTexture = t;
+		OBJ.BaseTextureRes = GetResourceDebug("F:/Lithium-Universe/LithiumUniverse/x64/Dev/Resources/Textures/NotSelected.png").ID; //t;
 	}
 	else {
 		GameObjectDeleted__(OBJ, "SetGameObjectTexture(" + std::to_string(i) + "," + std::to_string(t) + ");");

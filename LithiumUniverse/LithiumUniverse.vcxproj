@@ -167,9 +167,12 @@
     <ClInclude Include="GameData.h" />
     <ClInclude Include="GameInstalls.h" />
     <ClInclude Include="GameObjectActions.h" />
+    <ClInclude Include="GameResource.h" />
     <ClInclude Include="GlobalLua.h" />
+    <ClInclude Include="GlobalMods.h" />
     <ClInclude Include="GlobalPhysic.h" />
     <ClInclude Include="GlobalRender.h" />
+    <ClInclude Include="GlobalResources.h" />
     <ClInclude Include="GlobalUI.h" />
     <ClInclude Include="LithiumUniverse.h" />
     <ClInclude Include="StringActions.h" />

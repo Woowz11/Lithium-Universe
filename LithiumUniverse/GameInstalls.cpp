@@ -20,12 +20,14 @@
 #include <set>
 
 #include "LithiumUniverse.h";
+#include "GlobalResources.h";
 #include "BaseConstants.h";
 #include "GlobalRender.h";
 #include "GlobalPhysic.h";
 #include "GameControls.h";
 #include "DebugGetter.h";
 #include "GameObject.h";
+#include "GlobalMods.h";
 #include "GlobalLua.h";
 #include "GlobalUI.h";
 #include "GameData.h";
@@ -232,10 +234,13 @@ private:
 
 	/* Загрузка всего */
 	void RunAll() {
-		InstallLua();
 		RunGLFW();
 		RunGLAD();
+		UpdateResources();
 		InstallRender(START_WINDOW_WIDTH, START_WINDOW_HEIGHT, DeveloperVersion);
+
+		InstallLua();
+		CheckMods();
 
 		Print("LU", "All started, and start Loop()!");
 		Print("LU", "=============== [RUNTIME] ===============");

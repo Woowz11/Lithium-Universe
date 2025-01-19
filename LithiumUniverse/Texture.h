@@ -30,4 +30,5 @@ public:
 
 extern int NotSelectedTexture;
 extern std::vector<Texture> Texturies;
-void CreateTexture(std::string Path, std::string Atlas);
+void DeleteTexture(unsigned int TextureID);
+Texture CreateTexture(std::string Path, std::string Atlas);
