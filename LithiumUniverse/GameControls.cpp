@@ -21,11 +21,16 @@ bool HasMouseJoint = false;
 b2JointId MouseJoint = b2_nullJointId;
 
 /* Обработать клик по интерфейсу */
-void ProcessUIClick(int i) {
-	GameObject& OBJ = GetGameObject(i, "ProcessUIClick(" + std::to_string(i) + ");");
+void ProcessUIClick(int i, bool Left) {
+	GameObject& OBJ = GetGameObject(i, "ProcessUIClick(" + std::to_string(i) + "," + ToStringBool(Left) + ");");
 	
 	Button B = Buttons[OBJ.ButtonID];
-	B.WhenLeftClick();
+	if (Left) {
+		B.WhenLeftClick();
+	}
+	else {
+		B.WhenRightClick();
+	}
 }
 
 /* Обновить джоин мыши */
@@ -74,6 +79,9 @@ void MouseDropGO() {
 bool SHIFT = false;
 bool CONTROL = false;
 
+bool CameraDrag = false;
+glm::vec2 CameraDragOffset = glm::vec2(0, 0);
+
 /* Курсор двигается */
 void MouseMove() {
 	if (HasMouseJoint) {
@@ -83,6 +91,11 @@ void MouseMove() {
 		else {
 			MouseDropGO();
 		}
+	}
+
+	if (CameraDrag) {
+		glm::vec2 Dif = CameraDragOffset - MouseWorldPosition;
+		Camera->MoveCamera(Dif.x, Dif.y, (1/Camera->Zoom) * DeltaTime * 10);
 	}
 }
 
@@ -95,7 +108,7 @@ void MouseClick(int KEY, int ACTION) {
 	if (KEY == GLFW_MOUSE_BUTTON_LEFT) {
 		if (ACTION == GLFW_PRESS) {
 			if (MouseOnInterface) {
-				ProcessUIClick(MouseUIObject);
+				ProcessUIClick(MouseUIObject, true);
 			}
 			else {
 				MousePickupGO(MouseObject);
@@ -105,12 +118,29 @@ void MouseClick(int KEY, int ACTION) {
 			MouseDropGO();
 		}
 	}
+
+	if (KEY == GLFW_MOUSE_BUTTON_RIGHT) {
+		if (ACTION == GLFW_PRESS) {
+			if (MouseOnInterface) {
+				ProcessUIClick(MouseUIObject, false);
+			}
+		}
+	}
+
+	if (KEY == GLFW_MOUSE_BUTTON_MIDDLE) {
+		if (ACTION == GLFW_PRESS) {
+			CameraDrag = true;
+			CameraDragOffset = MouseWorldPosition;
+		}
+		if (ACTION == GLFW_RELEASE) {
+			CameraDrag = false;
+		}
+	}
 }
 
 /* Колёсико мышки двигается */
 void MouseScroll(float scroll) {
-	/* КОГДА ФПС МАЛО ЕМУ ПЛОХО */
-	Camera->MoveCameraZoom(scroll* (SHIFT ? 3 : (CONTROL ? 0.3f : 1)) * 150, DeltaTime);
+	Camera->MoveCameraZoom(scroll * (SHIFT ? 3 : (CONTROL ? 0.3f : 1)) * 0.1f, 1);
 }
 
 /* Управление клавиатурой */

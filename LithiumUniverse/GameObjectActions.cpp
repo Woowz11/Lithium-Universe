@@ -111,7 +111,7 @@ b2BodyId GetBody(int i) {
 	}
 	else {
 		Error("GAMEOBJ/BODY", "It is not possible to get the b2BodyId because it cannot be found by ID in the bodies! GetBody(" + std::to_string(i) + ");");
-		return { 0 };
+		return b2_nullBodyId;
 	}
 #endif
 }
@@ -133,11 +133,22 @@ GameObject& GetGameObject(int i, std::string message) {
 GameObject& GetGameObjectFromBody(b2BodyId b) {
 	auto it = std::find_if(Bodies.begin(), Bodies.end(),
 		[&b](const b2BodyId& body) { return body.index1 == b.index1; });
+
 	if (it != Bodies.end()) {
-		return GetGameObject(std::distance(Bodies.begin(), it) + 1, "GetGameObjectFromBody(?);");
+		int BodyID = std::distance(Bodies.begin(), it);
+		auto it2 = std::find_if(Scene.begin(), Scene.end(),
+			[&BodyID](const GameObject& gb) { return gb.BodyID == BodyID; });
+
+		if (it2 != Scene.end()) {
+			return GetGameObject(std::distance(Scene.begin(), it2), "GetGameObjectFromBody(?);");
+		}
+		else {
+			Error("GAMEOBJ", "GameObject not found via b2BodyId! GetGameObjectFromBody(?); #In Scene#");
+			return ErrorGameObject;
+		}
 	}
 	else {
-		Error("GAMEOBJ", "GameObject not found via b2BodyId! GetGameObjectFromBody(?);");
+		Error("GAMEOBJ", "GameObject not found via b2BodyId! GetGameObjectFromBody(?); #In Bodies#");
 		return ErrorGameObject;
 	}
 }

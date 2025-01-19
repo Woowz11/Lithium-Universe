@@ -39,6 +39,21 @@ void MakeGameObjectUI__(int i) {
 	SetGameObjectLayer(i, 1000);
 }
 
+/* Обновление кнопки при наведении курсора на неё (private) */
+void ButtonHover__(int i, bool Hover) {
+	if (i >= 0) {
+		GameObject& OBJ = GetGameObject(i, "ButtonHover__(" + std::to_string(i) + "," + ToStringBool(Hover) + ");");
+		if (OBJ.ButtonID != -1) {
+			if (Hover) {
+				SetGameObjectTexture(i, 7);
+			}
+			else {
+				SetGameObjectTexture(i, 6);
+			}
+		}
+	}
+}
+
 /* Превратить объект в кнопку */
 void MakeGameObjectButton(int i, std::function<void()> WhenLeftClick, std::function<void()> WhenRightClick) {
 	GameObject& OBJ = GetGameObject(i, "MakeGameObjectButton(" + std::to_string(i) + ",?,?);");
@@ -63,20 +78,44 @@ bool PointOverBox(glm::vec2 Point, glm::vec2 Pos, glm::vec2 Size) {
 bool PointOverUIBox(glm::vec2 Point, bool Resize, glm::vec2 Pos, glm::vec2 Size) {
 	return PointOverBox(ScreenPositionToWorld(Point, true, Resize), ScreenPositionToWorld(Pos, true, Resize), Size);
 }
+
+/* После обновления интерфейса */
+bool FindAnythingUI = false;
+int LastHoverUI = -1;
+void AfterUpdateUI() {
+	if (!FindAnythingUI) {
+		MouseOnInterface = false;
+		MouseUIObject = -1;
+	}
+
+	if (LastHoverUI != MouseUIObject) {
+		ButtonHover__(LastHoverUI, false);
+		LastHoverUI = MouseUIObject;
+	}
+
+	FindAnythingUI = false;
+}
+
 /* Обновление интерфейса */
 int ui_test = -1;
-void UpdateUI() {
-	GameObject& ui = GetGameObject(ui_test, "chmona");
-	MouseOnInterface = PointOverUIBox(MousePosition, ui.Resize, ui.PositionVisual, ui.SizeVisual);
-	SetGameObjectTexture(ui_test, MouseOnInterface ? 1 : 2);
-
-	MouseUIObject = MouseOnInterface ? ui_test : -1;
+int ui_test2 = -1;
+void UpdateUI(GameObject& OBJ) {
+	if (!FindAnythingUI) {
+		bool Over = PointOverUIBox(MousePosition, OBJ.Resize, OBJ.PositionVisual, OBJ.SizeVisual);
+		if (Over) {
+			MouseOnInterface = true;
+			MouseUIObject = OBJ.GetID();
+			ButtonHover__(MouseUIObject, true);
+			FindAnythingUI = true;
+		}
+	}
 }
 
 /* Создать интерфейс */
 void CreateUI() {
 	int ui = CreateGameObject("ui", RO_UI);
-	SetGameObjectSize(ui, glm::vec2(0.5f, 0.25f));
+	SetGameObjectTexture(ui, 6);
+	SetGameObjectSize(ui, glm::vec2(0.25f, 0.25f));
 	SetGameObjectPosition(ui, glm::vec2(-0.9f, -0.9f));
 
 	MakeGameObjectButton(ui, []() {
@@ -84,4 +123,15 @@ void CreateUI() {
 	}, []() {});
 
 	ui_test = ui;
+
+	ui = CreateGameObject("ui", RO_UI);
+	SetGameObjectTexture(ui, 6);
+	SetGameObjectSize(ui, glm::vec2(0.25f, 0.25f));
+	SetGameObjectPosition(ui, glm::vec2(-0.75f, -0.9f));
+
+	MakeGameObjectButton(ui, []() {
+		RemoveAllTestObject();
+	}, []() {});
+
+	ui_test2 = ui;
 }

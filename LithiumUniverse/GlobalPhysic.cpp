@@ -158,11 +158,22 @@ std::vector<GameObject>& UpdatePhysic() {
 	float step = GameInFocus ? GameDeltaTime : 0;
 	b2World_Step(World, step, 4);
 	for (GameObject& OBJ : Scene) {
-		if (!OBJ.Deleted && OBJ.Active && OBJ.Type == RO_Phys) {
-			UpdatePhysicObject(OBJ);
+		if (!OBJ.Deleted && OBJ.Active) {
+			switch (OBJ.Type)
+			{
+			case RO_Phys:
+				UpdatePhysicObject(OBJ);
+				break;
+			case RO_UI:
+				UpdateUI(OBJ);
+				break;
+			default:
+				break;
+			}
 		}
 	}
 	AfterUpdatePhysic();
+	AfterUpdateUI();
 	return Scene;
 }
 

@@ -278,7 +278,6 @@ private:
 		while (!glfwWindowShouldClose(Window)) {
 			Controls();
 
-			UpdateUI();
 			Render(UpdatePhysic());
 			CalculateFPS();
 

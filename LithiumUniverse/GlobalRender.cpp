@@ -178,11 +178,14 @@ void CreateTextures() {
     std::string VanillaTexturesFolder = AddFileToPath(AddFileToPath(GamePath, "Resources"), "Textures");
     CreateFolder(VanillaTexturesFolder);
 
-    CreateTexture(AddFileToPath(VanillaTexturesFolder, "NotSelected.png"), "Base"   );
-    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default.png"    ), "Vanilla");
-    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default2.png"   ), "Vanilla");
-    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Circle.png"     ), "Vanilla");
-    CreateTexture(AddFileToPath(VanillaTexturesFolder, "Cable.png"      ), "Vanilla");
+    /* 1 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "NotSelected.png"), "Base");
+    /* 2 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default.png"    ), "Vanilla");
+    /* 3 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "Default2.png"   ), "Vanilla");
+    /* 4 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "Circle.png"     ), "Vanilla");
+    /* 5 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "Cable.png"      ), "Vanilla");
+
+    /* 6 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "Button.png"     ), "BaseUI");
+    /* 7 */ CreateTexture(AddFileToPath(VanillaTexturesFolder, "ButtonHover.png"), "BaseUI");
 }
 
 /* Установить всё для рендера */

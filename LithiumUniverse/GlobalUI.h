@@ -22,5 +22,6 @@ extern int MouseUIObject;
 extern std::vector<Button> Buttons;
 
 void MakeGameObjectUI__(int i);
-void UpdateUI();
+void AfterUpdateUI();
+void UpdateUI(GameObject& OBJ);
 void CreateUI();
