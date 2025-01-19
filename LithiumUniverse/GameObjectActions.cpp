@@ -37,26 +37,33 @@ std::vector<b2BodyId> Bodies = {};
 void RemoveGameObjectCollider__(GameObject& OBJ) {
 	b2BodyId Body = Bodies[OBJ.BodyID];
 	int i = b2Body_GetShapeCount(Body);
-	b2ShapeId* shapes = new b2ShapeId[i];
-	b2Body_GetShapes(Body, shapes, i);
-	for (int j = 0; j < i; ++j) {
-		b2ShapeId s = shapes[j];
-		b2DestroyShape(s, true);
+	if (i > 0) {
+		b2ShapeId* shapes = new b2ShapeId[i];
+		b2Body_GetShapes(Body, shapes, i);
+		for (int j = 0; j < i; ++j) {
+			b2ShapeId s = shapes[j];
+			b2DestroyShape(s, true);
+		}
+		delete[] shapes;
 	}
-	delete[] shapes;
 }
 
 /* Обновить коллизию объекта (private) */
 void RefreshGameObjectCollider__(GameObject& OBJ) {
 	RemoveGameObjectCollider__(OBJ);
 
-	b2ShapeDef ShapeInfo = b2DefaultShapeDef();
-	/* Чем сам по себе является? */
-	ShapeInfo.filter.categoryBits = OBJ.Collider == CT_None ? F_Disabled : (OBJ.Static ? F_World : F_Default);
-	/* С кем коллайдится */
-	ShapeInfo.filter.maskBits     = OBJ.Collider == CT_None ? F_None : OBJ.Static ? F_World | F_Default : F_World | F_Default;
+	ColliderType CT = OBJ.Collider;
+	if (!OBJ.Active) { CT = CT_None; }
 
-	switch (OBJ.Collider)
+	b2ShapeDef ShapeInfo = b2DefaultShapeDef();
+
+	/* Какая коллизия    */
+	ShapeInfo.filter.categoryBits = CT == CT_None ? F_Disabled : (OBJ.Static ? F_World             : F_Default          );
+
+	/* С кем коллайдится */
+	ShapeInfo.filter.maskBits     = CT == CT_None ? F_None     : (OBJ.Static ? F_World | F_Default : F_World | F_Default);
+
+	switch (CT)
 	{
 	case CT_Box:
 		b2Polygon ColBox = b2MakeBox(OBJ.SizeVisual.x, OBJ.SizeVisual.y);
@@ -66,7 +73,11 @@ void RefreshGameObjectCollider__(GameObject& OBJ) {
 		);
 		break;
 	case CT_Circle:
-		
+		b2Circle ColCircle = b2Circle(b2Vec2(0, 0), OBJ.SizeVisual.x);
+		b2CreateCircleShape(Bodies[OBJ.BodyID],
+			&ShapeInfo,
+			&ColCircle
+		);
 		break;
 	default:
 		b2Polygon ColNone = b2MakeBox(0.01f, 0.01f);
@@ -123,7 +134,7 @@ GameObject& GetGameObjectFromBody(b2BodyId b) {
 	auto it = std::find_if(Bodies.begin(), Bodies.end(),
 		[&b](const b2BodyId& body) { return body.index1 == b.index1; });
 	if (it != Bodies.end()) {
-		return GetGameObject(std::distance(Bodies.begin(), it), "GetGameObjectFromBody(?);");
+		return GetGameObject(std::distance(Bodies.begin(), it) + 1, "GetGameObjectFromBody(?);");
 	}
 	else {
 		Error("GAMEOBJ", "GameObject not found via b2BodyId! GetGameObjectFromBody(?);");
@@ -160,19 +171,14 @@ void MakeGameObjectPhysical__(int i) {
 
 /* Получить игровой объект находящийся на этой точке */
 int GetGameObjectFromPoint(glm::vec2 PointPos) {
-	float PointSize = 0.00001f;
-	b2Vec2 v1 = Vec2ToBVec2(PointPos);
-	b2Vec2 v2 = b2Vec2(PointSize, PointSize);
-	b2AABB MouseDetector(b2Sub(v1,v2), b2Add(v1,v2));
-
 	int result = -1;
 
-	b2World_OverlapAABB(World, MouseDetector, b2DefaultQueryFilter(), [](b2ShapeId shapeId, void* context) {
+	b2World_OverlapPoint(World, Vec2ToBVec2(PointPos), b2Transform_identity, b2DefaultQueryFilter(), [](b2ShapeId shapeId, void* context) {
 		b2BodyId bodyId = b2Shape_GetBody(shapeId);
 		b2Body_SetAwake(bodyId, true);
 		GameObject& OBJ = GetGameObjectFromBody(bodyId);
-		
-		if (OBJ.Selectable) {
+
+		if (OBJ.Active && OBJ.Selectable) {
 			int* resultPtr = static_cast<int*>(context);
 
 			*resultPtr = OBJ.GetID();
@@ -185,6 +191,17 @@ int GetGameObjectFromPoint(glm::vec2 PointPos) {
 	}, &result);
 
 	return result;
+}
+
+/* Установить, удаляемый ли объект? */
+void SetGameObjectDontDelete(int i, bool b) {
+	GameObject& OBJ = GetGameObject(i, "SetGameObjectDontDelete(" + std::to_string(i) + "," + ToStringBool(b) + ");");
+	if (!OBJ.Deleted) {
+		OBJ.DontDelete = b;
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectDontDelete(" + std::to_string(i) + "," + ToStringBool(b) + ");");
+	}
 }
 
 /* Установить, менять ли размер объекту взависимости от размера экрана? */
@@ -227,11 +244,12 @@ void SetGameObjectActive(int i, bool b) {
 		OBJ.Active = b;
 		if (OBJ.Type == RO_Phys) {
 			if (b) {
-				b2Body_Enable(Bodies[OBJ.BodyID]);
+				b2Body_SetType(Bodies[OBJ.BodyID], OBJ.Static ? b2_staticBody : b2_dynamicBody);
 			}
 			else {
-				b2Body_Disable(Bodies[OBJ.BodyID]);
+				b2Body_SetType(Bodies[OBJ.BodyID], b2_staticBody);
 			}
+			RefreshGameObjectCollider__(OBJ);
 		}
 	}
 	else {
@@ -364,6 +382,24 @@ void SetGameObjectStatic(int i, bool b) {
 	}
 	else {
 		GameObjectNotSuitableForPhysics__(OBJ, "SetGameObjectStatic(" + std::to_string(i) + "," + ToStringBool(b) + ");");
+	}
+}
+
+/* Уничтожить объект */
+void DeleteGameObject(int i) {
+	GameObject& OBJ = GetGameObject(i, "DeleteGameObject(" + std::to_string(i) + ");");
+	if (!OBJ.Deleted) {
+		if (OBJ.Type == RO_Phys) {
+			int BodyID = OBJ.BodyID;
+			b2BodyId Body = GetBody(BodyID);
+			b2DestroyBody(Body);
+			Bodies[BodyID] = b2_nullBodyId;
+		}
+
+		OBJ.Delete();
+	}
+	else {
+		Warn("GAMEOBJ","Cannot delete GameObject because it has already been deleted! DeleteGameObject(" + std::to_string(i) + ");");
 	}
 }
 

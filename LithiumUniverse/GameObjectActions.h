@@ -19,6 +19,7 @@ GameObject& GetGameObjectFromBody(b2BodyId b);
 b2BodyId GetBody(int i);
 GameObject& GetGameObject(int i, std::string message);
 
+void SetGameObjectDontDelete(int i, bool b);
 void SetGameObjectResize(int i, bool b);
 void SetGameObjectLayer(int i, float l);
 void SetGameObjectTexture(int i, int t);
@@ -27,6 +28,7 @@ void SetGameObjectCollider(int i, ColliderType CT);
 void SetGameObjectSelectable(int i, bool b);
 int GetGameObjectFromPoint(glm::vec2 PointPos);
 int CreateGameObject(std::string Name, RO_Type ObjectType);
+void DeleteGameObject(int i);
 void SetGameObjectStatic(int i, bool b);
 glm::vec4 GetGameObjectColor(int i);
 void SetGameObjectColor(int i, glm::vec4 c);

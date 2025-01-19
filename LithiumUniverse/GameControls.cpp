@@ -9,6 +9,7 @@
 #include "GameInstalls.h";
 #include "GameCamera.h";
 #include "GameData.h";
+#include "GlobalUI.h";
 
 /* Скрипт отвечающий за управление игроком */
 
@@ -19,17 +20,28 @@ int PickupedObject = -1;
 bool HasMouseJoint = false;
 b2JointId MouseJoint = b2_nullJointId;
 
+/* Обработать клик по интерфейсу */
+void ProcessUIClick(int i) {
+	GameObject& OBJ = GetGameObject(i, "ProcessUIClick(" + std::to_string(i) + ");");
+	
+	Button B = Buttons[OBJ.ButtonID];
+	B.WhenLeftClick();
+}
+
 /* Обновить джоин мыши */
 void UpdateMouseJoint() {
 	if (HasMouseJoint) {
-		b2DestroyJoint(MouseJoint);
+		if (b2Joint_IsValid(MouseJoint)) {
+			b2DestroyJoint(MouseJoint);
+		}
 		HasMouseJoint = false;
 	}
 
 	if (PickupedObject != -1) {
 		b2MouseJointDef J = b2DefaultMouseJointDef();
-		b2BodyId Body = GetBody(PickupedObject);
-		J.bodyIdA = GetBody(MouseObjectConnector);
+		GameObject& OBJ = GetGameObject(PickupedObject, "UpdateMouseJoint(); #PickupedObject#");
+		b2BodyId Body = GetBody(OBJ.BodyID);
+		J.bodyIdA = GetBody(GetGameObject(MouseObjectConnector,"UpdateMouseJoint(); #MouseObjectConnector#").BodyID);
 		J.bodyIdB = Body;
 		J.target = Vec2ToBVec2(MouseWorldPosition);
 		J.hertz = 5.0f;
@@ -65,7 +77,12 @@ bool CONTROL = false;
 /* Курсор двигается */
 void MouseMove() {
 	if (HasMouseJoint) {
-		b2MouseJoint_SetTarget(MouseJoint, Vec2ToBVec2(MouseWorldPosition));
+		if (b2Joint_IsValid(MouseJoint)) {
+			b2MouseJoint_SetTarget(MouseJoint, Vec2ToBVec2(MouseWorldPosition));
+		}
+		else {
+			MouseDropGO();
+		}
 	}
 }
 
@@ -77,7 +94,12 @@ void MouseClick(int KEY, int ACTION) {
 
 	if (KEY == GLFW_MOUSE_BUTTON_LEFT) {
 		if (ACTION == GLFW_PRESS) {
-			MousePickupGO(GetMouseObject());
+			if (MouseOnInterface) {
+				ProcessUIClick(MouseUIObject);
+			}
+			else {
+				MousePickupGO(MouseObject);
+			}
 		}
 		if (ACTION == GLFW_RELEASE) {
 			MouseDropGO();
@@ -104,12 +126,24 @@ void ControlsKeyboard(int KEY, int ACTION) {
 		SetSimulationSpeed(0.1f);
 	}
 
+	if (KEY == GLFW_KEY_Z && ACTION == GLFW_PRESS) {
+		RemoveLastTestObject();
+	}
+
 	if (KEY == GLFW_KEY_1 && ACTION == GLFW_PRESS) {
 		CreateTestObject(0);
 	}
 
 	if (KEY == GLFW_KEY_2 && ACTION == GLFW_PRESS) {
 		CreateTestObject(1);
+	}
+
+	if (KEY == GLFW_KEY_3 && ACTION == GLFW_PRESS) {
+		CreateTestObject(2);
+	}
+
+	if (KEY == GLFW_KEY_4 && ACTION == GLFW_PRESS) {
+		CreateTestObject(3);
 	}
 }
 

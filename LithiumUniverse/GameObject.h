@@ -41,6 +41,7 @@ public:
 	RO_Type Type = RO_Default; /* Тип объекта       */
 	bool Active = true;        /* Объект активен?   */
 	bool Deleted = false;	   /* Объект удалённый? */
+	bool DontDelete = false;   /* Не удалять объект */
 
 	/* ==== Настройки рендера ==== */
 	int BaseTexture              = NotSelectedTexture;     /* Базовая текстура                */
@@ -56,7 +57,8 @@ public:
 	bool Selectable              = false;                  /* Мышка реагирует на этот объект? */
 
 	/* ==== Настройки интерфейса ==== */
-	bool Resize = false;                  /* Менять размер вместе с экраном? */
+	bool Resize  = false;                  /* Менять размер вместе с экраном? */
+	int ButtonID = -1;                     /* Является ли компонент кнопкой?  */
 
 	/* ==== Настройки физики ==== */
 	int BodyID             = -1;                     /* Айди b2::Body                   */

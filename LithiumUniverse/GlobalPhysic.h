@@ -5,6 +5,7 @@
 #include "GameObject.h";
 
 extern int MouseObjectConnector;
+extern int MouseObject;
 
 void InstallPhysic(bool DV);
 void ClearPhysic();
@@ -14,4 +15,5 @@ void SetSimulationSpeed(float sp);
 float GetSimulationSpeed();
 void UpdateDeltaTimePhysic(float dt_);
 void CreateTestObject(int type);
-int GetMouseObject();
+void RemoveLastTestObject();
+void RemoveAllTestObject();

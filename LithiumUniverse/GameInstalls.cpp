@@ -269,7 +269,7 @@ private:
 		glm::vec2 Pos3 = Pos2 + glm::vec2(1 - (double)CURRENT_WINDOW_WIDTH_ / (double)START_WINDOW_WIDTH, -(1 - (double)CURRENT_WINDOW_HEIGHT_ / (double)START_WINDOW_HEIGHT));
 		MousePosition = Pos;
 		MousePositionNonResize = Pos3;
-		MouseWorldPosition = ScreenPositionToWorld(Pos3, false);
+		MouseWorldPosition = ScreenPositionToWorld(Pos3, false, true);
 		MouseMove();
 	}
 

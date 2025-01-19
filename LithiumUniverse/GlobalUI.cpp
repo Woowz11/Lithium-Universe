@@ -3,9 +3,12 @@
 #include <GLM/glm.hpp>
 #include <GLM/gtx/rotate_vector.hpp>
 
+#include <vector>
+
 #include "GameObjectActions.h";
 #include "GlobalPhysic.h";
 #include "GlobalRender.h";
+#include "GlobalUI.h";
 
 enum Screen {
 	MainMenu = 0, /* Главное меню */
@@ -18,6 +21,15 @@ Screen CurrentScreen = Game;
 /* Окно в фокусе? */
 bool GameInFocus = true;
 
+/* Мышка на интерфейсе */
+bool MouseOnInterface = false;
+
+/* Кнопки */
+std::vector<Button> Buttons = {};
+
+/* Объект на который наведена мышь (интерфейс) */
+int MouseUIObject = -1;
+
 /* Сделать объект интерфейсом (private) */
 void MakeGameObjectUI__(int i) {
 	GameObject& OBJ = GetGameObject(i, "MakeGameObjectUI__(" + std::to_string(i) + ");");
@@ -25,6 +37,15 @@ void MakeGameObjectUI__(int i) {
 	SetGameObjectSelectable(i, false);
 	OBJ.Resize = true;
 	SetGameObjectLayer(i, 1000);
+}
+
+/* Превратить объект в кнопку */
+void MakeGameObjectButton(int i, std::function<void()> WhenLeftClick, std::function<void()> WhenRightClick) {
+	GameObject& OBJ = GetGameObject(i, "MakeGameObjectButton(" + std::to_string(i) + ",?,?);");
+	int Bi = Buttons.size();
+	OBJ.ButtonID = Bi;
+	Button B = Button(i,WhenLeftClick,WhenRightClick);
+	Buttons.push_back(B);
 }
 
 /* Точка пересекает прямоугольник? */
@@ -39,24 +60,28 @@ bool PointOverBox(glm::vec2 Point, glm::vec2 Pos, glm::vec2 Size) {
 }
 
 /* Точка пересекает прямоугольник? (Интерфейс) */
-bool PointOverUIBox(glm::vec2 Point, glm::vec2 Pos, glm::vec2 Size) {
-	return PointOverBox(ScreenPositionToWorld(Point, true), ScreenPositionToWorld(Pos, true), Size);
+bool PointOverUIBox(glm::vec2 Point, bool Resize, glm::vec2 Pos, glm::vec2 Size) {
+	return PointOverBox(ScreenPositionToWorld(Point, true, Resize), ScreenPositionToWorld(Pos, true, Resize), Size);
 }
 /* Обновление интерфейса */
 int ui_test = -1;
 void UpdateUI() {
-	SetGameObjectPosition(ui_test, glm::vec2(sinf(Time), cosf(Time)));
-	
 	GameObject& ui = GetGameObject(ui_test, "chmona");
-	SetGameObjectTexture(ui_test, PointOverUIBox(ui.Resize ? MousePosition : MousePositionNonResize, ui.PositionVisual, ui.SizeVisual) ? 1 : 2);
+	MouseOnInterface = PointOverUIBox(MousePosition, ui.Resize, ui.PositionVisual, ui.SizeVisual);
+	SetGameObjectTexture(ui_test, MouseOnInterface ? 1 : 2);
+
+	MouseUIObject = MouseOnInterface ? ui_test : -1;
 }
 
 /* Создать интерфейс */
 void CreateUI() {
 	int ui = CreateGameObject("ui", RO_UI);
-	//SetGameObjectResize(ui, false);
-	//SetGameObjectStatic(ui, true);
-	//SetGameObjectPosition(ui, glm::vec2(-1, 1));
+	SetGameObjectSize(ui, glm::vec2(0.5f, 0.25f));
+	SetGameObjectPosition(ui, glm::vec2(-0.9f, -0.9f));
+
+	MakeGameObjectButton(ui, []() {
+		RemoveAllTestObject();
+	}, []() {});
 
 	ui_test = ui;
 }

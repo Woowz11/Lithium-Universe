@@ -263,7 +263,7 @@ void PrintFast(std::string Base, std::string Message) {
 
 /* Отправить очень успрощённое сообщение (очень быстрое) */
 void PrintVeryFast(std::string Message) {
-	std::cout << Message << std::endl;
+	std::cout << std::endl << Message;
 }
 
 /* Отправить важное сообщение */

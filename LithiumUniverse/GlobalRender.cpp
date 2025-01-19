@@ -40,10 +40,13 @@ std::string GamePath;
 /* Константа на размер окна */
 const glm::vec2 ScreenScale    = glm::vec2(10.0f / 3, 7.5f / 3);
 
+/* Отладочный рендер */
+const bool DebugRender = false;
+
 /* ==== Глобальное ==== */
 
 /* Цвет заднего фона */
-glm::vec3 BackgroundColor = glm::vec3(0.05f, 0.05f, 0.05f);
+glm::vec3 BackgroundColor = glm::vec3(0.1f, 0.1f, 0.1f);
 
 /* ==== Вертиксы ==== */
 
@@ -62,13 +65,15 @@ int square_l = 4; /* Кол-во строк в square */
 std::vector<Shader> Shaders = {};
 
 /* Информация о uniform's
-Projection   (mat4)      = Проекция (от камеры)
-Position     (mat4)      = Позиция объекта
-LinePosition (mat4)      = Позиция начала и конца линии
-Random       (float)     = Случайное дробное число от 0 до 1
+Projection   (mat4     ) = Проекция (от камеры)
+Position     (mat4     ) = Позиция объекта
+LinePosition (mat4     ) = Позиция начала и конца линии
+Random       (float    ) = Случайное дробное число от 0 до 1
 Texture      (sampler2D) = Текстура
-Time         (float)     = Прошедшее время с запуска приложения
-DeltaTime    (float)     = Размягчение зависящие от FPS
+Time         (float    ) = Прошедшее время с запуска приложения
+DeltaTime    (float    ) = Размягчение зависящие от FPS
+DebugRender  (bool     ) = Включен отладочный рендер?
+Sleeping     (bool     ) = Физическое тело объекта спит?
 
 Информация о location's
 [0] PolygonPosition (vec3) = Позиция полигона
@@ -106,10 +111,18 @@ uniform float Random;
 uniform float Time;
 uniform float DeltaTime;
 
+uniform bool DebugRender;
+uniform bool Sleeping;
+
 void main()
 {
     vec4 TextureColor = texture(Texture, TextureCoord) * Color;
     if(TextureColor.a == 0){ discard; }
+    if(DebugRender){
+        if(Sleeping){
+            TextureColor *= vec4(1,0,0,1);
+        }
+    }
     FragColor = TextureColor;
 })";
 
@@ -226,6 +239,7 @@ void ClearRender() {
 
 /* ==== Рендер объектов ==== */
 Shader CSS;
+int TEX = -2;
 
 /* Рендер квадрата */
 void RenderSquare(const GameObject& OBJ) {
@@ -233,13 +247,15 @@ void RenderSquare(const GameObject& OBJ) {
     glm::mat4 Projection = glm::mat4(1.0f);
     float Zoom = 1 / (OBJ.Type == RO_UI ? 1 : Camera->Zoom);
 
-    float WIN_WIDTH = OBJ.Resize ? (float)START_WINDOW_WIDTH : (float)CURRENT_WINDOW_WIDTH;
+    float WIN_WIDTH  = OBJ.Resize ? (float)START_WINDOW_WIDTH  : (float)CURRENT_WINDOW_WIDTH;
     float WIN_HEIGHT = OBJ.Resize ? (float)START_WINDOW_HEIGHT : (float)CURRENT_WINDOW_HEIGHT;
 
-    float Left = -WIN_WIDTH / 240;
-    float Right = WIN_WIDTH / 240;
-    float Down = -WIN_HEIGHT / 240;
-    float Up = WIN_HEIGHT / 240;
+    glm::vec2 WIN_DIF = glm::vec2((float)CURRENT_WINDOW_WIDTH / (float)START_WINDOW_WIDTH, (float)CURRENT_WINDOW_HEIGHT / (float)START_WINDOW_HEIGHT);
+
+    float Left  = -WIN_WIDTH  / 240;
+    float Right =  WIN_WIDTH  / 240;
+    float Down  = -WIN_HEIGHT / 240;
+    float Up    =  WIN_HEIGHT / 240;
     Projection = glm::ortho(
         Left  / Zoom,
         Right / Zoom,
@@ -256,7 +272,7 @@ void RenderSquare(const GameObject& OBJ) {
         ResultPosition = glm::rotate(ResultPosition, -Camera->Rotation, glm::vec3(0, 0, 1));
     }
 
-    ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.PositionVisual * (OBJ.Type == RO_UI ? ScreenScale : glm::vec2(1,1)), (OBJ.Layer + (float)OBJ.GetID() / 10000) / 100));
+    ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.PositionVisual * (OBJ.Type == RO_UI ? (OBJ.Resize ? ScreenScale : ScreenScale * WIN_DIF) : glm::vec2(1, 1)), (OBJ.Layer + (float)OBJ.GetID() / 100) / 100));
     if (OBJ.Type != RO_UI) {
         ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
     }
@@ -266,11 +282,20 @@ void RenderSquare(const GameObject& OBJ) {
 
     CSS.setMat4("Position", ResultPosition);
 
+    CSS.setBool("DebugRender", DebugRender);
+    if (OBJ.Type == RO_Phys) {
+        CSS.setBool("Sleeping", !b2Body_IsAwake(GetBody(OBJ.BodyID)));
+    }
+    else {
+        CSS.setBool("Sleeping", false);
+    }
+
     glDrawArrays(GL_QUADS, 0, square_l);
 }
 
 /* Рендерить линию */
 void RenderLine(const GameObject& OBJ) {
+    /* WIP */
     /* ==== Трансформация ==== */
     glm::mat4 Projection = glm::mat4(1.0f);
     float Zoom = 1 / (OBJ.Type == RO_UI ? 1 : Camera->Zoom);
@@ -278,15 +303,15 @@ void RenderLine(const GameObject& OBJ) {
     float WIN_WIDTH = OBJ.Resize ? (float)START_WINDOW_WIDTH : (float)CURRENT_WINDOW_WIDTH;
     float WIN_HEIGHT = OBJ.Resize ? (float)START_WINDOW_HEIGHT : (float)CURRENT_WINDOW_HEIGHT;
 
-    float Left = -WIN_WIDTH / 240;
-    float Right = WIN_WIDTH / 240;
-    float Down = -WIN_HEIGHT / 240;
-    float Up = WIN_HEIGHT / 240;
+    float Left  = -WIN_WIDTH  / 240;
+    float Right =  WIN_WIDTH  / 240;
+    float Down  = -WIN_HEIGHT / 240;
+    float Up    =  WIN_HEIGHT / 240;
     Projection = glm::ortho(
-        Left / Zoom,
+        Left  / Zoom,
         Right / Zoom,
-        Down / Zoom,
-        Up / Zoom,
+        Down  / Zoom,
+        Up    / Zoom,
         -1000.0f, 1000.0f);
     CSS.setMat4("Projection", Projection);
 
@@ -331,8 +356,12 @@ void Render(std::vector<GameObject>& Scene) {
     /* ==== Рендер объектов ==== */
     for (const GameObject& OBJ : Scene) {
         if (!OBJ.Deleted && OBJ.Active && OBJ.Render) {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, OBJ.BaseTexture);
+            int OBJ_Texture = OBJ.BaseTexture;
+            if (OBJ_Texture != TEX) {
+                TEX = OBJ_Texture;
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, TEX);
+            }
 
             Shader OBJ_Shader = Shaders[OBJ.BaseShader];
             if (CSS.RealID != OBJ_Shader.RealID) {
@@ -361,10 +390,13 @@ void Render(std::vector<GameObject>& Scene) {
 }
 
 /* Позицию экранную в мировую */
-glm::vec2 ScreenPositionToWorld(glm::vec2 Pos, bool IgnoreCamera) {
+glm::vec2 ScreenPositionToWorld(glm::vec2 Pos, bool IgnoreCamera, bool Resize) {
     glm::vec2 Result = Pos;
     //800px => 20.0f / 3
     Result *= ScreenScale;
+    if (!Resize) {
+        Result *= glm::vec2((float)CURRENT_WINDOW_WIDTH / (float)START_WINDOW_WIDTH, (float)CURRENT_WINDOW_HEIGHT / (float)START_WINDOW_HEIGHT);
+    }
     if (!IgnoreCamera) {
         Result *= Camera->Zoom;
         Result = glm::rotate(Result, Camera->Rotation);
