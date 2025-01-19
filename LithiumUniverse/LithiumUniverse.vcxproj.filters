@@ -80,6 +80,9 @@
     <ClCompile Include="GlobalRender.cpp">
       <Filter>Scripts\Global</Filter>
     </ClCompile>
+    <ClCompile Include="DebugGetter.cpp">
+      <Filter>Scripts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -120,6 +123,9 @@
     </ClInclude>
     <ClInclude Include="GlobalUI.h">
       <Filter>Scripts\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugGetter.h">
+      <Filter>Scripts</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

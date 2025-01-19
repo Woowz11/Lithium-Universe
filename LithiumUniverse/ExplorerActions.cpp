@@ -56,7 +56,7 @@ void CreateFile_(std::string Path, std::string FileName) {
 	CreateFile_(Path, FileName, "");
 }
 void CreateFile_(std::string Path) {
-	std::ofstream file(FixPath(Path));
+	std::ofstream file(FixPath(Path), std::ios::app);
 	file.close();
 }
 
@@ -66,12 +66,46 @@ bool HasFile(std::string Path) {
 	return f.good();
 }
 
+/* Добавить текст в файл (длинным путём) */
+void AddToFileLongWay(std::string FilePath, std::string AddThat) {
+	if (HasFile(FilePath)) {
+		std::ofstream File(FixPath(FilePath), std::ios::app);
+		File << AddThat;
+		File.close();
+	}
+	else {
+		ErrorFromLog(Base_EA, "It is not possible to add data to the file because file does not exist! AddToFileLongWay(\"" + FilePath + "\",\"" + AddThat + "\");");
+	}
+}
+
 /* Добавить текст в файл */
 void AddToFile(std::ofstream& File, std::string AddThat) {
 	if (File.is_open()) {
 		File << AddThat;
 	}
 	else {
-		ErrorFromLog(Base_EA,"It is not possible to add data to the file because it is not open! AddToFile(?,\""+AddThat+"\");");
+		ErrorFromLog(Base_EA, "It is not possible to add data to the file because it is not open! AddToFile(?,\"" + AddThat + "\");");
+	}
+}
+
+/* Очистить файл (длинным путём) */
+void ClearFileLongWay(std::string FilePath) {
+	if (HasFile(FilePath)) {
+		std::ofstream File(FixPath(FilePath));
+		File.write("", 0);
+		File.close();
+	}
+	else {
+		ErrorFromLog(Base_EA, "he file cannot be cleared because file does not exist! ClearFileLongWay(\"" + FilePath + "\");");
+	}
+}
+
+/* Очистить файл */
+void ClearFile(std::ofstream& File) {
+	if (File.is_open()) {
+		File.write("",0);
+	}
+	else {
+		ErrorFromLog(Base_EA, "The file cannot be cleared because it is not open! ClearFile(?);");
 	}
 }

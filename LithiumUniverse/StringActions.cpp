@@ -24,14 +24,14 @@ std::string Trim(std::string Target) {
 }
 
 /* Заполнить строку символами */
-std::string FillString(std::string Target, char Symbol, int Length, bool ToRight) {
+std::string FillString(std::string Target, char Symbol, int Length, bool ToLeft) {
 	if (Target.length() >= Length) {
 		return Target;
 	}
 
 	int fillLength = Length - Target.length();
 	std::string filledString(fillLength, Symbol);
-	return ToRight ? filledString + Target : Target + filledString;
+	return ToLeft ? filledString + Target : Target + filledString;
 }
 
 /* Заменить все символы в строке на другие символы */

@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClCompile Include="BaseConstants.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="DebugGetter.cpp" />
     <ClCompile Include="ExplorerActions.cpp" />
     <ClCompile Include="GameCamera.h" />
     <ClCompile Include="GameControls.cpp" />
@@ -157,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="BaseConstants.h" />
     <ClInclude Include="Console.h" />
+    <ClInclude Include="DebugGetter.h" />
     <ClInclude Include="ExplorerActions.h" />
     <ClInclude Include="GameControls.h" />
     <ClInclude Include="GameData.h" />

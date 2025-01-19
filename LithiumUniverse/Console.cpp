@@ -9,6 +9,7 @@
 
 #include "ExplorerActions.h";
 #include "StringActions.h";
+#include "GameData.h";
 #include "Console.h";
 
 /* Скрипт [Вывод сообщений в консоль и логирование их] */
@@ -344,7 +345,7 @@ void CloseConsole() {
 }
 
 /* Регистрация консоли */
-void InstallConsole(std::string GamePath) {
+void InstallConsole() {
 	Console = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	LogsPath = AddFileToPath(GamePath, "Logs");

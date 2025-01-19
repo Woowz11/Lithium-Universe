@@ -3,7 +3,7 @@
 #include <string>
 
 std::string Trim(std::string Target);
-std::string FillString(std::string Target, char Symbol, int Length, bool ToRight);
+std::string FillString(std::string Target, char Symbol, int Length, bool ToLeft);
 std::string ReplaceCharsToChars(std::string Target, char ToThis, char ToThat);
 std::string ReplaceCharsToString(std::string Target, char ToThis, std::string ToThat);
 char GetLastSymbol(std::string Target);

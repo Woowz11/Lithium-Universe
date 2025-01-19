@@ -39,4 +39,4 @@ void PrintDebugB(std::string Base, std::string Message);
 void PrintDebugY(std::string Base, std::string Message);
 
 void CloseConsole();
-void InstallConsole(std::string GamePath);
+void InstallConsole();

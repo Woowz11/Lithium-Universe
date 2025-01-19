@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "DebugGetter.h";
 #include "Texture.h";
 #include "ExplorerActions.h";
 #include "Console.h";
@@ -37,11 +38,13 @@ void CreateTexture(std::string Path, std::string Atlas) {
             glTexImage2D(GL_TEXTURE_2D, 0, info.HasAlpha ? GL_RGBA : GL_RGB, width, height, 0, info.HasAlpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
             Print("TEXTURE", "Texture ($$Y" + info.FullPath + "$$_ ($$B" + std::to_string(info.ID) + "$$_)) $$Gcreated$$_!");
+            DebugLog_LoadTexture(info, true);
         }
         else
         {
             Error("TEXTURE", "Failed to load texture! Path: " + info.FullPath);
             info.Error = true;
+            DebugLog_LoadTexture(info, false);
         }
         stbi_image_free(data);
 

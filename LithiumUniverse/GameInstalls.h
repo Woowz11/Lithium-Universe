@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
 
-int Run(std::string GamePath_);
+int Run();
 int KeyPressed(int Key);
 void ExitGame();

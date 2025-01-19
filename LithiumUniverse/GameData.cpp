@@ -1,7 +1,15 @@
 ﻿#include <box2d/box2d.h>
 #include <GLM/glm.hpp>
 
+#include <string>
+
 #include "GameCamera.h";
+
+/* Версия игры */
+std::string Version = "";
+
+/* Позиция папки с игрой */
+std::string GamePath = "";
 
 /* Прошедшее время с запуска игры */
 float Time = 0;

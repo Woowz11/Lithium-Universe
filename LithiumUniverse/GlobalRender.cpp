@@ -34,9 +34,6 @@ void UpdateWindowSize(uint32_t W, uint32_t H) {
 
 LARGE_INTEGER AppTimeFrequency, AppTimeStart, AppTimeEnd;
 
-/* Путь до игры */
-std::string GamePath;
-
 /* Константа на размер окна */
 const glm::vec2 ScreenScale    = glm::vec2(10.0f / 3, 7.5f / 3);
 
@@ -189,11 +186,10 @@ void CreateTextures() {
 }
 
 /* Установить всё для рендера */
-void InstallRender(std::string GamePath_ ,uint32_t SWW, uint32_t SWH, bool DV) {
+void InstallRender(uint32_t SWW, uint32_t SWH, bool DV) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    GamePath = GamePath_;
     START_WINDOW_WIDTH = SWW;
     START_WINDOW_HEIGHT = SWH;
 

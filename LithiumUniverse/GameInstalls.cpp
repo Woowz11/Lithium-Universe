@@ -24,6 +24,7 @@
 #include "GlobalRender.h";
 #include "GlobalPhysic.h";
 #include "GameControls.h";
+#include "DebugGetter.h";
 #include "GameObject.h";
 #include "GlobalUI.h";
 #include "GameData.h";
@@ -41,7 +42,6 @@ uint32_t CURRENT_WINDOW_HEIGHT_ = 0;
 
 class GameInstalls {
 public:
-	std::string GamePath;
 	const uint32_t START_WINDOW_WIDTH = 800;
 	const uint32_t START_WINDOW_HEIGHT = 600;
 	GLFWwindow* Window = NULL;
@@ -49,8 +49,7 @@ public:
 	float FPS = -1;
 
 	/* Запуск игры */
-	void Run(std::string GamePath_) {
-		GamePath = GamePath_;
+	void Run() {
 		RunAll();
 		if (GlobalError==SUCCESS) {
 			Loop();
@@ -59,7 +58,7 @@ public:
 	}
 
 	std::string GetGameTitle() {
-		return "LithiumUniverse (" + GetGameVersion() + ") FPS: " + FillString(std::to_string(FPS),' ',10,false) + " SP: " + std::to_string(GetSimulationSpeed());
+		return "LithiumUniverse (" + Version + ") FPS: " + FillString(std::to_string(FPS),' ',10,false) + " SP: " + std::to_string(GetSimulationSpeed());
 	}
 
 	/* ==== Управление, другие функции ==== */
@@ -232,9 +231,10 @@ private:
 
 	/* Загрузка всего */
 	void RunAll() {
+		InstallDebug();
 		RunGLFW();
 		RunGLAD();
-		InstallRender(GamePath, START_WINDOW_WIDTH, START_WINDOW_HEIGHT, DeveloperVersion);
+		InstallRender(START_WINDOW_WIDTH, START_WINDOW_HEIGHT, DeveloperVersion);
 
 		Print("LU", "All started, and start Loop()!");
 		Print("LU", "=============== [RUNTIME] ===============");
@@ -304,17 +304,24 @@ private:
 
 /* Запуск игры */
 GameInstalls Game;
-int Run(std::string GamePath_) {
-#ifdef NDEBUG
-	DeveloperVersion = false;
-#else
-	DeveloperVersion = true;
-#endif
-
-	Print("LU", "Run LithiumUniverse (" + GetGameVersion() + (DeveloperVersion ? " $$YDEV$$_" : "") + ")!");
-
+int Run() {
 	try {
-		Game.Run(GamePath_);
+#ifdef NDEBUG
+		DeveloperVersion = false;
+#else
+		DeveloperVersion = true;
+#endif
+		Version = GetGameVersion();
+		InstallConsole();
+		InstallDebug();
+		Print("LU", "Run LithiumUniverse (" + Version + ")!");
+
+		Game.Run();
+
+		Print("LU", "$$GGame has been exit successfully!$$_");
+		CloseDebug();
+		CloseConsole();
+		End();
 	}
 	catch (const std::exception& e) {
 		std::string Error = e.what();
@@ -322,8 +329,6 @@ int Run(std::string GamePath_) {
 		Fatal("LU CRASH", "$$rThe game was terminated with an error!$$_");
 		return EXIT_FAILURE;
 	}
-	Print("LU", "$$GGame has been exit successfully!$$_");
-	End();
 	return EXIT_SUCCESS;
 }
 
