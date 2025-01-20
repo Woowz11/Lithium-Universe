@@ -19,11 +19,11 @@ const std::string VanillaControllerID = "VanillaController";
 std::vector<GameResource> Resources = {};
 
 /* Пути ресурсов */
+std::vector<std::string> F_Other    = {};
 std::vector<std::string> F_Scripts  = {};
 std::vector<std::string> F_Shaders  = {};
 std::vector<std::string> F_Textures = {};
 std::vector<std::string> F_Sounds   = {};
-std::vector<std::string> F_Other    = {};
 
 /* Путь до текстуры ошибки */
 std::string ErrorTexturePath = "";
@@ -86,6 +86,9 @@ void DefineResource(std::string Path) {
 	if (type == "png") {
 		F_Textures.push_back(Path);
 	}
+	else if (type == "shader") {
+		F_Shaders.push_back(Path);
+	}
 	else {
 		F_Other.push_back(Path);
 	}
@@ -95,16 +98,13 @@ void CreateNewGameResourceOrSkip(std::string FullPath_, GameResourceType Type_, 
 	auto it = std::find_if(Resources.begin(), Resources.end(),
 		[&FullPath_](const GameResource& GR) { return GR.FullPath == FullPath_; });
 
-	std::string Base_ = "test";
-	std::string Path_ = "Textures/Default2.png";
-
 	if (it != Resources.end()) {
 		GameResource& GR = Resources[std::distance(Resources.begin(), it)];
 		GR.Deleted = false;
 		GR.AssetID = AssetID_;
 	}
 	else {
-		GameResource GR = GameResource(FullPath_, Base_, Path_, Type_, ID_, AssetID_);
+		GameResource GR = GameResource(FullPath_, Type_, ID_, AssetID_);
 		Resources.push_back(GR);
 	}
 }
@@ -131,6 +131,13 @@ void GetAllFilesInGamePath() {
 	}
 }
 
+void UpdateR_Other() {
+	for (std::string r : F_Other) {
+		CreateNewGameResourceOrSkip(r, GR_Other, Resources.size(), -1);
+	}
+	Print("RES", "Other loaded!");
+}
+
 void UpdateR_Scripts() {
 	for (std::string r : F_Scripts) {
 
@@ -141,6 +148,7 @@ void UpdateR_Scripts() {
 void UpdateR_Shaders() {
 	for (std::string r : F_Shaders) {
 
+		CreateNewGameResourceOrSkip(r, GR_Shader, Resources.size(), -1);
 	}
 	Print("RES", "Shaders loaded!");
 }
@@ -177,13 +185,6 @@ void UpdateR_Sounds() {
 	Print("RES", "Sounds loaded!");
 }
 
-void UpdateR_Other() {
-	for (std::string r : F_Other) {
-
-	}
-	Print("RES","Other loaded!");
-}
-
 void UpdateResources() {
 	std::string VanillaTexturesFolder = AddFileToPath(AddFileToPath(GamePath, "Resources"), "Textures");
 	CreateFolder(VanillaTexturesFolder);
@@ -196,10 +197,10 @@ void UpdateResources() {
 	for (auto p : Resources) {
 		p.Deleted = true;
 	}
+	UpdateR_Other();
 	UpdateR_Scripts();
 	UpdateR_Shaders();
 	UpdateR_Textures();
 	UpdateR_Sounds();
-	UpdateR_Other();
 	Print("RES", "Resources updated!");
 }

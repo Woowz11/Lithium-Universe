@@ -13,3 +13,4 @@
 ## Остальное
 * [GLM](https://github.com/g-truc/glm)
 * [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)
+* [JSON](https://github.com/nlohmann/json)

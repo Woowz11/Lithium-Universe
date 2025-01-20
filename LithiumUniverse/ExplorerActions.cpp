@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "nlohmann/json.hpp";
+
 #include "StringActions.h";
 #include "Console.h";
 

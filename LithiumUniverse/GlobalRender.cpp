@@ -80,7 +80,13 @@ Sleeping     (bool     ) = Физическое тело объекта спит
 
 Shader DefaultShader;
 
-std::string DefaultShader_Vert = R"(#version 330 core
+Shader ErrorShader;
+
+Shader LineShader;
+
+/* Создать шейдеры */
+void CreateShaders() {
+    std::string vert = R"(#version 330 core
 layout (location = 0) in vec3 PolygonPosition;
 layout (location = 1) in vec2 TextureUV;
 
@@ -98,7 +104,7 @@ void main()
     TextureCoord = vec2(TextureUV.x, 1.0 - TextureUV.y);
 })";
 
-std::string DefaultShader_Frag = R"(#version 330 core
+    std::string frag = R"(#version 330 core
 out vec4 FragColor;
 
 in vec2 TextureCoord;
@@ -124,48 +130,11 @@ void main()
     FragColor = TextureColor;
 })";
 
-Shader ErrorShader;
-
-std::string ErrorShader_Frag = R"(#version 330 core
-out vec4 FragColor;
-
-in vec2 TextureCoord;
-uniform vec4 Color;
-
-uniform sampler2D Texture;
-
-void main()
-{
-    FragColor = vec4(1.0f,0.0f,1.0f,1.0f) * Color;
-})";
-
-Shader LineShader;
-
-std::string LineShader_Vert = R"(#version 330 core
-layout (location = 0) in vec3 PolygonPosition;
-layout (location = 1) in vec2 TextureUV;
-
-out vec2 TextureCoord;
-
-uniform mat4 LinePosition;
-uniform mat4 Projection;
-uniform float Random;
-uniform float Time;
-uniform float DeltaTime;
-
-void main()
-{
-    gl_Position = Projection * LinePosition * vec4(PolygonPosition, 1.0f);
-    TextureCoord = vec2(TextureUV.x, 1.0 - TextureUV.y);
-})";
-
-/* Создать шейдеры */
-void CreateShaders() {
-    ErrorShader = *new Shader("Error", DefaultShader_Vert, ErrorShader_Frag);
+    ErrorShader = *new Shader("Error", vert, frag);
     Shaders.push_back(ErrorShader);
-    DefaultShader = *new Shader("Default", DefaultShader_Vert, DefaultShader_Frag);
+    DefaultShader = *new Shader("Default", vert, frag);
     Shaders.push_back(DefaultShader);
-    LineShader = *new Shader("Line", LineShader_Vert, DefaultShader_Frag);
+    LineShader = *new Shader("Line", vert, frag);
     Shaders.push_back(LineShader);
 }
 

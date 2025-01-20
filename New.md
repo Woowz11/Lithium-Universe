@@ -118,4 +118,5 @@
 * [23:04] Добавлен [Sol2](https://github.com/ThePhD/sol2)
 # 20.01.2025
 * [14:10] Добавлена перезагрузка ресурсов
+* [15:09] Добавлен [JSON](https://github.com/nlohmann/json)
 # 0.2X
