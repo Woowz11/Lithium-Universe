@@ -92,6 +92,9 @@
     <ClCompile Include="GlobalLua.cpp">
       <Filter>Scripts\Global</Filter>
     </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Scripts\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">

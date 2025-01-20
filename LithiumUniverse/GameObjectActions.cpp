@@ -238,6 +238,17 @@ void SetGameObjectLayer(int i, float l) {
 	}
 }
 
+/* Установить шейдер объекту */
+void SetGameObjectShader(int i, int s) {
+	GameObject& OBJ = GetGameObject(i, "SetGameObjectShader(" + std::to_string(i) + "," + std::to_string(s) + ");");
+	if (!OBJ.Deleted) {
+		OBJ.BaseShaderRes = s;
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectShader(" + std::to_string(i) + "," + std::to_string(s) + ");");
+	}
+}
+
 /* Установить текстуру объекту */
 void SetGameObjectTexture(int i, int t) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectTexture(" + std::to_string(i) + "," + std::to_string(t) + ");");
@@ -421,7 +432,8 @@ int CreateGameObject(std::string Name = "[New GameObject]", RO_Type ObjectType =
 	GameObject OBJ = GameObject(Name, i);
 	Scene.push_back(OBJ);
 
-	SetGameObjectTexture(OBJ.GetID(), GetResource("Base","Textures/Error/NotSelected.png").ID);
+	SetGameObjectShader (OBJ.GetID(), GetResource("Base", "Shaders/Default.shader"        ).ID);
+	SetGameObjectTexture(OBJ.GetID(), GetResource("Base", "Textures/Error/NotSelected.png").ID);
 
 	switch (ObjectType)
 	{

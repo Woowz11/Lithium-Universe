@@ -5,6 +5,7 @@
 #include <string>
 
 #include "nlohmann/json.hpp";
+using json = nlohmann::json;
 
 #include "StringActions.h";
 #include "Console.h";
@@ -162,4 +163,57 @@ std::string GetFileType(std::string FilePath) {
 		ErrorFromLog(Base_EA, "Unable to determine file type because file does not exist! GetFileType(\"" + FilePath + "\");");
 	}
 	return "";
+}
+
+/* Прочесть файл */
+std::string ReadFile(std::string FilePath) {
+	if (HasFile(FilePath)) {
+		std::ifstream file(FilePath);
+		std::stringstream buffer;
+		buffer << file.rdbuf();
+		return buffer.str();
+	}
+	else {
+		Error(Base_EA, "The file cannot be read because it does not exist! ReadFile(\"" + FilePath + "\");");
+	}
+	return "";
+}
+
+/* Получить название файла */
+std::string GetFileName(std::string FilePath) {
+	if (HasFile(FilePath)) {
+		std::filesystem::path path(FilePath);
+		return path.stem().string();
+	}
+	else {
+		ErrorFromLog(Base_EA, "Unable to get file name because file does not exist! GetFileName(\"" + FilePath + "\");");
+	}
+	return "";
+}
+
+/* ==== JSON ==== */
+
+json ErrorJson = { {"Error", true} };
+
+/* Конвертировать строку в Json */
+json ConvertStringToJson(std::string Json) {
+	try {
+		return json::parse(Json);
+	}
+	catch (const json::parse_error& e) {
+		Error("JSON", "Failed to convert std::string to JSON! ConvertStringToJson(R\"(\n" + Json + "\n)\");");
+		Error("JSON", e.what());
+	}
+	return ErrorJson;
+}
+
+/* Прочитать JSON файл */
+json ReadJson(std::string FilePath) {
+	if (HasFile(FilePath)) {
+		return ConvertStringToJson(ReadFile(FilePath));
+	}
+	else {
+		Error("JSON", "Unable to read JSON file because it does not exist! ReadJson(\"" + FilePath + "\");");
+	}
+	return ErrorJson;
 }

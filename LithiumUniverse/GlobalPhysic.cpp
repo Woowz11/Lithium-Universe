@@ -184,8 +184,7 @@ void ClearPhysic() {
 }
 
 /* Установить физику */
-void InstallPhysic(bool DV) {
-	DeveloperVersion = DV;
+void InstallPhysic() {
 	InstallBox2D();
 	CreateUI();
 	CreateScene();

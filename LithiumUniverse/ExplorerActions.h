@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 
+#include "nlohmann/json.hpp";
+
 std::string FixPath(std::string Path);
 void CreateFolder(std::string Path);
 std::string RemoveLastFileInPath(std::string Path);
@@ -18,4 +20,9 @@ void ClearFileLongWay(std::string FilePath);
 void ClearFile(std::ofstream& File);
 std::vector<std::string> GetFolders(std::string Path);
 std::vector<std::string> GetFilesIncludeSubFolders(std::string Path);
+std::string GetFileName(std::string FilePath);
 std::string GetFileType(std::string FilePath);
+std::string ReadFile(std::string FilePath);
+
+nlohmann::json ConvertStringToJson(std::string Json);
+nlohmann::json ReadJson(std::string FilePath);

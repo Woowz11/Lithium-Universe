@@ -153,6 +153,7 @@
     <ClCompile Include="GlobalUI.cpp" />
     <ClCompile Include="LithiumUniverse.cpp" />
     <ClCompile Include="GameObject.h" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shader.h" />
     <ClCompile Include="Start.cpp" />
     <ClCompile Include="StringActions.cpp" />

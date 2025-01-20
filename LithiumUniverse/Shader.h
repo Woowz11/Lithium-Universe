@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
+#include <vector>
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -11,24 +12,19 @@
 #include "StringActions.h";
 #include "Console.h";
 
-static unsigned int ErrorShaderID = 3;
-
 class Shader
 {
 public:
     unsigned int ID;
     unsigned int RealID;
-    std::string Name;
+    std::string FullPath;
     bool Success = true;
 
-    Shader() { RealID = -1; ID = ErrorShaderID; Name = "Unknown"; }
+    Shader() { RealID = -1; ID = -1; FullPath = ""; }
 
-    Shader(std::string Name_, std::string VertexCode, std::string FragmentCode)
+    Shader(std::string FullPath_, std::string VertexCode, std::string FragmentCode, int ErrorShaderID)
     {
-        Name = Name_;
-
-        std::string vertexCode;
-        std::string fragmentCode;
+        FullPath = FullPath_;
 
         const char* vShaderCode = VertexCode.c_str();
         const char* fShaderCode = FragmentCode.c_str();
@@ -54,12 +50,21 @@ public:
         glDeleteShader(vertex);
         glDeleteShader(fragment);
 
-        Print("SHADER", "Shader ($$Y" + Name + "$$_ ($$B" + std::to_string(RealID) + "$$_)) "+(Success?"$$Gcreated" : "has $$Rerrors") + "$$_!");
+        Print("SHADER", "Shader ($$Y" + FullPath + "$$_ ($$B" + std::to_string(RealID) + "$$_)) " + (Success ? "$$Gcreated" : "has $$Rerrors") + "$$_!");
         if (Success) {
             ID = RealID;
         }
         else {
             ID = ErrorShaderID;
+        }
+
+        glUseProgram(ID);
+        setInt("Texture", 0);
+    }
+
+    void DeleteShader() {
+        if (RealID != -1) {
+            glDeleteProgram(RealID);
         }
     }
 
@@ -131,7 +136,7 @@ private:
             if (!success)
             {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-                Error("SHADER (COMPIL.)", "Error with shader ($$Y" + Name + "$$_ ($$B" + std::to_string(RealID) + "$$_)) type: $$C" + type);
+                Error("SHADER (COMPIL.)", "Error with shader ($$Y" + FullPath + "$$_ type: $$Y" + type + "$$_ ($$P" + std::to_string(shader) + "$$_)");
                 Error("SHADER (COMPIL.)", RemoveLastSymbol(infoLog));
                 Error("SHADER (COMPIL.)", "$$R---------------------------------------------------");
             }
@@ -142,7 +147,7 @@ private:
             if (!success)
             {
                 glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-                Error("SHADER (LINKING)", "Error with shader ($$Y" + Name + "$$_ ($$B" + std::to_string(RealID) + "$$_)) type: $$C" + type);
+                Error("SHADER (LINKING)", "Error with shader ($$Y" + FullPath + "$$_ ($$B" + std::to_string(RealID) + "$$_)) type: $$Y" + type + "$$_ ($$P" + std::to_string(shader) + "$$_)");
                 Error("SHADER (LINKING)", RemoveLastSymbol(infoLog));
                 Error("SHADER (LINKING)", "$$R---------------------------------------------------");
             }
@@ -152,4 +157,7 @@ private:
         }
     }
 };
+
+extern std::vector<Shader> Shaders;
+
 #endif

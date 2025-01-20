@@ -236,8 +236,9 @@ private:
 	void RunAll() {
 		RunGLFW();
 		RunGLAD();
+		InstallRender(START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
 		UpdateResources();
-		InstallRender(START_WINDOW_WIDTH, START_WINDOW_HEIGHT, DeveloperVersion);
+		InstallRenderAfterResources();
 
 		InstallLua();
 		CheckMods();

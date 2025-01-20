@@ -7,7 +7,8 @@
 #include "GameObject.h";
 
 void Render(std::vector<GameObject>& Scene);
-void InstallRender(uint32_t SWW, uint32_t SWH, bool DV);
+void InstallRender(uint32_t SWW, uint32_t SWH);
+void InstallRenderAfterResources();
 void ClearRender();
 void UpdateDeltaTime(float DT);
 void UpdateWindowSize(uint32_t W, uint32_t H);

@@ -7,7 +7,7 @@
 extern int MouseObjectConnector;
 extern int MouseObject;
 
-void InstallPhysic(bool DV);
+void InstallPhysic();
 void ClearPhysic();
 void CreateScene();
 std::vector<GameObject>& UpdatePhysic();

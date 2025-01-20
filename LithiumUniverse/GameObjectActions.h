@@ -19,24 +19,27 @@ GameObject& GetGameObjectFromBody(b2BodyId b);
 b2BodyId GetBody(int i);
 GameObject& GetGameObject(int i, std::string message);
 
+int CreateGameObject(std::string Name, RO_Type ObjectType);
+void DeleteGameObject(int i);
+
 void SetGameObjectDontDelete(int i, bool b);
 void SetGameObjectResize(int i, bool b);
 void SetGameObjectLayer(int i, float l);
+void SetGameObjectShader(int i, int s);
 void SetGameObjectTexture(int i, int t);
 void SetGameObjectActive(int i, bool b);
 void SetGameObjectCollider(int i, ColliderType CT);
 void SetGameObjectSelectable(int i, bool b);
-int GetGameObjectFromPoint(glm::vec2 PointPos);
-int CreateGameObject(std::string Name, RO_Type ObjectType);
-void DeleteGameObject(int i);
 void SetGameObjectStatic(int i, bool b);
-glm::vec4 GetGameObjectColor(int i);
-void SetGameObjectColor(int i, glm::vec4 c);
-glm::vec2 GetGameObjectPosition(int i);
-void SetGameObjectPosition(int i, glm::vec2 p);
-float GetGameObjectOrientation(int i);
-void SetGameObjectOrientation(int i, float r);
-void SetGameObjectTransform(int i, glm::vec2 p, float r);
-glm::vec2 GetGameObjectSize(int i);
 void SetGameObjectSize(int i, glm::vec2 s);
 void SetGameObjectRenderable(int i, bool b);
+void SetGameObjectColor(int i, glm::vec4 c);
+void SetGameObjectPosition(int i, glm::vec2 p);
+void SetGameObjectOrientation(int i, float r);
+void SetGameObjectTransform(int i, glm::vec2 p, float r);
+
+glm::vec2 GetGameObjectPosition(int i);
+float GetGameObjectOrientation(int i);
+glm::vec4 GetGameObjectColor(int i);
+glm::vec2 GetGameObjectSize(int i);
+int GetGameObjectFromPoint(glm::vec2 PointPos);

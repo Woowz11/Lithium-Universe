@@ -58,88 +58,8 @@ float square[] = {
 };
 int square_l = 4; /* Кол-во строк в square */
 
-/* ==== Шейдеры ==== */
-
-std::vector<Shader> Shaders = {};
-
-/* Информация о uniform's
-Projection   (mat4     ) = Проекция (от камеры)
-Position     (mat4     ) = Позиция объекта
-LinePosition (mat4     ) = Позиция начала и конца линии
-Random       (float    ) = Случайное дробное число от 0 до 1
-Texture      (sampler2D) = Текстура
-Time         (float    ) = Прошедшее время с запуска приложения
-DeltaTime    (float    ) = Размягчение зависящие от FPS
-DebugRender  (bool     ) = Включен отладочный рендер?
-Sleeping     (bool     ) = Физическое тело объекта спит?
-
-Информация о location's
-[0] PolygonPosition (vec3) = Позиция полигона
-[1] TextureUV       (vec2) = Развёртка текстуры
-*/
-
-Shader DefaultShader;
-
-Shader ErrorShader;
-
-Shader LineShader;
-
-/* Создать шейдеры */
-void CreateShaders() {
-    std::string vert = R"(#version 330 core
-layout (location = 0) in vec3 PolygonPosition;
-layout (location = 1) in vec2 TextureUV;
-
-out vec2 TextureCoord;
-
-uniform mat4 Position;
-uniform mat4 Projection;
-uniform float Random;
-uniform float Time;
-uniform float DeltaTime;
-
-void main()
-{
-    gl_Position = Projection * Position * vec4(PolygonPosition, 1.0f);
-    TextureCoord = vec2(TextureUV.x, 1.0 - TextureUV.y);
-})";
-
-    std::string frag = R"(#version 330 core
-out vec4 FragColor;
-
-in vec2 TextureCoord;
-
-uniform sampler2D Texture;
-uniform vec4 Color;
-uniform float Random;
-uniform float Time;
-uniform float DeltaTime;
-
-uniform bool DebugRender;
-uniform bool Sleeping;
-
-void main()
-{
-    vec4 TextureColor = texture(Texture, TextureCoord) * Color;
-    if(TextureColor.a == 0){ discard; }
-    if(DebugRender){
-        if(Sleeping){
-            TextureColor *= vec4(1,0,0,1);
-        }
-    }
-    FragColor = TextureColor;
-})";
-
-    ErrorShader = *new Shader("Error", vert, frag);
-    Shaders.push_back(ErrorShader);
-    DefaultShader = *new Shader("Default", vert, frag);
-    Shaders.push_back(DefaultShader);
-    LineShader = *new Shader("Line", vert, frag);
-    Shaders.push_back(LineShader);
-}
-
 /* Установить всё для рендера */
-void InstallRender(uint32_t SWW, uint32_t SWH, bool DV) {
+void InstallRender(uint32_t SWW, uint32_t SWH) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -148,10 +68,10 @@ void InstallRender(uint32_t SWW, uint32_t SWH, bool DV) {
 
     QueryPerformanceFrequency(&AppTimeFrequency);
     QueryPerformanceCounter(&AppTimeStart);
+}
 
-    /* ==== Шейдеры ====*/
-
-    CreateShaders();
+/* Установить всё для рендера после загрузки ресурсов */
+void InstallRenderAfterResources() {
 
     /* ==== Вертиксы ====*/
 
@@ -169,12 +89,9 @@ void InstallRender(uint32_t SWW, uint32_t SWH, bool DV) {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glUseProgram(DefaultShader.ID);
-    DefaultShader.setInt("Texture", 0);
-
     /* ==== Физика ==== */
 
-    InstallPhysic(DV);
+    InstallPhysic();
 }
 
 /* Удалить всё что осталось после рендера */
@@ -311,8 +228,8 @@ void Render(std::vector<GameObject>& Scene) {
                 glBindTexture(GL_TEXTURE_2D, TEX);
             }
 
-            Shader OBJ_Shader = Shaders[/*OBJ.BaseShader*/ 1];
-            if (CSS.RealID != OBJ_Shader.RealID) {
+            Shader OBJ_Shader = Shaders[GetResourceAssetID(OBJ.BaseShaderRes)];
+            if (CSS.ID != OBJ_Shader.ID) {
                 CSS = OBJ_Shader;
                 glUseProgram(CSS.ID);
             }
