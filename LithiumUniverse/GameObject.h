@@ -4,6 +4,7 @@
 #include <string>
 #include <GLM/glm.hpp>
 
+#include "GlobalResources.h";
 #include "StringActions.h";
 #include "GameResource.h";
 #include "GameData.h";
@@ -45,8 +46,8 @@ public:
 	bool DontDelete = false;   /* Не удалять объект */
 
 	/* ==== Настройки рендера ==== */
-	int BaseTextureRes           = 1;                     /* Базовая текстура                */
-	int BaseShaderRes            = 1;                     /* Базовый шейдер                  */
+	int BaseTextureRes           = 0;                      /* Базовая текстура                */
+	int BaseShaderRes            = 0;                      /* Базовый шейдер                  */
 	glm::vec2 PositionVisual     = glm::vec2(0, 0);        /* Позиция объекта                 */
 	glm::vec4 LinePositionVisual = glm::vec4(-1, 0, 1, 0); /* Позиция начала и конца линии    */
 	glm::vec2 SizeVisual         = glm::vec2(1, 1);        /* Размер объекта                  */

@@ -1,4 +1,5 @@
-﻿#include <string>
+﻿#include <algorithm>
+#include <string>
 #include <vector>
 #include <map>
 
@@ -9,6 +10,7 @@
 #include "Texture.h";
 #include "Shader.h";
 
+const std::string BaseID              = "Base";
 const std::string VanillaID           = "Vanilla";
 const std::string VanillaPhysicID     = "VanillaPhysic";
 const std::string VanillaControllerID = "VanillaController";
@@ -23,8 +25,8 @@ std::vector<std::string> F_Textures = {};
 std::vector<std::string> F_Sounds   = {};
 std::vector<std::string> F_Other    = {};
 
-/* Ошибочный ресурс */
-GameResource GameResourceError = GameResource("", "", "", GR_Other, -1, -1);
+/* Путь до текстуры ошибки */
+std::string ErrorTexturePath = "";
 
 /* Получить ресурс по полному пути */
 GameResource GetResourceDebug(std::string FullPath) {
@@ -36,8 +38,45 @@ GameResource GetResourceDebug(std::string FullPath) {
 	}
 	else {
 		Error("RES", "Resource not found at path! GetResourceDebug(\"" + FullPath + "\");");
-		return GameResourceError;
+		return GetResourceDebug(ErrorTexturePath);
 	}
+}
+
+/* Получить ресурс по пути */
+GameResource GetResource(std::string Base, std::string Path) {
+	return GetResourceDebug(GamePath + "/" + (Base == BaseID ? "Resources" : Base) + "/" + Path);
+}
+
+/* Получить айди ресурса */
+int GetResourceID(int ID, int IfNotFound) {
+#ifdef NDEBUG
+	return Resources[ID];
+#else
+	if (ID >= 0 && ID < Resources.size()) {
+		GameResource GR = Resources[ID];
+		if (!GR.Deleted) {
+			return ID;
+		}
+		else {
+			Error("RES", "Unable to get resource because it has been deleted! GetResourceID(" + std::to_string(ID) + "," + std::to_string(IfNotFound) + ");");
+		}
+	}
+	else {
+		Error("RES", "Unable to get resource because it is not in the array of all resources! GetResourceID(" + std::to_string(ID) + "," + std::to_string(IfNotFound) + ");");
+	}
+	return IfNotFound;
+#endif
+}
+int GetResourceID(int ID) {
+	return GetResourceID(ID, GetResourceDebug(ErrorTexturePath).ID);
+}
+
+/* Получить айди ассета ресурса */
+int GetResourceAssetID(int ID, int IfNotFound) {
+	return Resources[GetResourceID(ID, IfNotFound)].AssetID;
+}
+int GetResourceAssetID(int ID) {
+	return GetResourceAssetID(ID, GetResourceDebug(ErrorTexturePath).ID);
 }
 
 /* Определить ресурс по типу */
@@ -52,7 +91,7 @@ void DefineResource(std::string Path) {
 	}
 }
 
-GameResource CreateNewGameResourceOrSkip(std::string FullPath_, GameResourceType Type_, int ID_, int AssetID_) {
+void CreateNewGameResourceOrSkip(std::string FullPath_, GameResourceType Type_, int ID_, int AssetID_) {
 	auto it = std::find_if(Resources.begin(), Resources.end(),
 		[&FullPath_](const GameResource& GR) { return GR.FullPath == FullPath_; });
 
@@ -60,15 +99,13 @@ GameResource CreateNewGameResourceOrSkip(std::string FullPath_, GameResourceType
 	std::string Path_ = "Textures/Default2.png";
 
 	if (it != Resources.end()) {
-		GameResource GR = Resources[std::distance(Resources.begin(), it)];
+		GameResource& GR = Resources[std::distance(Resources.begin(), it)];
 		GR.Deleted = false;
 		GR.AssetID = AssetID_;
-		return GR;
 	}
 	else {
 		GameResource GR = GameResource(FullPath_, Base_, Path_, Type_, ID_, AssetID_);
 		Resources.push_back(GR);
-		return GR;
 	}
 }
 
@@ -98,44 +135,53 @@ void UpdateR_Scripts() {
 	for (std::string r : F_Scripts) {
 
 	}
-	Print("R/SCR.", "Loaded!");
+	Print("RES", "Scripts loaded!");
 }
 
 void UpdateR_Shaders() {
 	for (std::string r : F_Shaders) {
 
 	}
-	Print("R/SHDR.", "Loaded!");
+	Print("RES", "Shaders loaded!");
 }
 
 void RemoveR_Textures() {
+	F_Textures = {};
 	for (Texture T : Texturies) {
-		DeleteTexture(T.ID);
+		DeleteTexture(T);
 	}
 	Texturies = {};
 }
 
 void UpdateR_Textures() {
+	ErrorTexturePath = GamePath + "/Resources/Textures/Error/NotFound.png";
+	std::string Target = ErrorTexturePath;
+	std::sort(F_Textures.begin(), F_Textures.end(), [&Target](const std::string& a, const std::string& b) {
+		if (a == Target) return true;
+		if (b == Target) return false;
+		return false;
+	});
+
 	for (std::string r : F_Textures) {
 		Texture T = CreateTexture(r, "Test");
 
 		CreateNewGameResourceOrSkip(r, GR_Texture, Resources.size(), T.ID);
 	}
-	Print("R/TXTR.", "Loaded!");
+	Print("REs", "Textures loaded!");
 }
 
 void UpdateR_Sounds() {
 	for (std::string r : F_Sounds) {
 
 	}
-	Print("R/SND.", "Loaded!");
+	Print("RES", "Sounds loaded!");
 }
 
 void UpdateR_Other() {
 	for (std::string r : F_Other) {
 
 	}
-	Print("R/OTHR.","Loaded!");
+	Print("RES","Other loaded!");
 }
 
 void UpdateResources() {

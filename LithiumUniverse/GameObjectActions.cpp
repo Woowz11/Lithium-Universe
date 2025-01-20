@@ -242,7 +242,7 @@ void SetGameObjectLayer(int i, float l) {
 void SetGameObjectTexture(int i, int t) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectTexture(" + std::to_string(i) + "," + std::to_string(t) + ");");
 	if (!OBJ.Deleted) {
-		OBJ.BaseTextureRes = GetResourceDebug("F:/Lithium-Universe/LithiumUniverse/x64/Dev/Resources/Textures/NotSelected.png").ID; //t;
+		OBJ.BaseTextureRes = t;
 	}
 	else {
 		GameObjectDeleted__(OBJ, "SetGameObjectTexture(" + std::to_string(i) + "," + std::to_string(t) + ");");
@@ -420,6 +420,9 @@ int CreateGameObject(std::string Name = "[New GameObject]", RO_Type ObjectType =
 	int i = Scene.size();
 	GameObject OBJ = GameObject(Name, i);
 	Scene.push_back(OBJ);
+
+	SetGameObjectTexture(OBJ.GetID(), GetResource("Base","Textures/Error/NotSelected.png").ID);
+
 	switch (ObjectType)
 	{
 		case RO_Default:

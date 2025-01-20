@@ -335,7 +335,7 @@ void Render(std::vector<GameObject>& Scene) {
     /* ==== Рендер объектов ==== */
     for (const GameObject& OBJ : Scene) {
         if (!OBJ.Deleted && OBJ.Active && OBJ.Render) {
-            int OBJ_Texture = Resources[OBJ.BaseTextureRes].AssetID;
+            int OBJ_Texture = GetResourceAssetID(OBJ.BaseTextureRes);
             if (OBJ_Texture != TEX) {
                 TEX = OBJ_Texture;
                 glActiveTexture(GL_TEXTURE0);

@@ -15,8 +15,8 @@ std::vector<Texture> Texturies = {};
 int NotSelectedTexture = 1;
 
 /* Удалить текстуру */
-void DeleteTexture(unsigned int TextureID) {
-    glDeleteTextures(1, &TextureID);
+void DeleteTexture(Texture& T) {
+    glDeleteTextures(1, &T.ID);
 }
 
 /* Создать текстуру */
@@ -37,11 +37,14 @@ Texture CreateTexture(std::string Path, std::string Atlas) {
         unsigned char* data = stbi_load(info.FullPath.c_str(), &width, &height, &channels, 0);
         if (data)
         {
-            info.HasAlpha = channels == 4;
+            info.HasAlpha = (channels == 4);
             info.Width = width;
             info.Height = height;
-            glTexImage2D(GL_TEXTURE_2D, 0, info.HasAlpha ? GL_RGBA : GL_RGB, width, height, 0, info.HasAlpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
+            GLenum Format = info.HasAlpha ? GL_RGBA : GL_RGB;
+
+            glTexImage2D(GL_TEXTURE_2D, 0, Format, width, height, 0, Format, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
+
             Print("TEXTURE", "Texture ($$Y" + info.FullPath + "$$_ ($$B" + std::to_string(info.ID) + "$$_)) $$Gcreated$$_!");
             DebugLog_LoadTexture(info, true);
         }

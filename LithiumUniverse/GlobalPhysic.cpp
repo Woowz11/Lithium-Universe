@@ -9,6 +9,7 @@
 #include <box2d/box2d.h>
 
 #include "GameObjectActions.h";
+#include "GlobalResources.h";
 #include "GlobalRender.h";
 #include "GameObject.h";
 #include "GameCamera.h";
@@ -52,14 +53,14 @@ void CreateTestObject(int type) {
 		break;
 	case 2:
 		SetGameObjectSize(box, glm::vec2(5, 0.25f));
-		SetGameObjectTexture(box, 5);
+		SetGameObjectTexture(box, GetResource("Base", "Textures/Cable.png").ID);
 		break;
 	case 3:
 		SetGameObjectCollider(box, CT_Circle);
-		SetGameObjectTexture(box, 4);
+		SetGameObjectTexture(box, GetResource("Base", "Textures/Circle.png").ID);
 		break;
 	default:
-		SetGameObjectTexture(box, 2);
+		SetGameObjectTexture(box, GetResource("Base", "Textures/Default.png").ID);
 		break;
 	}
 

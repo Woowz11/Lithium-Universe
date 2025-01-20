@@ -45,10 +45,10 @@ void ButtonHover__(int i, bool Hover) {
 		GameObject& OBJ = GetGameObject(i, "ButtonHover__(" + std::to_string(i) + "," + ToStringBool(Hover) + ");");
 		if (OBJ.ButtonID != -1) {
 			if (Hover) {
-				SetGameObjectTexture(i, 7);
+				SetGameObjectTexture(i, GetResource("Base", "Textures/ButtonHover.png").ID);
 			}
 			else {
-				SetGameObjectTexture(i, 6);
+				SetGameObjectTexture(i, GetResource("Base", "Textures/Button.png").ID);
 			}
 		}
 	}
@@ -57,6 +57,7 @@ void ButtonHover__(int i, bool Hover) {
 /* Превратить объект в кнопку */
 void MakeGameObjectButton(int i, std::function<void()> WhenLeftClick, std::function<void()> WhenRightClick) {
 	GameObject& OBJ = GetGameObject(i, "MakeGameObjectButton(" + std::to_string(i) + ",?,?);");
+	SetGameObjectTexture(i, GetResource("Base", "Textures/Button.png").ID);
 	int Bi = Buttons.size();
 	OBJ.ButtonID = Bi;
 	Button B = Button(i,WhenLeftClick,WhenRightClick);
@@ -114,7 +115,6 @@ void UpdateUI(GameObject& OBJ) {
 /* Создать интерфейс */
 void CreateUI() {
 	int ui = CreateGameObject("ui", RO_UI);
-	SetGameObjectTexture(ui, 6);
 	SetGameObjectSize(ui, glm::vec2(0.25f, 0.25f));
 	SetGameObjectPosition(ui, glm::vec2(-0.9f, -0.9f));
 
@@ -125,12 +125,11 @@ void CreateUI() {
 	ui_test = ui;
 
 	ui = CreateGameObject("ui", RO_UI);
-	SetGameObjectTexture(ui, 6);
 	SetGameObjectSize(ui, glm::vec2(0.25f, 0.25f));
 	SetGameObjectPosition(ui, glm::vec2(-0.75f, -0.9f));
 
 	MakeGameObjectButton(ui, []() {
-		RemoveAllTestObject();
+		UpdateResources();
 	}, []() {});
 
 	ui_test2 = ui;
