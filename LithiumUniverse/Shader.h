@@ -59,7 +59,6 @@ public:
         }
 
         glUseProgram(ID);
-        setInt("Texture", 0);
     }
 
     void DeleteShader() {

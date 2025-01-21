@@ -277,6 +277,7 @@ private:
 		MousePosition = Pos;
 		MousePositionNonResize = Pos3;
 		MouseWorldPosition = ScreenPositionToWorld(Pos3, false, true);
+		MousePositionScreen = glm::vec2(xpos, CURRENT_WINDOW_HEIGHT_ - ypos);
 		MouseMove();
 	}
 

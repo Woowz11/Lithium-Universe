@@ -26,6 +26,9 @@ bool DeveloperVersion = false;
 /* Игровая камера */
 GameCamera* Camera = new GameCamera();
 
+/* Позиция мыши в экранных координатах (в пикселях) */
+glm::vec2 MousePositionScreen = glm::vec2(0, 0);
+
 /* Позиция мыши в экранных координатах */
 glm::vec2 MousePosition = glm::vec2(0, 0);
 

@@ -13,3 +13,4 @@ void ClearRender();
 void UpdateDeltaTime(float DT);
 void UpdateWindowSize(uint32_t W, uint32_t H);
 glm::vec2 ScreenPositionToWorld(glm::vec2 Pos, bool IgnoreCamera, bool Resize);
+void ReloadShaderTime();

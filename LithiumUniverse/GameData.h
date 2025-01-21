@@ -11,6 +11,7 @@ extern float DeltaTime;
 extern float GameDeltaTime;
 extern bool DeveloperVersion;
 
+extern glm::vec2 MousePositionScreen;
 extern glm::vec2 MousePosition;
 extern glm::vec2 MousePositionNonResize;
 extern glm::vec2 MouseWorldPosition;

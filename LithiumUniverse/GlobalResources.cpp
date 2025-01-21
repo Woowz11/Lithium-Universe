@@ -7,6 +7,7 @@
 using json = nlohmann::json;
 
 #include "ExplorerActions.h";
+#include "GlobalRender.h";
 #include "GameResource.h";
 #include "GameData.h";
 #include "Console.h";
@@ -188,6 +189,10 @@ void UpdateR_Shaders() {
 
 	for (std::string r : F_Shaders) {
 		int ID = -1;
+
+		std::string Vertex = "";
+		std::string Fragment = "";
+
 		json ShaderInfo = ReadJson(r);
 		if (ShaderInfo["Error"] == true) {
 			Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because its JSON file contains an error! UpdateR_Shaders();");
@@ -195,29 +200,34 @@ void UpdateR_Shaders() {
 		else {
 			std::string VertexPath = ComplexToFullPath(ShaderInfo["Vertex"]);
 			std::string FragmentPath = ComplexToFullPath(ShaderInfo["Fragment"]);
+
 			if (VertexPath == "" || FragmentPath == "") {
 				Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because paths to Vertex or Fragment shaders are incorrect! UpdateR_Shaders();");
 			}
 			else {
-				if (HasFile(VertexPath) && HasFile(FragmentPath)) {
-					std::string Vertex = ReadFile(VertexPath);
-					std::string Fragment = ReadFile(FragmentPath);
+				if (HasFile(VertexPath)) {
+					Vertex = ReadFile(VertexPath);
+				}
+				if (HasFile(FragmentPath)) {
+					Fragment = ReadFile(FragmentPath);
+				}
+			}
 
-					Shader S = Shader(r, Vertex, Fragment, ErrorShaderID);
-					ID = Shaders.size();
-					if (ErrorShaderID == -1) {
-						ErrorShaderID = S.ID;
-					}
-					Shaders.push_back(S);
-				}
-				else {
-					Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because Vertex or Fragment shader files were not found! UpdateR_Shaders();");
-				}
+			if (!(HasFile(VertexPath) && HasFile(FragmentPath))) {
+				Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because Vertex or Fragment shader files were not found! UpdateR_Shaders();");
 			}
 		}
 
+		Shader S = Shader(r, Vertex, Fragment, ErrorShaderID);
+		ID = Shaders.size();
+		if (ErrorShaderID == -1) {
+			ErrorShaderID = S.ID;
+		}
+		Shaders.push_back(S);
+
 		CreateNewGameResourceOrSkip(r, GR_Shader, Resources.size(), ID);
 	}
+	ReloadShaderTime();
 	Print("RES", "Shaders loaded!");
 }
 

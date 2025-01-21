@@ -35,6 +35,14 @@ void UpdateWindowSize(uint32_t W, uint32_t H) {
 
 LARGE_INTEGER AppTimeFrequency, AppTimeStart, AppTimeEnd;
 
+/* Время шейдера */
+float ShaderTime = 0;
+float ShaderTimeOffset = 0;
+void ReloadShaderTime() {
+    ShaderTimeOffset = Time;
+    ShaderTime = 0;
+}
+
 /* Константа на размер окна */
 const glm::vec2 ScreenScale    = glm::vec2(10.0f / 3, 7.5f / 3);
 
@@ -149,7 +157,7 @@ void RenderSquare(const GameObject& OBJ) {
 
     CSS.setBool("DebugRender", DebugRender);
     if (OBJ.Type == RO_Phys) {
-        CSS.setBool("Sleeping", !b2Body_IsAwake(GetBody(OBJ.BodyID)));
+        CSS.setBool("Sleeping", OBJ.Static? false : !b2Body_IsAwake(GetBody(OBJ.BodyID)));
     }
     else {
         CSS.setBool("Sleeping", false);
@@ -217,6 +225,9 @@ void Render(std::vector<GameObject>& Scene) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     Time = static_cast<double>(AppTimeEnd.QuadPart - AppTimeStart.QuadPart) / AppTimeFrequency.QuadPart;
+    ShaderTime = Time - ShaderTimeOffset;
+    float Rand = (static_cast<double>(rand()) / RAND_MAX);
+    glm::vec2 ScreenSize = glm::vec2(CURRENT_WINDOW_WIDTH, CURRENT_WINDOW_HEIGHT);
 
     /* ==== Рендер объектов ==== */
     for (const GameObject& OBJ : Scene) {
@@ -229,15 +240,19 @@ void Render(std::vector<GameObject>& Scene) {
             }
 
             Shader OBJ_Shader = Shaders[GetResourceAssetID(OBJ.BaseShaderRes)];
-            if (CSS.ID != OBJ_Shader.ID) {
-                CSS = OBJ_Shader;
-                glUseProgram(CSS.ID);
-            }
+            CSS = OBJ_Shader;
+            glUseProgram(CSS.ID);
 
-            CSS.setFloat("Random", (static_cast<double>(rand()) / RAND_MAX));
+            CSS.setVec2("ScreenSize", ScreenSize);
+            CSS.setVec2("MousePosition", MousePositionScreen);
+
+            CSS.setFloat("Random" , Rand);
+            CSS.setFloat("Random1", (static_cast<double>(rand()) / RAND_MAX));
+            CSS.setFloat("Random2", (static_cast<double>(rand()) / RAND_MAX));
+            CSS.setFloat("Random3", (static_cast<double>(rand()) / RAND_MAX));
 
             QueryPerformanceCounter(&AppTimeEnd);
-            CSS.setFloat("Time", Time);
+            CSS.setFloat("Time", ShaderTime);
 
             CSS.setVec4("Color", OBJ.Color);
 
