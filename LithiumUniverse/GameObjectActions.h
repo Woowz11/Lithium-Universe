@@ -18,8 +18,10 @@ float MakeOrientation(b2Rot r);
 GameObject& GetGameObjectFromBody(b2BodyId b);
 b2BodyId GetBody(int i);
 GameObject& GetGameObject(int i, std::string message);
+bool CheckOutSceneIndex(int i);
 
 int CreateGameObject(std::string Name, RO_Type ObjectType);
+void DeleteGameObject(int i, bool IgnoreError);
 void DeleteGameObject(int i);
 
 void SetGameObjectDontDelete(int i, bool b);

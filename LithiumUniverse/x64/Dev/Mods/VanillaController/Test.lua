@@ -1,12 +1,3 @@
---[[local test = {}
-
-
-test.Hi = function()
-    Print("ooomaagaada))0a0a0a))F0asf0")
+function Test()
+	return "ooomagaad!!!"
 end
-
-
-return test
-]]
-
-return "sepx"

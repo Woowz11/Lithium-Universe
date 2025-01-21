@@ -49,7 +49,7 @@ void LoadMod(std::string FullPath) {
 			}
 
 			if (NotHasThis == "") {
-				GameMod GM = GameMod(FullPath);
+				GameMod GM = GameMod(FullPath, ModID);
 				GM.Name       = ModInfo["Name"];
 				GM.MainScript = ModInfo["MainScript"];
 				GM.Author     = ModInfo["Author"];
@@ -68,9 +68,13 @@ void LoadMod(std::string FullPath) {
 	}
 }
 
+int TotalMods = 0;
 void LoadMods() {
+	Mods = {};
+	TotalMods = 0;
 	std::vector<std::string> ModsFoldes = GetFolders(ModsPath);
 	for (auto s : ModsFoldes) {
+		TotalMods++;
 		LoadMod(s);
 	}
 }
@@ -83,15 +87,16 @@ void CheckMods() {
 
 	LoadMods();
 
-	Print("MODS", "Mods loaded!");
+	Print("MODS", "Mods (" + std::to_string(Mods.size()) + "/" + std::to_string(TotalMods) + ") loaded!");
 }
 
 void StopMods() {
-
+	UnloadLua();
 }
 
 void RunMods() {
 	for (GameMod GM : Mods) {
+		LoadLua(GM);
 		RunScript(GM.MainScript);
 	}
 }

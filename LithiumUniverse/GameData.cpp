@@ -55,21 +55,27 @@ Scenes CurrentScene = SCENE_NotSelected;
 void SetScene(Scenes Scen) {
 	if (Scen != CurrentScene) {
 		Print("SCENE", "Scene changed to (" + std::to_string(Scen) + ")!");
-		CurrentScene = Scen;
-
-		StopMods();
+		if (CurrentScene == SCENE_Game) {
+			StopMods();
+		}
 
 		int i = 0;
 		for (GameObject& OBJ : Scene) {
-			DeleteGameObject(i);
-
+			DeleteGameObject(i, true);
 			i++;
 		}
 		Scene = {};
 		Buttons = {};
+		Bodies = {};
 
-		RunMods();
+		CurrentScene = Scen;
 
+		if (Scen == SCENE_Game) {
+			Print("LU", "================ [GAME] =================");
+			RunMods();
+		}
+
+		Camera->ResetCamera();
 		CreateUI(Scen);
 		CreateScene(Scen);
 	}

@@ -8,3 +8,5 @@
 Играли в игру:
 * Wldoui
 * PavkaLakar
+* TheWindowSkrepka
+* TrollBebra

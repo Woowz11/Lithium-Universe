@@ -116,6 +116,11 @@ b2BodyId GetBody(int i) {
 	}
 #endif
 }
+
+bool CheckOutSceneIndex(int i) {
+	return !(i >= 0 && i <= Scene.size());
+}
+
 GameObject& GetGameObject(int i, std::string message) {
 #ifdef NDEBUG
 	return Scene[i];
@@ -409,7 +414,9 @@ void SetGameObjectStatic(int i, bool b) {
 }
 
 /* Уничтожить объект */
-void DeleteGameObject(int i) {
+void DeleteGameObject(int i, bool IgnoreError) {
+	bool Out = CheckOutSceneIndex(i);
+	if (IgnoreError && Out) { return; }
 	GameObject& OBJ = GetGameObject(i, "DeleteGameObject(" + std::to_string(i) + ");");
 	if (!OBJ.Deleted) {
 		if (OBJ.Type == RO_Phys) {
@@ -422,9 +429,12 @@ void DeleteGameObject(int i) {
 		OBJ.Delete();
 	}
 	else {
-		Warn("GAMEOBJ","Cannot delete GameObject because it has already been deleted! DeleteGameObject(" + std::to_string(i) + ");");
+		if (!IgnoreError) {
+			Warn("GAMEOBJ", "Cannot delete GameObject because it has already been deleted! DeleteGameObject(" + std::to_string(i) + ");");
+		}
 	}
 }
+void DeleteGameObject(int i) { DeleteGameObject(i, false); }
 
 /* Создать объект */
 int CreateGameObject(std::string Name = "[New GameObject]", RO_Type ObjectType = RO_Default) {

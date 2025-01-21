@@ -95,9 +95,22 @@ std::string ComplexToFullPath(std::string NotFullPath) {
 		return "";
 	}
 	else {
-		std::string Base = NFP.substr(0,  pos);
+		std::string Base = NFP.substr(0, pos);
 		std::string Path = NFP.substr(pos + 1);
 		return FixPath(GamePath + "/" + (Base == BaseID ? "Resources" : "Mods/" + Base) + "/" + Path);
+	}
+}
+
+/* Получить базу по пути */
+std::string GetBaseFromPath(std::string Path) {
+	std::string P = Path;
+	size_t pos = P.find(':');
+	if (pos == std::string::npos) {
+		Error("RES", "Failed to get base from path [" + Path + "]! GetBaseFromPath(\"" + Path + "\");");
+		return "";
+	}
+	else {
+		return P.substr(0, pos);
 	}
 }
 

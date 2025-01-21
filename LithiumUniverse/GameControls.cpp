@@ -4,6 +4,7 @@
 #include <box2d/box2d.h>
 
 #include "GameObjectActions.h";
+#include "GameControls.h";
 #include "GlobalRender.h";
 #include "GlobalPhysic.h";
 #include "GameInstalls.h";
@@ -20,19 +21,6 @@ int PickupedObject = -1;
 bool HasMouseJoint = false;
 b2JointId MouseJoint = b2_nullJointId;
 
-/* Обработать клик по интерфейсу */
-void ProcessUIClick(int i, bool Left) {
-	GameObject& OBJ = GetGameObject(i, "ProcessUIClick(" + std::to_string(i) + "," + ToStringBool(Left) + ");");
-	
-	Button B = Buttons[OBJ.ButtonID];
-	if (Left) {
-		B.WhenLeftClick();
-	}
-	else {
-		B.WhenRightClick();
-	}
-}
-
 /* Обновить джоин мыши */
 void UpdateMouseJoint() {
 	if (HasMouseJoint) {
@@ -43,20 +31,32 @@ void UpdateMouseJoint() {
 	}
 
 	if (PickupedObject != -1) {
-		b2MouseJointDef J = b2DefaultMouseJointDef();
+		if (CheckOutSceneIndex(PickupedObject)) {
+			PickupedObject = -1;
+			UpdateMouseJoint();
+			return;
+		}
+
 		GameObject& OBJ = GetGameObject(PickupedObject, "UpdateMouseJoint(); #PickupedObject#");
-		b2BodyId Body = GetBody(OBJ.BodyID);
-		J.bodyIdA = GetBody(GetGameObject(MouseObjectConnector,"UpdateMouseJoint(); #MouseObjectConnector#").BodyID);
-		J.bodyIdB = Body;
-		J.target = Vec2ToBVec2(MouseWorldPosition);
-		J.hertz = 5.0f;
-		J.dampingRatio = 0.7f;
-		J.maxForce = 1000000.f * b2Body_GetMass(Body);
-		MouseJoint = b2CreateMouseJoint(World, &J);
 
-		b2Body_SetAwake(Body, true);
+		if (OBJ.Deleted || !OBJ.Active) {
+			PickupedObject = -1;
+		}
+		else {
+			b2MouseJointDef J = b2DefaultMouseJointDef();
+			b2BodyId Body = GetBody(OBJ.BodyID);
+			J.bodyIdA = GetBody(GetGameObject(MouseObjectConnector, "UpdateMouseJoint(); #MouseObjectConnector#").BodyID);
+			J.bodyIdB = Body;
+			J.target = Vec2ToBVec2(MouseWorldPosition);
+			J.hertz = 5.0f;
+			J.dampingRatio = 0.7f;
+			J.maxForce = 1000000.f * b2Body_GetMass(Body);
+			MouseJoint = b2CreateMouseJoint(World, &J);
 
-		HasMouseJoint = true;
+			b2Body_SetAwake(Body, true);
+
+			HasMouseJoint = true;
+		}
 	}
 }
 
@@ -72,6 +72,19 @@ void MousePickupGO(int i) {
 void MouseDropGO() {
 	PickupedObject = -1;
 	UpdateMouseJoint();
+}
+
+/* Обработать клик по интерфейсу */
+void ProcessUIClick(int i, bool Left) {
+	GameObject& OBJ = GetGameObject(i, "ProcessUIClick(" + std::to_string(i) + "," + ToStringBool(Left) + ");");
+
+	Button B = Buttons[OBJ.ButtonID];
+	if (Left) {
+		B.WhenLeftClick();
+	}
+	else {
+		B.WhenRightClick();
+	}
 }
 
 /* ==== Основа ==== */
@@ -155,6 +168,10 @@ void ControlsKeyboard(int KEY, int ACTION) {
 		}
 	}
 
+	if (KEY == GLFW_KEY_HOME && ACTION == GLFW_PRESS) {
+		Camera->ResetCamera();
+	}
+
 	if (KEY == GLFW_KEY_SPACE && ACTION == GLFW_PRESS) {
 		SpacePressed = !SpacePressed;
 		SetSimulationSpeed(SpacePressed ? 0 : 1);
@@ -200,12 +217,6 @@ void ControlsKeyboard(int KEY, int ACTION) {
 
 /* Управление клавиатурой (Каждый тик) */
 void ControlsKeyboardTick() {
-	if (KeyPressed(GLFW_KEY_HOME) == GLFW_PRESS) {
-		Camera->SetCameraRotation(0);
-		Camera->SetCameraZoom(1);
-		Camera->SetCameraPosition(0, 0);
-	}
-
 	bool W = KeyPressed(GLFW_KEY_W) == GLFW_PRESS;
 	bool S = KeyPressed(GLFW_KEY_S) == GLFW_PRESS;
 	bool D = KeyPressed(GLFW_KEY_D) == GLFW_PRESS;

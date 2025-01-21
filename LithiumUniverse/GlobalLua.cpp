@@ -1,23 +1,26 @@
 ﻿#include "sol/sol.hpp";
 
+#include <unordered_map>
+
 #include "ExplorerActions.h";
 #include "GlobalResources.h";
+#include "GlobalLua.h";
+#include "GameMod.h";
 #include "Console.h";
 
-/* Основа LUA */
-sol::state LUA;
+/* Основа LUA модов */
+std::unordered_map<std::string, std::unique_ptr<sol::state>> ModsLUA = {};
 
 /* Отправить простое сообщение в консоль */
-void LUA_Print(std::string Message) {
+void LUA_Print(const std::string& Message) {
 	Print("MOD", Message);
 }
 
 class LUA_Resources {
 public:
 	/* Получить скрипт */
-	sol::object GetScript(std::string Path) {
-		/* МБ сделать так что-бы можно было вызывать функции из других скриптов и получать результат?????? */
-		return sol::nil;
+	void LoadScript(const std::string& Path) {
+		RunScript(Path);
 	}
 };
 
@@ -33,11 +36,11 @@ public:
 
 LUA_Game LUA_Game_;
 
-void GameLua() {
+void GameLua(sol::state& LUA) {
 	LUA["Resources"] = &LUA_Resources_;
 	LUA.new_usertype<LUA_Resources>(
 		"LUA_Resources",
-		"GetScript", &LUA_Resources::GetScript
+		"LoadScript", &LUA_Resources::LoadScript
 	);
 
 	LUA["Game"] = &LUA_Game_;
@@ -49,20 +52,39 @@ void GameLua() {
 	LUA.set_function("Print", &LUA_Print);
 }
 
-void InstallLua() {
-	LUA.open_libraries(sol::lib::base);
+void LoadLua(GameMod Mod) {
+	auto LUA = std::make_unique<sol::state>();
 
+	LUA->open_libraries(sol::lib::base);
+
+	GameLua(*LUA);
+
+	ModsLUA[Mod.ID] = std::move(LUA);
+}
+
+void UnloadLua() {
+	ModsLUA.clear();
+}
+
+void InstallLua() {
 	Print("LUA", "Lua 5.4.2");
-	
-	GameLua();
 }
 
 void RunScript(const std::string& ScriptPath) {
 	std::string Script = ReadFile(ComplexToFullPath(ScriptPath));
-	sol::protected_function_result Result = LUA.script(Script, &sol::script_pass_on_error);
-	if (!Result.valid()) {
-		sol::error ErrorLua = Result;
-		Error("LUA", "Error in script $$Y" + ScriptPath + "$$_!");
-		Error("LUA", ErrorLua.what());
+	std::string ModID = GetBaseFromPath(ScriptPath);
+
+	auto it = ModsLUA.find(ModID);
+	if (it != ModsLUA.end()) {
+		sol::state& LUA = *(it->second);
+		sol::protected_function_result Result = LUA.script(Script, &sol::script_pass_on_error);
+		if (!Result.valid()) {
+			sol::error ErrorLua = Result;
+			Error("LUA", "Error in script $$Y" + ScriptPath + "$$_!");
+			Error("LUA", ErrorLua.what());
+		}
+	}
+	else {
+		Error("LUA","Failed to call the script because such a mod [" + ModID + "] does not exist! RunScript(\"" + ScriptPath + "\");");
 	}
 }

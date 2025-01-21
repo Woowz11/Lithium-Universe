@@ -29,7 +29,7 @@ Sleeping          (bool     ) = Физическое тело объекта с�
 
 Информация о location's
 [0] PointPosition (vec3) = Позиция точки
-[1] TextureUV       (vec2) = Развёртка текстуры в точке
+[1] TextureUV     (vec2) = Развёртка текстуры в точке
 [2] PointID       (int ) = Айди точки
 
 */

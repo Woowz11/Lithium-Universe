@@ -18,6 +18,13 @@ public:
 
 	GameCamera() {}
 
+	/* Вернуть камеру в центр */
+	void ResetCamera() {
+		SetCameraRotation(0);
+		SetCameraZoom(1);
+		SetCameraPosition(0, 0);
+	}
+
 	/* Установить позицию камере */
 	void SetCameraPosition(float x, float y) {
 		Position = glm::vec2(x, y);
