@@ -1,4 +1,4 @@
 {
-	"Vertex"   : "Base:Shaders/Default.vert",
-	"Fragment" : "Base:Shaders/popo.frag"
+	"Vertex"   : "Base:Shaders/popa.vert",
+	"Fragment" : "Base:Shaders/popa.frag"
 }

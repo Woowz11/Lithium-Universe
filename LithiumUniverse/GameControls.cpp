@@ -175,6 +175,18 @@ void ControlsKeyboard(int KEY, int ACTION) {
 	if (KEY == GLFW_KEY_4 && ACTION == GLFW_PRESS) {
 		CreateTestObject(3);
 	}
+
+	if (KEY == GLFW_KEY_5 && ACTION == GLFW_PRESS) {
+		CreateTestObject(4);
+	}
+
+	if (KEY == GLFW_KEY_6 && ACTION == GLFW_PRESS) {
+		CreateTestObject(5);
+	}
+
+	if (KEY == GLFW_KEY_7 && ACTION == GLFW_PRESS) {
+		CreateTestObject(6);
+	}
 }
 
 /* Управление клавиатурой (Каждый тик) */

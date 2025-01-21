@@ -59,10 +59,10 @@ glm::vec3 BackgroundColor = glm::vec3(0.1f, 0.1f, 0.1f);
 unsigned int VBO, VAO;
 
 float square[] = {
-    -1.0f, -1.0f, -1.0f,    0.0f, 0.0f,
-     1.0f, -1.0f, -1.0f,    1.0f, 0.0f,
-     1.0f,  1.0f, -1.0f,    1.0f, 1.0f,
-    -1.0f,  1.0f, -1.0f,    0.0f, 1.0f
+    -1.0f, -1.0f, -1.0f,    0.0f, 0.0f,    0,
+     1.0f, -1.0f, -1.0f,    1.0f, 0.0f,    1,
+     1.0f,  1.0f, -1.0f,    1.0f, 1.0f,    2,
+    -1.0f,  1.0f, -1.0f,    0.0f, 1.0f,    3
 };
 int square_l = 4; /* Кол-во строк в square */
 
@@ -91,11 +91,14 @@ void InstallRenderAfterResources() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(square), square, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 1, GL_INT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     /* ==== Физика ==== */
 
@@ -117,44 +120,19 @@ int TEX = -2;
 /* Рендер квадрата */
 void RenderSquare(const GameObject& OBJ) {
     /* ==== Трансформация ==== */
-    glm::mat4 Projection = glm::mat4(1.0f);
-    float Zoom = 1 / (OBJ.Type == RO_UI ? 1 : Camera->Zoom);
-
-    float WIN_WIDTH  = OBJ.Resize ? (float)START_WINDOW_WIDTH  : (float)CURRENT_WINDOW_WIDTH;
-    float WIN_HEIGHT = OBJ.Resize ? (float)START_WINDOW_HEIGHT : (float)CURRENT_WINDOW_HEIGHT;
-
-    glm::vec2 WIN_DIF = glm::vec2((float)CURRENT_WINDOW_WIDTH / (float)START_WINDOW_WIDTH, (float)CURRENT_WINDOW_HEIGHT / (float)START_WINDOW_HEIGHT);
-
-    float Left  = -WIN_WIDTH  / 240;
-    float Right =  WIN_WIDTH  / 240;
-    float Down  = -WIN_HEIGHT / 240;
-    float Up    =  WIN_HEIGHT / 240;
-    Projection = glm::ortho(
-        Left  / Zoom,
-        Right / Zoom,
-        Down  / Zoom,
-        Up    / Zoom,
-        -1000.0f, 1000.0f);
-    CSS.setMat4("Projection", Projection);
-
     glBindVertexArray(VAO);
 
-    glm::mat4 ResultPosition = glm::mat4(1.0f);
+    CSS.setInt("ID", OBJ.GetID());
 
-    if (OBJ.Type != RO_UI) {
-        ResultPosition = glm::rotate(ResultPosition, -Camera->Rotation, glm::vec3(0, 0, 1));
-    }
+    CSS.setVec2("Position", OBJ.PositionVisual);
+    CSS.setFloat("Orientation", -OBJ.OrientationVisual);
+    CSS.setVec2("Size", OBJ.SizeVisual);
+    CSS.setFloat("Layer", OBJ.Layer);
 
-    ResultPosition = glm::translate(ResultPosition, glm::vec3(OBJ.PositionVisual * (OBJ.Type == RO_UI ? (OBJ.Resize ? ScreenScale : ScreenScale * WIN_DIF) : glm::vec2(1, 1)), (OBJ.Layer + (float)OBJ.GetID() / 100) / 100));
-    if (OBJ.Type != RO_UI) {
-        ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
-    }
-
-    ResultPosition = glm::rotate(ResultPosition, -OBJ.OrientationVisual, glm::vec3(0, 0, 1));
-    ResultPosition = glm::scale(ResultPosition, glm::vec3(OBJ.SizeVisual, 1));
-
-    CSS.setMat4("Position", ResultPosition);
-
+    CSS.setBool("Static", OBJ.Static);
+    CSS.setBool("Physical", OBJ.Type == RO_Phys);
+    CSS.setBool("Interface", OBJ.Type == RO_UI);
+    CSS.setBool("Resize", OBJ.Resize);
     CSS.setBool("DebugRender", DebugRender);
     if (OBJ.Type == RO_Phys) {
         CSS.setBool("Sleeping", OBJ.Static? false : !b2Body_IsAwake(GetBody(OBJ.BodyID)));
@@ -170,7 +148,8 @@ void RenderSquare(const GameObject& OBJ) {
 void RenderLine(const GameObject& OBJ) {
     /* WIP */
     /* ==== Трансформация ==== */
-    glm::mat4 Projection = glm::mat4(1.0f);
+    
+    /*glm::mat4 Projection = glm::mat4(1.0f);
     float Zoom = 1 / (OBJ.Type == RO_UI ? 1 : Camera->Zoom);
 
     float WIN_WIDTH = OBJ.Resize ? (float)START_WINDOW_WIDTH : (float)CURRENT_WINDOW_WIDTH;
@@ -216,7 +195,7 @@ void RenderLine(const GameObject& OBJ) {
 
     CSS.setMat4("LinePosition", ResultPosition);
 
-    glDrawArrays(GL_QUADS, 0, square_l);
+    glDrawArrays(GL_QUADS, 0, square_l);*/
 }
 
 /* Рендер картинки каждый кадр */
@@ -228,13 +207,14 @@ void Render(std::vector<GameObject>& Scene) {
     ShaderTime = Time - ShaderTimeOffset;
     float Rand = (static_cast<double>(rand()) / RAND_MAX);
     glm::vec2 ScreenSize = glm::vec2(CURRENT_WINDOW_WIDTH, CURRENT_WINDOW_HEIGHT);
+    glm::vec2 ScreenStartSize = glm::vec2(START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
 
     /* ==== Рендер объектов ==== */
     for (const GameObject& OBJ : Scene) {
         if (!OBJ.Deleted && OBJ.Active && OBJ.Render) {
-            int OBJ_Texture = GetResourceAssetID(OBJ.BaseTextureRes);
-            if (OBJ_Texture != TEX) {
-                TEX = OBJ_Texture;
+            Texture OBJ_Texture = Texturies[GetResourceAssetID(OBJ.BaseTextureRes)];
+            if (OBJ_Texture.ID != TEX) {
+                TEX = OBJ_Texture.ID;
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, TEX);
             }
@@ -243,13 +223,18 @@ void Render(std::vector<GameObject>& Scene) {
             CSS = OBJ_Shader;
             glUseProgram(CSS.ID);
 
+            CSS.setVec2("TextureSize", glm::vec2(OBJ_Texture.Width, OBJ_Texture.Height));
+
+            CSS.setVec2("ScreenStartSize", ScreenStartSize);
             CSS.setVec2("ScreenSize", ScreenSize);
             CSS.setVec2("MousePosition", MousePositionScreen);
 
+            CSS.setVec2("CameraPosition", Camera->Position);
+            CSS.setFloat("CameraOrientation", Camera->Orientation);
+            CSS.setFloat("CameraZoom", Camera->Zoom);
+
             CSS.setFloat("Random" , Rand);
-            CSS.setFloat("Random1", (static_cast<double>(rand()) / RAND_MAX));
-            CSS.setFloat("Random2", (static_cast<double>(rand()) / RAND_MAX));
-            CSS.setFloat("Random3", (static_cast<double>(rand()) / RAND_MAX));
+            CSS.setFloat("LocalRandom", (static_cast<double>(rand()) / RAND_MAX));
 
             QueryPerformanceCounter(&AppTimeEnd);
             CSS.setFloat("Time", ShaderTime);
@@ -279,7 +264,7 @@ glm::vec2 ScreenPositionToWorld(glm::vec2 Pos, bool IgnoreCamera, bool Resize) {
     }
     if (!IgnoreCamera) {
         Result *= Camera->Zoom;
-        Result = glm::rotate(Result, Camera->Rotation);
+        Result = glm::rotate(Result, Camera->Orientation);
         Result -= Camera->Position;
     }
     return Result;

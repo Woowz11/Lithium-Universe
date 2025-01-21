@@ -49,7 +49,7 @@ void CreateTestObject(int type) {
 	switch (type)
 	{
 	case 1:
-		SetGameObjectStatic(box, true);
+		SetGameObjectTexture(box, GetResource("Base", "Textures/Default.png").ID);
 		break;
 	case 2:
 		SetGameObjectSize(box, glm::vec2(5, 0.25f));
@@ -59,8 +59,21 @@ void CreateTestObject(int type) {
 		SetGameObjectCollider(box, CT_Circle);
 		SetGameObjectTexture(box, GetResource("Base", "Textures/Circle.png").ID);
 		break;
-	default:
+	case 4:
+		SetGameObjectSize(box, glm::vec2(3, 3));
 		SetGameObjectTexture(box, GetResource("Base", "Textures/Default.png").ID);
+		break;
+	case 5:
+		SetGameObjectSize(box, glm::vec2(5 * 3, 0.25f * 3));
+		SetGameObjectTexture(box, GetResource("Base", "Textures/Cable.png").ID);
+		break;
+	case 6:
+		SetGameObjectSize(box, glm::vec2(3, 3));
+		SetGameObjectCollider(box, CT_Circle);
+		SetGameObjectTexture(box, GetResource("Base", "Textures/Circle.png").ID);
+		break;
+	default:
+		SetGameObjectStatic(box, true);
 		break;
 	}
 

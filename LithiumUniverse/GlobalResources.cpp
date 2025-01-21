@@ -250,8 +250,8 @@ void UpdateR_Textures() {
 
 	for (std::string r : F_Textures) {
 		Texture T = CreateTexture(r, "Test");
-
-		CreateNewGameResourceOrSkip(r, GR_Texture, Resources.size(), T.ID);
+		Texturies.push_back(T);
+		CreateNewGameResourceOrSkip(r, GR_Texture, Resources.size(), Texturies.size()-1);
 	}
 	Print("RES", "Textures loaded!");
 }

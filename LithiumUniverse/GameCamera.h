@@ -13,7 +13,7 @@ private:
 	float RealCameraRotation = 0;
 public:
 	glm::vec2 Position = glm::vec2(0,0);
-	float Rotation = 0;
+	float Orientation = 0;
 	float Zoom = 1;
 
 	GameCamera() {}
@@ -25,7 +25,7 @@ public:
 
 	/* Двигать камеру */
 	void MoveCamera(float vel_x, float vel_y, float dt) {
-		Position = Position + glm::rotate(-glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt), Rotation);
+		Position = Position + glm::rotate(-glm::vec2(vel_x * 2 * Zoom * dt, vel_y * 2 * Zoom * dt), Orientation);
 	}
 
 	/* Изменить масштаб камеры */
@@ -41,7 +41,7 @@ public:
 	/* Установить поворот камеры */
 	void SetCameraRotation(float deg) {
 		RealCameraRotation = deg;
-		Rotation = glm::radians(floor(glm::degrees(RealCameraRotation) / 15) * 15);
+		Orientation = glm::radians(floor(glm::degrees(RealCameraRotation) / 15) * 15);
 	}
 
 	/* Повернуть камеру */
