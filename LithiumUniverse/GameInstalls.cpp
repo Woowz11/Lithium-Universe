@@ -27,7 +27,6 @@
 #include "GameControls.h";
 #include "DebugGetter.h";
 #include "GameObject.h";
-#include "GlobalMods.h";
 #include "GlobalLua.h";
 #include "GlobalUI.h";
 #include "GameData.h";
@@ -237,11 +236,9 @@ private:
 		RunGLFW();
 		RunGLAD();
 		InstallRender(START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
+		InstallLua();
 		UpdateResources();
 		InstallRenderAfterResources();
-
-		InstallLua();
-		CheckMods();
 
 		Print("LU", "All started, and start Loop()!");
 		Print("LU", "=============== [RUNTIME] ===============");

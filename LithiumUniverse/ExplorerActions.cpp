@@ -191,6 +191,18 @@ std::string GetFileName(std::string FilePath) {
 	return "";
 }
 
+/* Получить название папки */
+std::string GetFolderName(std::string Path) {
+	if (HasFolder(Path)) {
+		std::filesystem::path path(Path);
+		return path.stem().string();
+	}
+	else {
+		ErrorFromLog(Base_EA, "Unable to get folder name because file does not exist! GetFolderName(\"" + Path + "\");");
+	}
+	return "";
+}
+
 /* ==== JSON ==== */
 
 json ErrorJson = { {"Error", true} };

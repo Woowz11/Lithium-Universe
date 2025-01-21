@@ -151,5 +151,8 @@
     <ClInclude Include="GameResource.h">
       <Filter>Scripts\Foundation</Filter>
     </ClInclude>
+    <ClInclude Include="GameMod.h">
+      <Filter>Scripts\GameClasses</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

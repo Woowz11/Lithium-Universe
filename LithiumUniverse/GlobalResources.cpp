@@ -9,9 +9,12 @@ using json = nlohmann::json;
 #include "ExplorerActions.h";
 #include "GlobalRender.h";
 #include "GameResource.h";
+#include "GlobalMods.h";
+#include "GlobalLua.h";
 #include "GameData.h";
 #include "Console.h";
 #include "Texture.h";
+#include "GameMod.h";
 #include "Shader.h";
 
 const std::string BaseID              = "Base";
@@ -50,7 +53,7 @@ GameResource GetResourceDebug(std::string FullPath) {
 
 /* Получить ресурс по пути */
 GameResource GetResource(std::string Base, std::string Path) {
-	return GetResourceDebug(GamePath + "/" + (Base == BaseID ? "Resources" : Base) + "/" + Path);
+	return GetResourceDebug(GamePath + "/" + (Base == BaseID ? "Resources" : "Mods/" + Base) + "/" + Path);
 }
 
 /* Получить айди ресурса */
@@ -96,7 +99,7 @@ std::string ComplexToFullPath(std::string NotFullPath) {
 	else {
 		std::string Base = NFP.substr(0,  pos);
 		std::string Path = NFP.substr(pos + 1);
-		return FixPath(GamePath + "/" + (Base == BaseID ? "Resources" : Base) + "/" + Path);
+		return FixPath(GamePath + "/" + (Base == BaseID ? "Resources" : "Mods/" + Base) + "/" + Path);
 	}
 }
 
@@ -107,7 +110,7 @@ void DefineResource(std::string Path) {
 	if (type == "png") {
 		F_Textures.push_back(Path);
 	}
-	else if (type == "shader") {
+	else if (type == "lu_shader") {
 		F_Shaders.push_back(Path);
 	}
 	else {
@@ -177,7 +180,7 @@ void RemoveR_Shaders() {
 }
 
 void UpdateR_Shaders() {
-	ErrorShaderPath = GamePath + "/Resources/Shaders/Error.shader";
+	ErrorShaderPath = GamePath + "/Resources/Shaders/Error.lu_shader";
 	std::string Target = ErrorShaderPath;
 	std::sort(F_Shaders.begin(), F_Shaders.end(), [&Target](const std::string& a, const std::string& b) {
 		if (a == Target) return true;
@@ -198,23 +201,28 @@ void UpdateR_Shaders() {
 			Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because its JSON file contains an error! UpdateR_Shaders();");
 		}
 		else {
-			std::string VertexPath = ComplexToFullPath(ShaderInfo["Vertex"]);
-			std::string FragmentPath = ComplexToFullPath(ShaderInfo["Fragment"]);
+			if (ShaderInfo.contains("Vertex") && ShaderInfo.contains("Fragment")) {
+				std::string VertexPath = ComplexToFullPath(ShaderInfo["Vertex"]);
+				std::string FragmentPath = ComplexToFullPath(ShaderInfo["Fragment"]);
 
-			if (VertexPath == "" || FragmentPath == "") {
-				Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because paths to Vertex or Fragment shaders are incorrect! UpdateR_Shaders();");
+				if (VertexPath == "" || FragmentPath == "") {
+					Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because paths to Vertex or Fragment shaders are incorrect! UpdateR_Shaders();");
+				}
+				else {
+					if (HasFile(VertexPath)) {
+						Vertex = ReadFile(VertexPath);
+					}
+					if (HasFile(FragmentPath)) {
+						Fragment = ReadFile(FragmentPath);
+					}
+				}
+
+				if (!(HasFile(VertexPath) && HasFile(FragmentPath))) {
+					Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because Vertex or Fragment shader files were not found! UpdateR_Shaders();");
+				}
 			}
 			else {
-				if (HasFile(VertexPath)) {
-					Vertex = ReadFile(VertexPath);
-				}
-				if (HasFile(FragmentPath)) {
-					Fragment = ReadFile(FragmentPath);
-				}
-			}
-
-			if (!(HasFile(VertexPath) && HasFile(FragmentPath))) {
-				Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because Vertex or Fragment shader files were not found! UpdateR_Shaders();");
+				Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because the Vertex or Fragment field was not found in the file $$Y" + GetFileName(r) + ".lu_shader$$_! UpdateR_Shaders();");
 			}
 		}
 
@@ -276,10 +284,16 @@ void UpdateResources() {
 	for (auto p : Resources) {
 		p.Deleted = true;
 	}
+	CheckMods();
 	UpdateR_Other();
 	UpdateR_Scripts();
 	UpdateR_Shaders();
 	UpdateR_Textures();
 	UpdateR_Sounds();
 	Print("RES", "Resources updated!");
+
+	/* Потом эту функцию нужно будет перенести на запуск уровня!!! */
+	for (GameMod GM : Mods) {
+		RunScript(GM.MainScript);
+	}
 }

@@ -20,6 +20,7 @@ void ClearFileLongWay(std::string FilePath);
 void ClearFile(std::ofstream& File);
 std::vector<std::string> GetFolders(std::string Path);
 std::vector<std::string> GetFilesIncludeSubFolders(std::string Path);
+std::string GetFolderName(std::string Path);
 std::string GetFileName(std::string FilePath);
 std::string GetFileType(std::string FilePath);
 std::string ReadFile(std::string FilePath);

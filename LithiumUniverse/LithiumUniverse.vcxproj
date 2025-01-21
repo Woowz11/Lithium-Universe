@@ -167,6 +167,7 @@
     <ClInclude Include="GameControls.h" />
     <ClInclude Include="GameData.h" />
     <ClInclude Include="GameInstalls.h" />
+    <ClInclude Include="GameMod.h" />
     <ClInclude Include="GameObjectActions.h" />
     <ClInclude Include="GameResource.h" />
     <ClInclude Include="GlobalLua.h" />

@@ -432,7 +432,7 @@ int CreateGameObject(std::string Name = "[New GameObject]", RO_Type ObjectType =
 	GameObject OBJ = GameObject(Name, i);
 	Scene.push_back(OBJ);
 
-	SetGameObjectShader (OBJ.GetID(), GetResource("Base", "Shaders/Default.shader"        ).ID);
+	SetGameObjectShader (OBJ.GetID(), GetResource("Base", "Shaders/Default.lu_shader"        ).ID);
 	SetGameObjectTexture(OBJ.GetID(), GetResource("Base", "Textures/Error/NotSelected.png").ID);
 
 	switch (ObjectType)
