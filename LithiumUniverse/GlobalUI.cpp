@@ -10,14 +10,6 @@
 #include "GlobalRender.h";
 #include "GlobalUI.h";
 
-enum Screen {
-	MainMenu = 0, /* Главное меню */
-	Game     = 1  /* Игра         */
-};
-
-/* Текущее окно */
-Screen CurrentScreen = Game;
-
 /* Окно в фокусе? */
 bool GameInFocus = true;
 
@@ -113,24 +105,43 @@ void UpdateUI(GameObject& OBJ) {
 }
 
 /* Создать интерфейс */
-void CreateUI() {
-	int ui = CreateGameObject("ui", RO_UI);
-	SetGameObjectSize(ui, glm::vec2(0.25f, 0.25f));
-	SetGameObjectPosition(ui, glm::vec2(-0.9f, -0.9f));
+void CreateUI(Scenes Scen) {
+	switch (Scen)
+	{
+		case SCENE_MainMenu: {
 
-	MakeGameObjectButton(ui, []() {
-		RemoveAllTestObject();
-	}, []() {});
+			int ui2 = CreateGameObject("ui", RO_UI);
+			SetGameObjectSize(ui2, glm::vec2(2.0f, 2.0f));
+			MakeGameObjectButton(ui2, []() {
+				SetScene(SCENE_Game);
+			}, []() {});
 
-	ui_test = ui;
 
-	ui = CreateGameObject("ui", RO_UI);
-	SetGameObjectSize(ui, glm::vec2(0.25f, 0.25f));
-	SetGameObjectPosition(ui, glm::vec2(-0.75f, -0.9f));
+			break;
+		}
+		default: {
 
-	MakeGameObjectButton(ui, []() {
-		UpdateResources();
-	}, []() {});
+			int ui = CreateGameObject("ui", RO_UI);
+			SetGameObjectSize(ui, glm::vec2(0.25f, 0.25f));
+			SetGameObjectPosition(ui, glm::vec2(-0.9f, -0.9f));
 
-	ui_test2 = ui;
+			MakeGameObjectButton(ui, []() {
+				RemoveAllTestObject();
+				}, []() {});
+
+			ui_test = ui;
+
+			ui = CreateGameObject("ui", RO_UI);
+			SetGameObjectSize(ui, glm::vec2(0.25f, 0.25f));
+			SetGameObjectPosition(ui, glm::vec2(-0.75f, -0.9f));
+
+			MakeGameObjectButton(ui, []() {
+				UpdateResources();
+				}, []() {});
+
+			ui_test2 = ui;
+
+			break;
+		}
+	}
 }

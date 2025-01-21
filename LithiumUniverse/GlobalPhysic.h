@@ -3,7 +3,9 @@
 #include <vector>
 
 #include "GameObject.h";
+#include "GameData.h";
 
+extern std::vector<GameObject> Scene;
 extern int MouseObjectConnector;
 extern int MouseObject;
 
@@ -17,3 +19,4 @@ void UpdateDeltaTimePhysic(float dt_);
 void CreateTestObject(int type);
 void RemoveLastTestObject();
 void RemoveAllTestObject();
+void CreateScene(Scenes Scen);

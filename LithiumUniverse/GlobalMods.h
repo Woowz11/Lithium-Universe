@@ -5,3 +5,5 @@
 extern std::vector<GameMod> Mods;
 
 void CheckMods();
+void StopMods();
+void RunMods();

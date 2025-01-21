@@ -10,7 +10,6 @@ using json = nlohmann::json;
 #include "GlobalRender.h";
 #include "GameResource.h";
 #include "GlobalMods.h";
-#include "GlobalLua.h";
 #include "GameData.h";
 #include "Console.h";
 #include "Texture.h";
@@ -27,7 +26,6 @@ std::vector<GameResource> Resources = {};
 
 /* Пути ресурсов */
 std::vector<std::string> F_Other    = {};
-std::vector<std::string> F_Scripts  = {};
 std::vector<std::string> F_Shaders  = {};
 std::vector<std::string> F_Textures = {};
 std::vector<std::string> F_Sounds   = {};
@@ -164,13 +162,6 @@ void UpdateR_Other() {
 	Print("RES", "Other loaded!");
 }
 
-void UpdateR_Scripts() {
-	for (std::string r : F_Scripts) {
-
-	}
-	Print("RES", "Scripts loaded!");
-}
-
 void RemoveR_Shaders() {
 	F_Shaders = {};
 	for (Shader S : Shaders) {
@@ -286,14 +277,8 @@ void UpdateResources() {
 	}
 	CheckMods();
 	UpdateR_Other();
-	UpdateR_Scripts();
 	UpdateR_Shaders();
 	UpdateR_Textures();
 	UpdateR_Sounds();
 	Print("RES", "Resources updated!");
-
-	/* Потом эту функцию нужно будет перенести на запуск уровня!!! */
-	for (GameMod GM : Mods) {
-		RunScript(GM.MainScript);
-	}
 }

@@ -130,7 +130,7 @@ void AfterUpdatePhysic() {
 }
 
 /* Создать сцену */
-void CreateScene() {
+void CreateScene(Scenes Scen) {
 	MouseObjectConnector = CreateGameObject("[LU] MouseObjectConnector", RO_Phys);
 	SetGameObjectStatic(MouseObjectConnector, true);
 	SetGameObjectSelectable(MouseObjectConnector, false);
@@ -138,33 +138,44 @@ void CreateScene() {
 	SetGameObjectRenderable(MouseObjectConnector, false);
 	SetGameObjectDontDelete(MouseObjectConnector, true);
 
-	float yoffset = 87.5f;
+	switch (Scen)
+	{
+		case SCENE_Game: {
 
-	int platform = CreateGameObject("platform", RO_Phys);
-	SetGameObjectStatic(platform, true);
-	SetGameObjectPosition(platform, glm::vec2(0, -100 + yoffset));
-	SetGameObjectSize(platform, glm::vec2(100, 10));
-	SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
+			float yoffset = 87.5f;
 
-	platform = CreateGameObject("platform", RO_Phys);
-	SetGameObjectStatic(platform, true);
-	SetGameObjectPosition(platform, glm::vec2(-100, 0 + yoffset));
-	SetGameObjectSize(platform, glm::vec2(100, 10));
-	SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
-	SetGameObjectOrientation(platform, glm::radians(90.0f));
+			int platform = CreateGameObject("platform", RO_Phys);
+			SetGameObjectStatic(platform, true);
+			SetGameObjectPosition(platform, glm::vec2(0, -100 + yoffset));
+			SetGameObjectSize(platform, glm::vec2(100, 10));
+			SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
 
-	platform = CreateGameObject("platform", RO_Phys);
-	SetGameObjectStatic(platform, true);
-	SetGameObjectPosition(platform, glm::vec2(0, 100 + yoffset));
-	SetGameObjectSize(platform, glm::vec2(100, 10));
-	SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
+			platform = CreateGameObject("platform", RO_Phys);
+			SetGameObjectStatic(platform, true);
+			SetGameObjectPosition(platform, glm::vec2(-100, 0 + yoffset));
+			SetGameObjectSize(platform, glm::vec2(100, 10));
+			SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
+			SetGameObjectOrientation(platform, glm::radians(90.0f));
 
-	platform = CreateGameObject("platform", RO_Phys);
-	SetGameObjectStatic(platform, true);
-	SetGameObjectPosition(platform, glm::vec2(100, 0 + yoffset));
-	SetGameObjectSize(platform, glm::vec2(100, 10));
-	SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
-	SetGameObjectOrientation(platform, glm::radians(90.0f));
+			platform = CreateGameObject("platform", RO_Phys);
+			SetGameObjectStatic(platform, true);
+			SetGameObjectPosition(platform, glm::vec2(0, 100 + yoffset));
+			SetGameObjectSize(platform, glm::vec2(100, 10));
+			SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
+
+			platform = CreateGameObject("platform", RO_Phys);
+			SetGameObjectStatic(platform, true);
+			SetGameObjectPosition(platform, glm::vec2(100, 0 + yoffset));
+			SetGameObjectSize(platform, glm::vec2(100, 10));
+			SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
+			SetGameObjectOrientation(platform, glm::radians(90.0f));
+
+			break;
+		}
+		default: {
+			break;
+		}
+	}
 }
 
 /* Обновить физику */
@@ -199,6 +210,5 @@ void ClearPhysic() {
 /* Установить физику */
 void InstallPhysic() {
 	InstallBox2D();
-	CreateUI();
-	CreateScene();
+	SetScene(SCENE_MainMenu);
 }

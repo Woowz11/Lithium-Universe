@@ -3,7 +3,14 @@
 
 #include <string>
 
+#include "GameObjectActions.h";
+#include "GlobalMods.h";
 #include "GameCamera.h";
+#include "GameData.h";
+#include "Console.h";
+
+#include "GlobalPhysic.h";
+#include "GlobalUI.h";
 
 /* Версия игры */
 std::string Version = "";
@@ -40,6 +47,33 @@ glm::vec2 MouseWorldPosition = glm::vec2(0, 0);
 
 /* Игровой мир для Box2D */
 b2WorldId World = b2_nullWorldId;
+
+/* Текущая сцена */
+Scenes CurrentScene = SCENE_NotSelected;
+
+/* Установить сцену */
+void SetScene(Scenes Scen) {
+	if (Scen != CurrentScene) {
+		Print("SCENE", "Scene changed to (" + std::to_string(Scen) + ")!");
+		CurrentScene = Scen;
+
+		StopMods();
+
+		int i = 0;
+		for (GameObject& OBJ : Scene) {
+			DeleteGameObject(i);
+
+			i++;
+		}
+		Scene = {};
+		Buttons = {};
+
+		RunMods();
+
+		CreateUI(Scen);
+		CreateScene(Scen);
+	}
+}
 
 /* Очистить данные */
 void ClearData() {

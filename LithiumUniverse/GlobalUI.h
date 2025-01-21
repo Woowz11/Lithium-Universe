@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "GameObject.h";
+#include "GameData.h";
 
 class Button {
 public:
@@ -24,4 +25,4 @@ extern std::vector<Button> Buttons;
 void MakeGameObjectUI__(int i);
 void AfterUpdateUI();
 void UpdateUI(GameObject& OBJ);
-void CreateUI();
+void CreateUI(Scenes Scen);

@@ -146,6 +146,15 @@ void MouseScroll(float scroll) {
 /* Управление клавиатурой */
 bool SpacePressed = false;
 void ControlsKeyboard(int KEY, int ACTION) {
+	if (KEY == GLFW_KEY_ESCAPE && ACTION == GLFW_PRESS) {
+		if (CurrentScene == SCENE_Game) {
+			SetScene(SCENE_MainMenu);
+		}
+		else {
+			ExitGame();
+		}
+	}
+
 	if (KEY == GLFW_KEY_SPACE && ACTION == GLFW_PRESS) {
 		SpacePressed = !SpacePressed;
 		SetSimulationSpeed(SpacePressed ? 0 : 1);
@@ -191,10 +200,6 @@ void ControlsKeyboard(int KEY, int ACTION) {
 
 /* Управление клавиатурой (Каждый тик) */
 void ControlsKeyboardTick() {
-	if (KeyPressed(GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		ExitGame();
-	}
-
 	if (KeyPressed(GLFW_KEY_HOME) == GLFW_PRESS) {
 		Camera->SetCameraRotation(0);
 		Camera->SetCameraZoom(1);

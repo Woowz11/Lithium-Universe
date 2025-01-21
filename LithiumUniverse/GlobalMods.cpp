@@ -5,6 +5,7 @@
 using json = nlohmann::json;
 
 #include "ExplorerActions.h";
+#include "GlobalLua.h";
 #include "GameData.h";
 #include "Console.h";
 #include "GameMod.h";
@@ -83,4 +84,14 @@ void CheckMods() {
 	LoadMods();
 
 	Print("MODS", "Mods loaded!");
+}
+
+void StopMods() {
+
+}
+
+void RunMods() {
+	for (GameMod GM : Mods) {
+		RunScript(GM.MainScript);
+	}
 }
