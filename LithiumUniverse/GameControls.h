@@ -1,7 +1,7 @@
 #pragma once
 
-void MouseClick(int KEY, int ACTION);
-void ControlsKeyboard(int KEY, int ACTION);
-void MouseScroll(float scroll);
+void MouseClick(const int KEY, const int ACTION);
+void ControlsKeyboard(const int KEY, const int ACTION);
+void MouseScroll(const float scroll);
 void MouseMove();
 void Controls();

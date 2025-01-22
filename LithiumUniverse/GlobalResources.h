@@ -6,13 +6,14 @@
 
 extern std::vector<GameResource> Resources;
 
-int GetResourceAssetID(int ID, int IfNotFound);
-int GetResourceAssetID(int ID);
-int GetResourceID(int ID, int IfNotFound);
-int GetResourceID(int ID);
+int GetResourceAssetID(const int ID, const int IfNotFound);
+int GetResourceAssetID(const int ID);
+int GetResourceID(const int ID, const int IfNotFound);
+int GetResourceID(const int ID);
 
-std::string ComplexToFullPath(std::string NotFullPath);
-std::string GetBaseFromPath(std::string Path);
-GameResource GetResourceDebug(std::string FullPath);
-GameResource GetResource(std::string Base, std::string Path);
+std::string FullPathToComplex(const std::string FullPath);
+std::string ComplexToFullPath(const std::string NotFullPath);
+std::string GetBaseFromPath(const std::string Path);
+GameResource GetResourceDebug(const std::string FullPath);
+GameResource GetResource(const std::string Base, const std::string Path);
 void UpdateResources();

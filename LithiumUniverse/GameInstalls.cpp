@@ -39,13 +39,8 @@ enum GameInstallError {
 	GLFW_NOT_LOADED        = 3
 };
 
-uint32_t CURRENT_WINDOW_WIDTH_  = 0;
-uint32_t CURRENT_WINDOW_HEIGHT_ = 0;
-
 class GameInstalls {
 public:
-	const uint32_t START_WINDOW_WIDTH = 800;
-	const uint32_t START_WINDOW_HEIGHT = 600;
 	GLFWwindow* Window = NULL;
 
 	float FPS = -1;
@@ -90,10 +85,7 @@ private:
 			Print("GLFW", "Window created!");
 			glfwMakeContextCurrent(Window);
 			glfwSwapInterval(0);
-			CURRENT_WINDOW_WIDTH_ = START_WINDOW_WIDTH;
-			CURRENT_WINDOW_HEIGHT_ = START_WINDOW_HEIGHT;
 			glfwSetFramebufferSizeCallback(Window, WindowSizeChanged);
-			UpdateWindowSize(START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
 			glfwSetWindowFocusCallback(Window, [](GLFWwindow* window, int focused) {
 				GameInFocus = focused;
 			});
@@ -118,9 +110,8 @@ private:
 	/* Размер окна был изменён */
 	static void WindowSizeChanged(GLFWwindow* window, int width, int height)
 	{
-		CURRENT_WINDOW_WIDTH_ = width;
-		CURRENT_WINDOW_HEIGHT_ = height;
-		UpdateWindowSize(width, height);
+		CURRENT_WINDOW_WIDTH = width;
+		CURRENT_WINDOW_HEIGHT = height;
 		glViewport(0, 0, width, height);
 	}
 
@@ -235,13 +226,14 @@ private:
 	void RunAll() {
 		RunGLFW();
 		RunGLAD();
-		InstallRender(START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
+		InstallRender();
 		InstallLua();
+		InstallDebug();
 		UpdateResources();
 		InstallRenderAfterResources();
 
 		Print("LU", "All started, and start Loop()!");
-		Print("LU", "=============== [RUNTIME] ===============");
+		Print("LU", "=============== [$$YRUNTIME$$_] ===============");
 	}
 
 	/* Вычесление FPS */
@@ -268,13 +260,13 @@ private:
 
 		double xpos, ypos;
 		glfwGetCursorPos(Window, &xpos, &ypos);
-		glm::vec2 Pos  = (glm::vec2(xpos / (double)CURRENT_WINDOW_WIDTH_, ypos / (double)CURRENT_WINDOW_HEIGHT_) * glm::vec2(1,-1) - glm::vec2(0.5f, -0.5f)) * glm::vec2(2,2);
+		glm::vec2 Pos  = (glm::vec2(xpos / (double)CURRENT_WINDOW_WIDTH, ypos / (double)CURRENT_WINDOW_HEIGHT) * glm::vec2(1,-1) - glm::vec2(0.5f, -0.5f)) * glm::vec2(2,2);
 		glm::vec2 Pos2 = (glm::vec2(xpos / (double)START_WINDOW_WIDTH, ypos / (double)START_WINDOW_HEIGHT) * glm::vec2(1, -1) - glm::vec2(0.5f, -0.5f)) * glm::vec2(2, 2);
-		glm::vec2 Pos3 = Pos2 + glm::vec2(1 - (double)CURRENT_WINDOW_WIDTH_ / (double)START_WINDOW_WIDTH, -(1 - (double)CURRENT_WINDOW_HEIGHT_ / (double)START_WINDOW_HEIGHT));
+		glm::vec2 Pos3 = Pos2 + glm::vec2(1 - (double)CURRENT_WINDOW_WIDTH / (double)START_WINDOW_WIDTH, -(1 - (double)CURRENT_WINDOW_HEIGHT / (double)START_WINDOW_HEIGHT));
 		MousePosition = Pos;
 		MousePositionNonResize = Pos3;
 		MouseWorldPosition = ScreenPositionToWorld(Pos3, false, true);
-		MousePositionScreen = glm::vec2(xpos, CURRENT_WINDOW_HEIGHT_ - ypos);
+		MousePositionScreen = glm::vec2(xpos, CURRENT_WINDOW_HEIGHT - ypos);
 		MouseMove();
 	}
 
@@ -318,13 +310,11 @@ int Run() {
 #endif
 		Version = GetGameVersion();
 		InstallConsole();
-		InstallDebug();
 		Print("LU", "Run LithiumUniverse (" + Version + ")!");
 
 		Game.Run();
 
 		Print("LU", "$$GGame has been exit successfully!$$_");
-		CloseDebug();
 		CloseConsole();
 		End();
 	}

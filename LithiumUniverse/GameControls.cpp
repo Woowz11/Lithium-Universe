@@ -61,7 +61,7 @@ void UpdateMouseJoint() {
 }
 
 /* Поднять объект */
-void MousePickupGO(int i) {
+void MousePickupGO(const int i) {
 	if (i != PickupedObject) {
 		PickupedObject = i;
 		UpdateMouseJoint();
@@ -75,7 +75,7 @@ void MouseDropGO() {
 }
 
 /* Обработать клик по интерфейсу */
-void ProcessUIClick(int i, bool Left) {
+void ProcessUIClick(const int i, const bool Left) {
 	GameObject& OBJ = GetGameObject(i, "ProcessUIClick(" + std::to_string(i) + "," + ToStringBool(Left) + ");");
 
 	Button B = Buttons[OBJ.ButtonID];
@@ -113,7 +113,7 @@ void MouseMove() {
 }
 
 /* Кнопка на мыши нажата */
-void MouseClick(int KEY, int ACTION) {
+void MouseClick(const int KEY, const int ACTION) {
 	if (KEY == GLFW_MOUSE_BUTTON_RIGHT && ACTION == GLFW_PRESS) {
 		CreateTestObject(1);
 	}
@@ -152,13 +152,13 @@ void MouseClick(int KEY, int ACTION) {
 }
 
 /* Колёсико мышки двигается */
-void MouseScroll(float scroll) {
+void MouseScroll(const float scroll) {
 	Camera->MoveCameraZoom(scroll * (SHIFT ? 3 : (CONTROL ? 0.3f : 1)) * 0.1f, 1);
 }
 
 /* Управление клавиатурой */
 bool SpacePressed = false;
-void ControlsKeyboard(int KEY, int ACTION) {
+void ControlsKeyboard(const int KEY, const int ACTION) {
 	if (KEY == GLFW_KEY_ESCAPE && ACTION == GLFW_PRESS) {
 		if (CurrentScene == SCENE_Game) {
 			SetScene(SCENE_MainMenu);

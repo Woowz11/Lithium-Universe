@@ -9,6 +9,7 @@ using json = nlohmann::json;
 #include "ExplorerActions.h";
 #include "GlobalRender.h";
 #include "GameResource.h";
+#include "DebugGetter.h";
 #include "GlobalMods.h";
 #include "GameData.h";
 #include "FontChar.h";
@@ -18,10 +19,8 @@ using json = nlohmann::json;
 #include "Shader.h";
 #include "Font.h";
 
+/* Айди игровых ресурсов */
 const std::string BaseID              = "Base";
-const std::string VanillaID           = "Vanilla";
-const std::string VanillaPhysicID     = "VanillaPhysic";
-const std::string VanillaControllerID = "VanillaController";
 
 /* Все ресурсы игры */
 std::vector<GameResource> Resources = {};
@@ -39,7 +38,7 @@ std::string ErrorTexturePath = "";
 std::string ErrorShaderPath = "";
 
 /* Получить ресурс по полному пути */
-GameResource GetResourceDebug(std::string FullPath) {
+GameResource GetResourceDebug(const std::string FullPath) {
 	auto it = std::find_if(Resources.begin(), Resources.end(),
 		[&FullPath](const GameResource& GR) { return GR.FullPath == FullPath; });
 
@@ -53,12 +52,12 @@ GameResource GetResourceDebug(std::string FullPath) {
 }
 
 /* Получить ресурс по пути */
-GameResource GetResource(std::string Base, std::string Path) {
+GameResource GetResource(const std::string Base, const std::string Path) {
 	return GetResourceDebug(GamePath + "/" + (Base == BaseID ? "Resources" : "Mods/" + Base) + "/" + Path);
 }
 
 /* Получить айди ресурса */
-int GetResourceID(int ID, int IfNotFound) {
+int GetResourceID(const int ID, const int IfNotFound) {
 #ifdef NDEBUG
 	return ID;
 #else
@@ -77,35 +76,48 @@ int GetResourceID(int ID, int IfNotFound) {
 	return IfNotFound;
 #endif
 }
-int GetResourceID(int ID) {
+int GetResourceID(const int ID) {
 	return GetResourceID(ID, GetResourceDebug(ErrorTexturePath).ID);
 }
 
 /* Получить айди ассета ресурса */
-int GetResourceAssetID(int ID, int IfNotFound) {
+int GetResourceAssetID(const int ID, const int IfNotFound) {
 	return Resources[GetResourceID(ID, IfNotFound)].AssetID;
 }
-int GetResourceAssetID(int ID) {
+int GetResourceAssetID(const int ID) {
 	return GetResourceAssetID(ID, GetResourceDebug(ErrorTexturePath).ID);
 }
 
 /* Конвертировать путь по типу "Base:Shaders/Default.vert" в полный путь */
-std::string ComplexToFullPath(std::string NotFullPath) {
-	std::string NFP = NotFullPath;
-	size_t pos = NFP.find(':');
+std::string ComplexToFullPath(const std::string ComplexPath) {
+	std::string CP = ComplexPath;
+	size_t pos = CP.find(':');
 	if (pos == std::string::npos) {
-		Error("RES", "Failed to convert path [" + NotFullPath + "] to full path! ComplexToFullPath(\"" + NotFullPath + "\");");
+		Error("RES", "Failed to convert path [" + ComplexPath + "] to full path! ComplexToFullPath(\"" + ComplexPath + "\");");
 		return "";
 	}
 	else {
-		std::string Base = NFP.substr(0, pos);
-		std::string Path = NFP.substr(pos + 1);
+		std::string Base = CP.substr(0, pos);
+		std::string Path = CP.substr(pos + 1);
 		return FixPath(GamePath + "/" + (Base == BaseID ? "Resources" : "Mods/" + Base) + "/" + Path);
 	}
 }
 
+/* Конвертировать полный путь в не полный путь */
+std::string FullPathToComplex(const std::string FullPath) {
+	std::string EndPath = ReplaceStringToString(FixPath(FullPath),GamePath+"/","");
+	std::string Base = GetFirstElementFromPath(EndPath);
+	if (Base == "Mods") {
+		EndPath = ReplaceStringToString(EndPath, Base + "/", "");
+		Base = GetFirstElementFromPath(EndPath);
+	}
+	EndPath = ReplaceStringToString(EndPath, Base + "/", "");
+	if (Base == "Resources") { Base = BaseID; }
+	return Base + ":" + EndPath;
+}
+
 /* Получить базу по пути */
-std::string GetBaseFromPath(std::string Path) {
+std::string GetBaseFromPath(const std::string Path) {
 	std::string P = Path;
 	size_t pos = P.find(':');
 	if (pos == std::string::npos) {
@@ -118,7 +130,7 @@ std::string GetBaseFromPath(std::string Path) {
 }
 
 /* Определить ресурс по типу */
-void DefineResource(std::string Path) {
+void DefineResource(const std::string Path) {
 	std::string type = GetFileType(Path);
 
 	if (type == "png") {
@@ -136,7 +148,7 @@ void DefineResource(std::string Path) {
 }
 
 /* Создать ресурс или взять существующий */
-void CreateNewGameResourceOrSkip(std::string FullPath_, GameResourceType Type_, int ID_, int AssetID_) {
+void CreateNewGameResourceOrSkip(const std::string FullPath_, const GameResourceType Type_, const int ID_, const int AssetID_) {
 	auto it = std::find_if(Resources.begin(), Resources.end(),
 		[&FullPath_](const GameResource& GR) { return GR.FullPath == FullPath_; });
 
@@ -156,11 +168,11 @@ void CreateNewGameResourceOrSkip(std::string FullPath_, GameResourceType Type_, 
 
 /* Получить все ресурсы игры */
 void GetAllFilesInGamePath() {
-	std::vector<std::string> F_Scripts  = {};
-	std::vector<std::string> F_Shaders  = {};
-	std::vector<std::string> F_Textures = {};
-	std::vector<std::string> F_Sounds   = {};
-	std::vector<std::string> F_Other    = {};
+	F_Shaders  = {};
+	F_Fonts    = {};
+	F_Textures = {};
+	F_Sounds   = {};
+	F_Other    = {};
 
 	std::string ResourcesPath = GamePath + "/Resources";
 	std::string ModsPath      = GamePath + "/Mods";
@@ -178,14 +190,13 @@ void GetAllFilesInGamePath() {
 }
 
 void UpdateR_Other() {
-	for (std::string r : F_Other) {
+	for (const std::string r : F_Other) {
 		CreateNewGameResourceOrSkip(r, GR_Other, Resources.size(), -1);
 	}
 	Print("RES", "Other loaded!");
 }
 
 void RemoveR_Shaders() {
-	F_Shaders = {};
 	for (Shader S : Shaders) {
 		S.DeleteShader();
 	}
@@ -203,7 +214,7 @@ void UpdateR_Shaders() {
 
 	int ErrorShaderID = -1;
 
-	for (std::string r : F_Shaders) {
+	for (const std::string r : F_Shaders) {
 		int ID = -1;
 
 		std::string Vertex = "";
@@ -215,23 +226,28 @@ void UpdateR_Shaders() {
 		}
 		else {
 			if (ShaderInfo.contains("Vertex") && ShaderInfo.contains("Fragment")) {
-				std::string VertexPath = ComplexToFullPath(ShaderInfo["Vertex"]);
-				std::string FragmentPath = ComplexToFullPath(ShaderInfo["Fragment"]);
+				if (ShaderInfo["Vertex"].is_string() && ShaderInfo["Fragment"].is_string()) {
+					std::string VertexPath = ComplexToFullPath(ShaderInfo["Vertex"]);
+					std::string FragmentPath = ComplexToFullPath(ShaderInfo["Fragment"]);
 
-				if (VertexPath == "" || FragmentPath == "") {
-					Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because paths to Vertex or Fragment shaders are incorrect! UpdateR_Shaders();");
+					if (VertexPath == "" || FragmentPath == "") {
+						Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because paths to Vertex or Fragment shaders are incorrect! UpdateR_Shaders();");
+					}
+					else {
+						if (HasFile(VertexPath)) {
+							Vertex = ReadFile(VertexPath);
+						}
+						if (HasFile(FragmentPath)) {
+							Fragment = ReadFile(FragmentPath);
+						}
+					}
+
+					if (!(HasFile(VertexPath) && HasFile(FragmentPath))) {
+						Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because Vertex or Fragment shader files were not found! UpdateR_Shaders();");
+					}
 				}
 				else {
-					if (HasFile(VertexPath)) {
-						Vertex = ReadFile(VertexPath);
-					}
-					if (HasFile(FragmentPath)) {
-						Fragment = ReadFile(FragmentPath);
-					}
-				}
-
-				if (!(HasFile(VertexPath) && HasFile(FragmentPath))) {
-					Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because Vertex or Fragment shader files were not found! UpdateR_Shaders();");
+					Error("SHADER", "Unable to load shader [$$Y" + r + "$$_] because Vertex or Fragment shader files are not paths! UpdateR_Shaders();");
 				}
 			}
 			else {
@@ -253,7 +269,6 @@ void UpdateR_Shaders() {
 }
 
 void RemoveR_Textures() {
-	F_Textures = {};
 	for (Texture T : Texturies) {
 		DeleteTexture(T);
 	}
@@ -269,8 +284,9 @@ void UpdateR_Textures() {
 		return false;
 	});
 
-	for (std::string r : F_Textures) {
+	for (const std::string r : F_Textures) {
 		Texture T = CreateTexture(r, "Test");
+		T.Path = FullPathToComplex(r);
 		Texturies.push_back(T);
 		CreateNewGameResourceOrSkip(r, GR_Texture, Resources.size(), Texturies.size()-1);
 	}
@@ -278,12 +294,11 @@ void UpdateR_Textures() {
 }
 
 void RemoveR_Fonts() {
-	F_Fonts = {};
 	Fonts = {};
 }
 
 void UpdateR_Fonts() {
-	for (std::string r : F_Fonts) {
+	for (const std::string r : F_Fonts) {
 		json FontInfo = ReadJson(r);
 		if (FontInfo["Error"] == true) {
 			Error("FONT", "Unable to load font [$$Y" + r + "$$_] because its JSON file contains an error! UpdateR_Fonts();");
@@ -300,7 +315,7 @@ void UpdateR_Fonts() {
 }
 
 void UpdateR_Sounds() {
-	for (std::string r : F_Sounds) {
+	for (const std::string r : F_Sounds) {
 
 	}
 	Print("RES", "Sounds loaded!");
@@ -312,10 +327,13 @@ void UpdateResources() {
 
 	Print("RES", "Loading resources has started...");
 
+	ClearDebug();
+
 	RemoveR_Fonts();
 	RemoveR_Textures();
 	RemoveR_Shaders();
 
+	StartDebug();
 	GetAllFilesInGamePath();
 	for (auto p : Resources) {
 		p.Deleted = true;
@@ -326,5 +344,6 @@ void UpdateResources() {
 	UpdateR_Textures();
 	UpdateR_Fonts();
 	UpdateR_Sounds();
+	FinishLoadingResources();
 	Print("RES", "Resources updated!");
 }

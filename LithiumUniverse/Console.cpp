@@ -360,7 +360,7 @@ void InstallConsole() {
 	CurrentLogName = GenerateLogFileName();
 	CurrentLogPath = LogsPath + "/" + CurrentLogName;
 
-	CreateFile_(CurrentLogPath);
+	CreateFileLongWay(CurrentLogPath);
 
 	LogFile.open(CurrentLogPath);
 }

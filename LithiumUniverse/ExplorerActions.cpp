@@ -17,7 +17,7 @@ using json = nlohmann::json;
 const std::string Base_EA = "ExplorerActions";
 
 /* Исправить чёрточки в пути */
-std::string FixPath(std::string Path) {
+std::string FixPath(const std::string Path) {
 	std::string Result = Trim(Path);
 	Result = ReplaceCharsToChars(Result, '\\', '/');
 	if (GetLastSymbol(Result) == '/') {
@@ -27,7 +27,7 @@ std::string FixPath(std::string Path) {
 }
 
 /* Удалить последний файл из пути */
-std::string RemoveLastFileInPath(std::string Path) {
+std::string RemoveLastFileInPath(const std::string Path) {
 	size_t found = Path.find_last_of("/\\");
 	if (found) {
 		std::string Result = Path.substr(0, found);
@@ -40,43 +40,43 @@ std::string RemoveLastFileInPath(std::string Path) {
 }
 
 /* Добавить файл в конец пути */
-std::string AddFileToPath(std::string Path, std::string File) {
+std::string AddFileToPath(const std::string Path, const std::string File) {
 	return FixPath(Path) + "/" + File;
 }
 
 /* Создать папку по указаному пути */
-void CreateFolder(std::string Path) {
+void CreateFolder(const std::string Path) {
 	namespace fs = std::filesystem;
 	fs::create_directories(Path);
 }
 
 /* Создать файл */
-void CreateFile_(std::string Path, std::string FileName, std::string Content) {
+void CreateFile_(const std::string Path, const std::string FileName, const std::string Content) {
 	std::ofstream file(FixPath(Path) + "/" + FileName);
 	file << Content;
 	file.close();
 }
-void CreateFile_(std::string Path, std::string FileName) {
+void CreateFile_(const std::string Path, const std::string FileName) {
 	CreateFile_(Path, FileName, "");
 }
-void CreateFile_(std::string Path) {
+void CreateFileLongWay(const std::string Path) {
 	std::ofstream file(FixPath(Path), std::ios::app);
 	file.close();
 }
 
 /* Файл существует по пути? */
-bool HasFile(std::string Path) {
+bool HasFile(const std::string Path) {
 	std::ifstream f((FixPath(Path)).c_str());
 	return f.good();
 }
 
 /* Папка существует по пути? */
-bool HasFolder(std::string Path) {
+bool HasFolder(const std::string Path) {
 	return std::filesystem::exists(FixPath(Path)) && std::filesystem::is_directory(FixPath(Path));
 }
 
 /* Добавить текст в файл (длинным путём) */
-void AddToFileLongWay(std::string FilePath, std::string AddThat) {
+void AddToFileLongWay(const std::string FilePath, const std::string AddThat) {
 	if (HasFile(FilePath)) {
 		std::ofstream File(FixPath(FilePath), std::ios::app);
 		File << AddThat;
@@ -88,7 +88,7 @@ void AddToFileLongWay(std::string FilePath, std::string AddThat) {
 }
 
 /* Добавить текст в файл */
-void AddToFile(std::ofstream& File, std::string AddThat) {
+void AddToFile(std::ofstream& File, const std::string AddThat) {
 	if (File.is_open()) {
 		File << AddThat;
 	}
@@ -98,7 +98,7 @@ void AddToFile(std::ofstream& File, std::string AddThat) {
 }
 
 /* Очистить файл (длинным путём) */
-void ClearFileLongWay(std::string FilePath) {
+void ClearFileLongWay(const std::string FilePath) {
 	if (HasFile(FilePath)) {
 		std::ofstream File(FixPath(FilePath));
 		File.write("", 0);
@@ -120,7 +120,7 @@ void ClearFile(std::ofstream& File) {
 }
 
 /* Получить массив папок внутри папки */
-std::vector<std::string> GetFolders(std::string Path) {
+std::vector<std::string> GetFolders(const std::string Path) {
 	std::vector<std::string> Result = {};
 	if (HasFolder(Path)) {
 		for (const auto& e : std::filesystem::directory_iterator(Path)) {
@@ -136,7 +136,7 @@ std::vector<std::string> GetFolders(std::string Path) {
 }
 
 /* Получить массив файлов внутри папки и подпапок */
-std::vector<std::string> GetFilesIncludeSubFolders(std::string Path) {
+std::vector<std::string> GetFilesIncludeSubFolders(const std::string Path) {
 	std::vector<std::string> Result = {};
 	if (HasFolder(Path)) {
 		for (const auto& e : std::filesystem::recursive_directory_iterator(Path)) {
@@ -152,7 +152,7 @@ std::vector<std::string> GetFilesIncludeSubFolders(std::string Path) {
 }
 
 /* Получить расширение файла */
-std::string GetFileType(std::string FilePath) {
+std::string GetFileType(const std::string FilePath) {
 	if (HasFile(FilePath)) {
 		std::filesystem::path path(FilePath);
 		std::string extension = path.extension().string();
@@ -166,7 +166,7 @@ std::string GetFileType(std::string FilePath) {
 }
 
 /* Прочесть файл */
-std::string ReadFile(std::string FilePath) {
+std::string ReadFile(const std::string FilePath) {
 	if (HasFile(FilePath)) {
 		std::ifstream file(FilePath);
 		std::stringstream buffer;
@@ -180,7 +180,7 @@ std::string ReadFile(std::string FilePath) {
 }
 
 /* Получить название файла */
-std::string GetFileName(std::string FilePath) {
+std::string GetFileName(const std::string FilePath) {
 	if (HasFile(FilePath)) {
 		std::filesystem::path path(FilePath);
 		return path.stem().string();
@@ -192,7 +192,7 @@ std::string GetFileName(std::string FilePath) {
 }
 
 /* Получить название папки */
-std::string GetFolderName(std::string Path) {
+std::string GetFolderName(const std::string Path) {
 	if (HasFolder(Path)) {
 		std::filesystem::path path(Path);
 		return path.stem().string();
@@ -203,12 +203,29 @@ std::string GetFolderName(std::string Path) {
 	return "";
 }
 
+/* Получить первый элемент из пути */
+std::string GetFirstElementFromPath(const std::string Path) {
+	if (!Path.empty()) {
+		size_t firstSlashPos = Path.find('/');
+		if (firstSlashPos != std::string::npos) {
+			return Path.substr(0, firstSlashPos);
+		}
+		else {
+			Warn(Base_EA,"It is not possible to get the first element from the path because it was not found! GetFirstElementFromPath(\"" + Path + "\");");
+		}
+	}
+	else {
+		Warn(Base_EA, "It is not possible to get the first element from the path because it is empty! GetFirstElementFromPath(\"" + Path + "\");");
+	}
+	return "";
+}
+
 /* ==== JSON ==== */
 
 json ErrorJson = { {"Error", true} };
 
 /* Конвертировать строку в Json */
-json ConvertStringToJson(std::string Json) {
+json ConvertStringToJson(const std::string Json) {
 	try {
 		return json::parse(Json);
 	}
@@ -220,7 +237,7 @@ json ConvertStringToJson(std::string Json) {
 }
 
 /* Прочитать JSON файл */
-json ReadJson(std::string FilePath) {
+json ReadJson(const std::string FilePath) {
 	if (HasFile(FilePath)) {
 		return ConvertStringToJson(ReadFile(FilePath));
 	}

@@ -6,11 +6,9 @@
 #include "GameCamera.h";
 #include "GameObject.h";
 
-void Render(std::vector<GameObject>& Scene);
-void InstallRender(uint32_t SWW, uint32_t SWH);
+void Render(const std::vector<GameObject>& Scene);
+void InstallRender();
 void InstallRenderAfterResources();
 void ClearRender();
-void UpdateDeltaTime(float DT);
-void UpdateWindowSize(uint32_t W, uint32_t H);
-glm::vec2 ScreenPositionToWorld(glm::vec2 Pos, bool IgnoreCamera, bool Resize);
+glm::vec2 ScreenPositionToWorld(const glm::vec2& Pos, const bool IgnoreCamera, const bool Resize);
 void ReloadShaderTime();

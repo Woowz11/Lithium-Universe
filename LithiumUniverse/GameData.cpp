@@ -48,6 +48,12 @@ glm::vec2 MouseWorldPosition = glm::vec2(0, 0);
 /* Игровой мир для Box2D */
 b2WorldId World = b2_nullWorldId;
 
+/* Размеры окна */
+uint32_t START_WINDOW_WIDTH    = 800;
+uint32_t START_WINDOW_HEIGHT   = 600;
+uint32_t CURRENT_WINDOW_WIDTH  = START_WINDOW_WIDTH;
+uint32_t CURRENT_WINDOW_HEIGHT = START_WINDOW_HEIGHT;
+
 /* Текущая сцена */
 Scenes CurrentScene = SCENE_NotSelected;
 
@@ -56,6 +62,7 @@ void SetScene(Scenes Scen) {
 	if (Scen != CurrentScene) {
 		Print("SCENE", "Scene changed to (" + std::to_string(Scen) + ")!");
 		if (CurrentScene == SCENE_Game) {
+			Print("LU", "============== [$$YEND GAME$$_] ===============");
 			StopMods();
 		}
 
@@ -71,7 +78,7 @@ void SetScene(Scenes Scen) {
 		CurrentScene = Scen;
 
 		if (Scen == SCENE_Game) {
-			Print("LU", "================ [GAME] =================");
+			Print("LU", "================ [$$YGAME$$_] =================");
 			RunMods();
 		}
 

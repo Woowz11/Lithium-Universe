@@ -11,8 +11,19 @@
 
 const std::string Base_SA = "StringActions";
 
+/* Заменить в строке что-то на что-то */
+std::string ReplaceStringToString(const std::string Target, const std::string This, const std::string ToThat) {
+	std::string Result = Target;
+	size_t pos = 0;
+	while ((pos = Result.find(This, pos)) != std::string::npos) {
+		Result.replace(pos, This.length(), ToThat);
+		pos += ToThat.length();
+	}
+	return Result;
+}
+
 /* Убрать пробелы из начала и конца */
-std::string Trim(std::string Target) {
+std::string Trim(const std::string& Target) {
     size_t first = Target.find_first_not_of(" \t\n\r");
     size_t last = Target.find_last_not_of(" \t\n\r");
 
@@ -24,7 +35,7 @@ std::string Trim(std::string Target) {
 }
 
 /* Заполнить строку символами */
-std::string FillString(std::string Target, char Symbol, int Length, bool ToLeft) {
+std::string FillString(const std::string& Target, const char Symbol, const int Length, const bool ToLeft) {
 	if (Target.length() >= Length) {
 		return Target;
 	}
@@ -35,14 +46,14 @@ std::string FillString(std::string Target, char Symbol, int Length, bool ToLeft)
 }
 
 /* Заменить все символы в строке на другие символы */
-std::string ReplaceCharsToChars(std::string Target, char ToThis, char ToThat) {
+std::string ReplaceCharsToChars(const std::string& Target, const char ToThis, const char ToThat) {
 	std::string Result = Target;
 	std::replace(Result.begin(), Result.end(), ToThis, ToThat);
 	return Result;
 }
 
 /* Заменить все символы в строке на строку */
-std::string ReplaceCharsToString(std::string Target, char ToThis, std::string ToThat) {
+std::string ReplaceCharsToString(const std::string& Target, const char ToThis, const std::string ToThat) {
 	std::string Result = Target;
 	std::string Char(1, ToThis);
 	size_t pos = 0;
@@ -54,7 +65,7 @@ std::string ReplaceCharsToString(std::string Target, char ToThis, std::string To
 }
 
 /* Получить последний символ строки */
-char GetLastSymbol(std::string Target) {
+char GetLastSymbol(const std::string& Target) {
 	if (Target.empty()) {
 		return ' ';
 	}
@@ -62,19 +73,20 @@ char GetLastSymbol(std::string Target) {
 }
 
 /* Удалить последний символ строки */
-std::string RemoveLastSymbol(std::string Target) {
+std::string RemoveLastSymbol(const std::string& Target) {
 	if (Target.empty()) {
 		Warn(Base_SA, "Cannot delete the last character in a string because the string is empty! RemoveLastSymbol(\"" + Target + "\");");
 		return Target;
 	}
 	else {
-		Target.pop_back();
-		return Target;
+		std::string Result = Target;
+		Result.pop_back();
+		return Result;
 	}
 }
 
 /* Удалить первый символ строки */
-std::string RemoveFirstSymbol(std::string Target) {
+std::string RemoveFirstSymbol(const std::string& Target) {
 	if (Target.empty()) {
 		Warn(Base_SA, "Cannot delete the first character in a string because the string is empty! RemoveFirstSymbol(\"" + Target + "\");");
 		return Target;
@@ -120,14 +132,14 @@ std::string u32stringToString(const std::u32string& u32str) {
 
 /* ==== Конвертация в строки ==== */
 
-std::string ToStringVec2(glm::vec2 target) {
+std::string ToStringVec2(const glm::vec2 target) {
 	return "glm::vec2(" + std::to_string(target.x) + "," + std::to_string(target.y) + ")";
 }
 
-std::string ToStringVec4(glm::vec4 target) {
+std::string ToStringVec4(const glm::vec4 target) {
 	return "glm::vec4(" + std::to_string(target.x) + "," + std::to_string(target.y) + "," + std::to_string(target.z) + "," + std::to_string(target.w) + ")";
 }
 
-std::string ToStringBool(bool target) {
+std::string ToStringBool(const bool target) {
 	return target ? "true" : "false";
 }

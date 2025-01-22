@@ -24,6 +24,11 @@ extern glm::vec2 MousePosition;
 extern glm::vec2 MousePositionNonResize;
 extern glm::vec2 MouseWorldPosition;
 
+extern uint32_t START_WINDOW_WIDTH;
+extern uint32_t START_WINDOW_HEIGHT;
+extern uint32_t CURRENT_WINDOW_WIDTH;
+extern uint32_t CURRENT_WINDOW_HEIGHT;
+
 extern std::string Version;
 extern std::string GamePath;
 

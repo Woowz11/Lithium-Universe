@@ -26,15 +26,7 @@
 #include "Shader.h";
 #include "Font.h";
 
-uint32_t START_WINDOW_WIDTH;
-uint32_t START_WINDOW_HEIGHT;
-uint32_t CURRENT_WINDOW_WIDTH;
-uint32_t CURRENT_WINDOW_HEIGHT;
-void UpdateWindowSize(uint32_t W, uint32_t H) {
-    CURRENT_WINDOW_WIDTH  = W;
-    CURRENT_WINDOW_HEIGHT = H;
-}
-
+/* Элементы для высчита времени приложения */
 LARGE_INTEGER AppTimeFrequency, AppTimeStart, AppTimeEnd;
 
 /* Время шейдера */
@@ -46,7 +38,7 @@ void ReloadShaderTime() {
 }
 
 /* Константа на размер окна */
-const glm::vec2 ScreenScale    = glm::vec2(10.0f / 3, 7.5f / 3);
+const glm::vec2 ScreenScale = glm::vec2(10.0f / 3, 7.5f / 3);
 
 /* Отладочный рендер */
 const bool DebugRender = false;
@@ -60,16 +52,17 @@ glm::vec3 BackgroundColor = glm::vec3(0.1f, 0.1f, 0.1f);
 
 unsigned int VBO, VAO;
 
-float square[] = {
+/* Вертиксы квадрата (вертиксы, развёртка, номер верт.) */
+float Square[] = {
     -1.0f, -1.0f, -1.0f,    0.0f, 0.0f,    0,
      1.0f, -1.0f, -1.0f,    1.0f, 0.0f,    1,
      1.0f,  1.0f, -1.0f,    1.0f, 1.0f,    2,
     -1.0f,  1.0f, -1.0f,    0.0f, 1.0f,    3
 };
-int square_l = 4; /* Кол-во строк в square */
+int Square_l = 4; /* Кол-во строк в square */
 
 /* Проверка на GL ошибку */
-void CheckGLError(std::string Script) {
+void CheckGLError(const std::string Script) {
 #ifdef DEBUG
     GLenum E = glGetError();
     if (E != GLFW_NO_ERROR) {
@@ -79,16 +72,13 @@ void CheckGLError(std::string Script) {
 }
 
 /* Установить всё для рендера */
-void InstallRender(uint32_t SWW, uint32_t SWH) {
+void InstallRender() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    START_WINDOW_WIDTH = SWW;
-    START_WINDOW_HEIGHT = SWH;
-
     QueryPerformanceFrequency(&AppTimeFrequency);
     QueryPerformanceCounter(&AppTimeStart);
-    CheckGLError("InstallRender(" + std::to_string(SWW) + "," + std::to_string(SWH) + ");");
+    CheckGLError("InstallRender();");
 }
 
 void CreateBuffers_Default() {
@@ -98,7 +88,7 @@ void CreateBuffers_Default() {
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(square), square, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Square), Square, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -131,12 +121,12 @@ void ClearRender() {
 }
 
 /* ==== Рендер объектов ==== */
+
 Shader CSS;
 int TEX = -2;
 
 /* Рендер квадрата */
 void RenderSquare(const GameObject& OBJ) {
-    /* ==== Трансформация ==== */
     glBindVertexArray(VAO);
 
     CSS.setInt("ID", OBJ.GetID());
@@ -158,7 +148,7 @@ void RenderSquare(const GameObject& OBJ) {
         CSS.setBool("Sleeping", false);
     }
 
-    glDrawArrays(GL_QUADS, 0, square_l);
+    glDrawArrays(GL_QUADS, 0, Square_l);
 }
 
 /* Рендерить линию */
@@ -215,12 +205,12 @@ void RenderText(const GameObject& OBJ) {
 
         i++;
         TotalW += Cinfo.W;
-        glDrawArrays(GL_QUADS, 0, square_l);
+        glDrawArrays(GL_QUADS, 0, Square_l);
     }
 }
 
 /* Рендер картинки каждый кадр */
-void Render(std::vector<GameObject>& Scene) {
+void Render(const std::vector<GameObject>& Scene) {
 	glClearColor(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -231,6 +221,7 @@ void Render(std::vector<GameObject>& Scene) {
     glm::vec2 ScreenStartSize = glm::vec2(START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
 
     /* ==== Рендер объектов ==== */
+
     for (const GameObject& OBJ : Scene) {
         if (!OBJ.Deleted && OBJ.Active && OBJ.Render) {
             Texture OBJ_Texture = Texturies[GetResourceAssetID(OBJ.BaseTextureRes)];
@@ -281,7 +272,7 @@ void Render(std::vector<GameObject>& Scene) {
 }
 
 /* Позицию экранную в мировую */
-glm::vec2 ScreenPositionToWorld(glm::vec2 Pos, bool IgnoreCamera, bool Resize) {
+glm::vec2 ScreenPositionToWorld(const glm::vec2& Pos, const bool IgnoreCamera, const bool Resize) {
     glm::vec2 Result = Pos;
     //800px => 20.0f / 3
     Result *= ScreenScale;

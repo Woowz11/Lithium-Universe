@@ -5,25 +5,26 @@
 
 #include "nlohmann/json.hpp";
 
-std::string FixPath(std::string Path);
-void CreateFolder(std::string Path);
-std::string RemoveLastFileInPath(std::string Path);
-std::string AddFileToPath(std::string Path, std::string File);
-void CreateFile_(std::string Path, std::string FileName, std::string Content);
-void CreateFile_(std::string Path, std::string FileName);
-void CreateFile_(std::string Path);
-bool HasFolder(std::string Path);
-bool HasFile(std::string Path);
-void AddToFileLongWay(std::string FilePath, std::string AddThat);
-void AddToFile(std::ofstream& File, std::string AddThat);
-void ClearFileLongWay(std::string FilePath);
+std::string FixPath(const std::string Path);
+void CreateFolder(const std::string Path);
+std::string RemoveLastFileInPath(const std::string Path);
+std::string AddFileToPath(const std::string Path, const std::string File);
+void CreateFile_(const std::string Path, const std::string FileName, const std::string Content);
+void CreateFile_(const std::string Path, const std::string FileName);
+void CreateFileLongWay(const std::string Path);
+bool HasFolder(const std::string Path);
+bool HasFile(const std::string Path);
+void AddToFileLongWay(const std::string FilePath, const std::string AddThat);
+void AddToFile(std::ofstream& File, const std::string AddThat);
+void ClearFileLongWay(const std::string FilePath);
 void ClearFile(std::ofstream& File);
-std::vector<std::string> GetFolders(std::string Path);
-std::vector<std::string> GetFilesIncludeSubFolders(std::string Path);
-std::string GetFolderName(std::string Path);
-std::string GetFileName(std::string FilePath);
-std::string GetFileType(std::string FilePath);
-std::string ReadFile(std::string FilePath);
+std::vector<std::string> GetFolders(const std::string Path);
+std::vector<std::string> GetFilesIncludeSubFolders(const std::string Path);
+std::string GetFolderName(const std::string Path);
+std::string GetFileName(const std::string FilePath);
+std::string GetFileType(const std::string FilePath);
+std::string ReadFile(const std::string FilePath);
+std::string GetFirstElementFromPath(const std::string Path);
 
-nlohmann::json ConvertStringToJson(std::string Json);
-nlohmann::json ReadJson(std::string FilePath);
+nlohmann::json ConvertStringToJson(const std::string Json);
+nlohmann::json ReadJson(const std::string FilePath);
