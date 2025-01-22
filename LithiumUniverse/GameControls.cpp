@@ -213,6 +213,10 @@ void ControlsKeyboard(int KEY, int ACTION) {
 	if (KEY == GLFW_KEY_7 && ACTION == GLFW_PRESS) {
 		CreateTestObject(6);
 	}
+
+	if (KEY == GLFW_KEY_8 && ACTION == GLFW_PRESS) {
+		CreateTestObject(7);
+	}
 }
 
 /* Управление клавиатурой (Каждый тик) */

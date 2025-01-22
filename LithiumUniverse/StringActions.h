@@ -9,10 +9,8 @@ std::string ReplaceCharsToString(std::string Target, char ToThis, std::string To
 char GetLastSymbol(std::string Target);
 std::string RemoveLastSymbol(std::string Target);
 std::string RemoveFirstSymbol(std::string Target);
+std::string u32stringToString(const std::u32string& u32str);
 
 std::string ToStringBool(bool target);
 std::string ToStringVec2(glm::vec2 target);
 std::string ToStringVec4(glm::vec4 target);
-
-std::u32string UTF8ToUTF32(const std::string& utf8);
-uint32_t GetCharID(const char& c);

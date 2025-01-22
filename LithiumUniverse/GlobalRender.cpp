@@ -202,7 +202,7 @@ void RenderLine(const GameObject& OBJ) {
 
 /* Рендер текста */
 void RenderText(const GameObject& OBJ) {
-    std::string Text = OBJ.Text;
+    std::u32string Text = OBJ.Text;
     Font F = Fonts[GetResourceAssetID(OBJ.FontRes)];
 
     CSS.setInt("ID", OBJ.GetID());
@@ -226,23 +226,30 @@ void RenderText(const GameObject& OBJ) {
     CSS.setInt("TextLength", Text.size());
 
     int i = 0;
-    for (char C : Text) {
+    int TotalW = 0;
+
+    FontChar CinfoError = F.Chars[-1];
+    CSS.setVec2("ErrorCharSize", glm::vec2(CinfoError.W, CinfoError.H));
+
+    for (char32_t C : Text) {
         glBindVertexArray(VAO);
 
-        uint32_t CharID = GetCharID(C);
+        uint32_t CharID = C;
         auto it = F.Chars.find(CharID);
         if (it == F.Chars.end()) {
             CharID = -1;
         }
         FontChar Cinfo = F.Chars[CharID];
 
-        CSS.setInt("CharPosition", i);
+        CSS.setInt("TextCharPosition", i);
         CSS.setInt("CharID", CharID);
-        CSS.setVec2("FontSize", glm::vec2(13,1));
-        CSS.setVec2("FontCharPosition", glm::vec2(Cinfo.X,0));
+        CSS.setVec2("CharPosition", glm::vec2(Cinfo.X, Cinfo.Y));
+        CSS.setVec2("CharSize", glm::vec2(Cinfo.W, Cinfo.H));
+        CSS.setInt("TextCharSize", TotalW);
 
         glDrawArrays(GL_QUADS, 0, square_l);
         i++;
+        TotalW += Cinfo.W;
     }
 }
 

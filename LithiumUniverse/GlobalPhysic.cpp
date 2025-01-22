@@ -72,6 +72,9 @@ void CreateTestObject(int type) {
 		SetGameObjectCollider(box, CT_Circle);
 		SetGameObjectTexture(box, GetResource("Base", "Textures/Circle.png").ID);
 		break;
+	case 7:
+		MakeGameObjectText(box, U"0123456789 9876543210");
+		break;
 	default:
 		SetGameObjectStatic(box, true);
 		break;

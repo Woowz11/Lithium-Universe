@@ -267,6 +267,11 @@ void PrintVeryFast(std::string Message) {
 	std::cout << std::endl << Message;
 }
 
+/* Отправить очень успрощённое сообщение (U32) (очень быстрое) */
+void PrintVeryFastU32(std::u32string Message) {
+	std::cout << std::endl << u32stringToString(Message);
+}
+
 /* Отправить важное сообщение */
 void PrintImportant(std::string Base, std::string Message) {
 	PrintBase(Base, Both, SLT_Important, Message);

@@ -23,6 +23,7 @@ extern int MouseUIObject;
 extern std::vector<Button> Buttons;
 
 void MakeGameObjectUI__(int i);
+void MakeGameObjectText(int i, std::u32string Text);
 void AfterUpdateUI();
 void UpdateUI(GameObject& OBJ);
 void CreateUI(Scenes Scen);

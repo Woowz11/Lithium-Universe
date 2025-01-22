@@ -6,6 +6,8 @@ public:
 	int Char;
 	int X = -1;
 	int Y = -1;
+	int W = -1;
+	int H = -1;
 
 	FontChar() { Char = -1; }
 

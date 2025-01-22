@@ -84,6 +84,40 @@ std::string RemoveFirstSymbol(std::string Target) {
 	}
 }
 
+/* Конвертировать строку u32string в string */
+std::string u32stringToString(const std::u32string& u32str) {
+	std::string str;
+	for (char32_t ch : u32str) {
+		if (ch <= 0x7F) {
+			// 1 байт (ASCII)
+			str.push_back(static_cast<char>(ch));
+		}
+		else if (ch <= 0x7FF) {
+			// 2 байта
+			str.push_back(static_cast<char>(0xC0 | (ch >> 6)));
+			str.push_back(static_cast<char>(0x80 | (ch & 0x3F)));
+		}
+		else if (ch <= 0xFFFF) {
+			// 3 байта
+			str.push_back(static_cast<char>(0xE0 | (ch >> 12)));
+			str.push_back(static_cast<char>(0x80 | ((ch >> 6) & 0x3F)));
+			str.push_back(static_cast<char>(0x80 | (ch & 0x3F)));
+		}
+		else if (ch <= 0x10FFFF) {
+			// 4 байта
+			str.push_back(static_cast<char>(0xF0 | (ch >> 18)));
+			str.push_back(static_cast<char>(0x80 | ((ch >> 12) & 0x3F)));
+			str.push_back(static_cast<char>(0x80 | ((ch >> 6) & 0x3F)));
+			str.push_back(static_cast<char>(0x80 | (ch & 0x3F)));
+		}
+		else {
+			Warn(Base_SA,"Failed to convert std::u32string to std::string! u32stringToString(?);");
+			return "ERROR";
+		}
+	}
+	return str;
+}
+
 /* ==== Конвертация в строки ==== */
 
 std::string ToStringVec2(glm::vec2 target) {
@@ -96,47 +130,4 @@ std::string ToStringVec4(glm::vec4 target) {
 
 std::string ToStringBool(bool target) {
 	return target ? "true" : "false";
-}
-
-/* ==== Работа с символами ==== */
-
-/* Конвертировать строку UTF8 в UTF32 */
-std::u32string UTF8ToUTF32(const std::string& utf8) {
-	std::u32string utf32;
-	size_t i = 0;
-	while (i < utf8.size()) {
-		char32_t codepoint = 0;
-		unsigned char c = utf8[i];
-
-		if (c <= 0x7F) {
-			codepoint = c;
-			i += 1;
-		}
-		else if ((c & 0xE0) == 0xC0) {
-			codepoint = (utf8[i] & 0x1F) << 6 | (utf8[i + 1] & 0x3F);
-			i += 2;
-		}
-		else if ((c & 0xF0) == 0xE0) {
-			codepoint = (utf8[i] & 0x0F) << 12 | (utf8[i + 1] & 0x3F) << 6 | (utf8[i + 2] & 0x3F);
-			i += 3;
-		}
-		else if ((c & 0xF8) == 0xF0) {
-			codepoint = (utf8[i] & 0x07) << 18 | (utf8[i + 1] & 0x3F) << 12 |
-				(utf8[i + 2] & 0x3F) << 6 | (utf8[i + 3] & 0x3F);
-			i += 4;
-		}
-		else {
-			WarnSerious(Base_SA+"/UTF8", "Failed to convert UTF8 string to UTF32 string! UTF8ToUTF32(\"" + utf8 + "\");");
-		}
-
-		utf32 += codepoint;
-	}
-
-	return utf32;
-}
-
-/* Получить айди символа */
-uint32_t GetCharID(const char& c) {
-	auto utf32 = UTF8ToUTF32(std::string(1,c));
-	return utf32[0];
 }

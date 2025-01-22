@@ -6,21 +6,22 @@ layout (location = 2) in int PointID;
 out vec2 TextureCoord;
 
 uniform vec2 Position;
-uniform float Orientation;
 uniform vec2 Size;
 uniform float Layer;
 uniform int ID;
 uniform vec2 CameraPosition;
-uniform float CameraOrientation;
 uniform float CameraZoom;
 uniform bool Interface;
 uniform bool Resize;
 uniform vec2 ScreenStartSize;
 uniform vec2 ScreenSize;
 
-uniform int CharPosition;
-uniform vec2 FontCharPosition;
-uniform vec2 FontSize;
+uniform vec2 TextureSize;
+uniform int TextCharPosition;
+uniform int TextCharSize;
+uniform vec2 CharPosition;
+uniform vec2 CharSize;
+uniform vec2 ErrorCharSize;
 
 mat4 Scale(mat4 mat, vec2 vec){
 	return mat4(
@@ -28,34 +29,6 @@ mat4 Scale(mat4 mat, vec2 vec){
 		mat[1] * vec[1],
 		mat[2],
 		mat[3]);
-}
-
-mat4 Rotate(mat4 mat, float angl){
-	float c = cos(angl);
-	float s = sin(angl);
-	
-	vec3 axis = normalize(vec3(0,0,1));
-	vec3 temp = (1 - c) * axis;
-	
-	mat4 Rotate;
-	Rotate[0][0] = c + temp[0] * axis[0];
-	Rotate[0][1] = temp[0] * axis[1] + s * axis[2];
-	Rotate[0][2] = temp[0] * axis[2] - s * axis[1];
-
-	Rotate[1][0] = temp[1] * axis[0] - s * axis[2];
-	Rotate[1][1] = c + temp[1] * axis[1];
-	Rotate[1][2] = temp[1] * axis[2] + s * axis[0];
-
-	Rotate[2][0] = temp[2] * axis[0] + s * axis[1];
-	Rotate[2][1] = temp[2] * axis[1] - s * axis[0];
-	Rotate[2][2] = c + temp[2] * axis[2];
-	
-	mat4 Result;
-	Result[0] = mat[0] * Rotate[0][0] + mat[1] * Rotate[0][1] + mat[2] * Rotate[0][2];
-	Result[1] = mat[0] * Rotate[1][0] + mat[1] * Rotate[1][1] + mat[2] * Rotate[1][2];
-	Result[2] = mat[0] * Rotate[2][0] + mat[1] * Rotate[2][1] + mat[2] * Rotate[2][2];
-	Result[3] = mat[3];
-	return Result;
 }
 
 mat4 Translate(mat4 mat, vec3 vec)
@@ -106,21 +79,15 @@ void main()
 	RPosition[2] = vec4(0,0,1,0);
 	RPosition[3] = vec4(0,0,0,1);
 	
-	if(!Interface){
-		RPosition = Rotate(RPosition, CameraOrientation);
-	}
-	
-	float Indent = (float(CharPosition) * 0.8) * Size.x;
+	float Indent = (float(TextCharSize)/ErrorCharSize.x) * 0.4;
 	RPosition = Translate(RPosition, vec3(vec2(Position.x + Indent, Position.y) * (Interface ? (Resize ? ScreenScale : ScreenScale * ScreenDifference) : vec2(1,1)), (Layer + (float(ID)/100))/100));
 	
 	if(!Interface){
 		RPosition = Translate(RPosition, CameraPosition);
 	}
 	
-	RPosition = Rotate(RPosition, Orientation);
-	
-	RPosition = Scale(RPosition, Size);
+	RPosition = Scale(RPosition, vec2(Size.x * (CharSize.x/ErrorCharSize.x), Size.y));
 	
     gl_Position = Projection * RPosition * vec4(PointPosition, 1.0f);
-    TextureCoord = vec2((TextureUV.x / FontSize.x) + (FontCharPosition.x / FontSize.x), 1.0 - TextureUV.y);
+    TextureCoord = vec2(TextureUV.x * (CharSize.x / TextureSize.x) + (CharPosition.x / TextureSize.x), 1.0 - (TextureUV.y * (CharSize.y / TextureSize.y) + (CharPosition.y / TextureSize.y)));
 }

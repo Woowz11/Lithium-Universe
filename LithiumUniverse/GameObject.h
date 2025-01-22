@@ -63,7 +63,7 @@ public:
 	/* ==== Настройки интерфейса ==== */
 	bool Resize  = false;                  /* Менять размер вместе с экраном? */
 	int ButtonID = -1;                     /* Является ли компонент кнопкой?  */
-	std::string Text = "";                 /* Текст (если этот элемент текст) */
+	std::u32string Text = U"";                 /* Текст (если этот элемент текст) */
 
 	/* ==== Настройки физики ==== */
 	int BodyID             = -1;                     /* Айди b2BodyId                   */
@@ -85,7 +85,7 @@ public:
 		LinePositionVisual = glm::vec4(0, 0, 0, 0);
 		SizeVisual = glm::vec2(0, 0);
 		Color = glm::vec4(0, 0, 0, 0);
-		Text = "";
+		Text = U"";
 	}
 
 	std::string ToString() {
