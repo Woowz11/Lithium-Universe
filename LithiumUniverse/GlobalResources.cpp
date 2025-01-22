@@ -278,7 +278,8 @@ void UpdateR_Textures() {
 }
 
 void RemoveR_Fonts() {
-
+	F_Fonts = {};
+	Fonts = {};
 }
 
 void UpdateR_Fonts() {

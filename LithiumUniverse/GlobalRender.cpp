@@ -68,6 +68,16 @@ float square[] = {
 };
 int square_l = 4; /* Кол-во строк в square */
 
+/* Проверка на GL ошибку */
+void CheckGLError(std::string Script) {
+#ifdef DEBUG
+    GLenum E = glGetError();
+    if (E != GLFW_NO_ERROR) {
+        Error("GL CHECK", "Error ID (" + std::to_string(E) + ") " + Script);
+    }
+#endif
+}
+
 /* Установить всё для рендера */
 void InstallRender(uint32_t SWW, uint32_t SWH) {
     glEnable(GL_BLEND);
@@ -78,13 +88,10 @@ void InstallRender(uint32_t SWW, uint32_t SWH) {
 
     QueryPerformanceFrequency(&AppTimeFrequency);
     QueryPerformanceCounter(&AppTimeStart);
+    CheckGLError("InstallRender(" + std::to_string(SWW) + "," + std::to_string(SWH) + ");");
 }
 
-/* Установить всё для рендера после загрузки ресурсов */
-void InstallRenderAfterResources() {
-
-    /* ==== Вертиксы ====*/
-
+void CreateBuffers_Default() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
@@ -102,7 +109,13 @@ void InstallRenderAfterResources() {
     glVertexAttribPointer(2, 1, GL_INT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    /* ==== Физика ==== */
+    glBindVertexArray(0);
+    CheckGLError("CreateBuffers_Default();");
+}
+
+/* Установить всё для рендера после загрузки ресурсов */
+void InstallRenderAfterResources() {
+    CreateBuffers_Default();
 
     InstallPhysic();
 }
@@ -113,6 +126,8 @@ void ClearRender() {
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+
+    CheckGLError("ClearRender();");
 }
 
 /* ==== Рендер объектов ==== */
@@ -148,56 +163,7 @@ void RenderSquare(const GameObject& OBJ) {
 
 /* Рендерить линию */
 void RenderLine(const GameObject& OBJ) {
-    /* WIP */
-    /* ==== Трансформация ==== */
-    
-    /*glm::mat4 Projection = glm::mat4(1.0f);
-    float Zoom = 1 / (OBJ.Type == RO_UI ? 1 : Camera->Zoom);
-
-    float WIN_WIDTH = OBJ.Resize ? (float)START_WINDOW_WIDTH : (float)CURRENT_WINDOW_WIDTH;
-    float WIN_HEIGHT = OBJ.Resize ? (float)START_WINDOW_HEIGHT : (float)CURRENT_WINDOW_HEIGHT;
-
-    float Left  = -WIN_WIDTH  / 240;
-    float Right =  WIN_WIDTH  / 240;
-    float Down  = -WIN_HEIGHT / 240;
-    float Up    =  WIN_HEIGHT / 240;
-    Projection = glm::ortho(
-        Left  / Zoom,
-        Right / Zoom,
-        Down  / Zoom,
-        Up    / Zoom,
-        -1000.0f, 1000.0f);
-    CSS.setMat4("Projection", Projection);
-
-    glBindVertexArray(VAO);
-
-    float Thickness = OBJ.SizeVisual.x;
-    glm::vec2 StartPos = glm::vec2(OBJ.LinePositionVisual.x, OBJ.LinePositionVisual.y);
-    glm::vec2 EndPos = glm::vec2(OBJ.LinePositionVisual.z, OBJ.LinePositionVisual.w);
-    glm::vec2 CenterPos = StartPos / glm::vec2(2, 2) + EndPos / glm::vec2(2, 2);
-
-    glm::mat4 ResultPosition = glm::mat4(1.0f);
-    
-    glm::vec2 Direction = EndPos - StartPos;
-    float rad = atan2(Direction.y, Direction.x) - glm::half_pi<float>();;
-
-    if (OBJ.Type != RO_UI) {
-        ResultPosition = glm::rotate(ResultPosition, -Camera->Rotation, glm::vec3(0, 0, 1));
-    }
-
-    glm::vec2 Pos = CenterPos * (OBJ.Type == RO_UI ? ScreenScale : glm::vec2(1, 1));
-    ResultPosition = glm::translate(ResultPosition, glm::vec3(Pos, (OBJ.Layer + (float)OBJ.GetID() / 10000) / 100 ));
-
-    if (OBJ.Type != RO_UI) {
-        ResultPosition = glm::translate(ResultPosition, glm::vec3(Camera->Position.x, Camera->Position.y, 0));
-    }
-
-    ResultPosition = glm::rotate(ResultPosition, rad, glm::vec3(0, 0, 1));
-    ResultPosition = glm::scale(ResultPosition, glm::vec3(Thickness, glm::distance(StartPos, EndPos), 1));
-
-    CSS.setMat4("LinePosition", ResultPosition);
-
-    glDrawArrays(GL_QUADS, 0, square_l);*/
+    /* СМ. код на гитхабе */
 }
 
 /* Рендер текста */
@@ -231,9 +197,9 @@ void RenderText(const GameObject& OBJ) {
     FontChar CinfoError = F.Chars[-1];
     CSS.setVec2("ErrorCharSize", glm::vec2(CinfoError.W, CinfoError.H));
 
-    for (char32_t C : Text) {
-        glBindVertexArray(VAO);
+    glBindVertexArray(VAO);
 
+    for (char32_t C : Text) {
         uint32_t CharID = C;
         auto it = F.Chars.find(CharID);
         if (it == F.Chars.end()) {
@@ -247,9 +213,9 @@ void RenderText(const GameObject& OBJ) {
         CSS.setVec2("CharSize", glm::vec2(Cinfo.W, Cinfo.H));
         CSS.setInt("TextCharSize", TotalW);
 
-        glDrawArrays(GL_QUADS, 0, square_l);
         i++;
         TotalW += Cinfo.W;
+        glDrawArrays(GL_QUADS, 0, square_l);
     }
 }
 
@@ -310,6 +276,8 @@ void Render(std::vector<GameObject>& Scene) {
             }
         }
     }
+
+    CheckGLError("Render();");
 }
 
 /* Позицию экранную в мировую */

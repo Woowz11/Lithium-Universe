@@ -79,7 +79,7 @@ void main()
 	RPosition[2] = vec4(0,0,1,0);
 	RPosition[3] = vec4(0,0,0,1);
 	
-	float Indent = (float(TextCharSize)/ErrorCharSize.x) * 0.4;
+	float Indent = (float(TextCharSize)/ErrorCharSize.x) * 0.125;
 	RPosition = Translate(RPosition, vec3(vec2(Position.x + Indent, Position.y) * (Interface ? (Resize ? ScreenScale : ScreenScale * ScreenDifference) : vec2(1,1)), (Layer + (float(ID)/100))/100));
 	
 	if(!Interface){
@@ -89,5 +89,6 @@ void main()
 	RPosition = Scale(RPosition, vec2(Size.x * (CharSize.x/ErrorCharSize.x), Size.y));
 	
     gl_Position = Projection * RPosition * vec4(PointPosition, 1.0f);
-    TextureCoord = vec2(TextureUV.x * (CharSize.x / TextureSize.x) + (CharPosition.x / TextureSize.x), 1.0 - (TextureUV.y * (CharSize.y / TextureSize.y) + (CharPosition.y / TextureSize.y)));
+	
+    TextureCoord = vec2(TextureUV.x * (CharSize.x / TextureSize.x) + (CharPosition.x / TextureSize.x), 1.0 - (TextureUV.y * (CharSize.y / TextureSize.y) + (CharPosition.y / TextureSize.y + (ErrorCharSize.y/TextureSize.y))));
 }

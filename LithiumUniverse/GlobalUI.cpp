@@ -60,7 +60,7 @@ void MakeGameObjectButton(int i, std::function<void()> WhenLeftClick, std::funct
 void MakeGameObjectText(int i, std::u32string Text) {
 	GameObject& OBJ = GetGameObject(i, "MakeGameObjectText(" + std::to_string(i) + ",\"" + u32stringToString(Text) + "\");");
 	OBJ.RenderType = RT_Text;
-	OBJ.Text = Text;
+	SetGameObjectText(i, Text);
 	SetGameObjectShader(i, GetResource("Base", "Shaders/Text.lu_shader").ID);
 	SetGameObjectFont(i, GetResource("Base", "Fonts/Default.lu_font").ID);
 	SetGameObjectTexture(i, GetResource("Base", "Fonts/DefaultFont.png").ID);
@@ -103,6 +103,7 @@ void AfterUpdateUI() {
 /* Обновление интерфейса */
 int ui_test = -1;
 int ui_test2 = -1;
+int t = 0;
 void UpdateUI(GameObject& OBJ) {
 	if (!FindAnythingUI) {
 		bool Over = PointOverUIBox(MousePosition, OBJ.Resize, OBJ.PositionVisual, OBJ.SizeVisual);
@@ -112,6 +113,13 @@ void UpdateUI(GameObject& OBJ) {
 			ButtonHover__(MouseUIObject, true);
 			FindAnythingUI = true;
 		}
+	}
+
+	t++;
+	if (OBJ.Name == "fps" && t>1000) {
+		t = 0;
+		std::string fps = std::to_string(1 / DeltaTime);
+		SetGameObjectText(OBJ.GetID(), std::u32string(fps.begin(), fps.end()));
 	}
 }
 
@@ -151,9 +159,9 @@ void CreateUI(Scenes Scen) {
 
 			ui_test2 = ui;
 
-			//ui = CreateGameObject("text", /*RO_UI*/ RO_Phys);
-			//MakeGameObjectText(ui, U"0123456789 я 9876543210");
-			//SetGameObjectPosition(ui, glm::vec2(-1,0));
+			ui = CreateGameObject("fps", RO_UI);
+			MakeGameObjectText(ui, U"");
+			SetGameObjectPosition(ui, glm::vec2(-0.95f,0.95f));
 
 			break;
 		}

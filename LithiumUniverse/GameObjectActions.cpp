@@ -243,6 +243,17 @@ void SetGameObjectLayer(int i, float l) {
 	}
 }
 
+/* Установить текст объекту */
+void SetGameObjectText(int i, std::u32string t) {
+	GameObject& OBJ = GetGameObject(i, "SetGameObjectText(" + std::to_string(i) + "," + u32stringToString(t) + ");");
+	if (!OBJ.Deleted) {
+		OBJ.Text = t;
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectText(" + std::to_string(i) + "," + u32stringToString(t) + ");");
+	}
+}
+
 /* Установить шрифт объекту */
 void SetGameObjectFont(int i, int f) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectFont(" + std::to_string(i) + "," + std::to_string(f) + ");");
