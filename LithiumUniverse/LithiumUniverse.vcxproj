@@ -139,6 +139,7 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="DebugGetter.cpp" />
     <ClCompile Include="ExplorerActions.cpp" />
+    <ClCompile Include="Font.cpp" />
     <ClCompile Include="GameCamera.h" />
     <ClCompile Include="GameControls.cpp" />
     <ClCompile Include="GameData.cpp" />
@@ -164,6 +165,8 @@
     <ClInclude Include="Console.h" />
     <ClInclude Include="DebugGetter.h" />
     <ClInclude Include="ExplorerActions.h" />
+    <ClInclude Include="Font.h" />
+    <ClInclude Include="FontChar.h" />
     <ClInclude Include="GameControls.h" />
     <ClInclude Include="GameData.h" />
     <ClInclude Include="GameInstalls.h" />

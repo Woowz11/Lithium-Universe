@@ -11,10 +11,12 @@ using json = nlohmann::json;
 #include "GameResource.h";
 #include "GlobalMods.h";
 #include "GameData.h";
+#include "FontChar.h";
 #include "Console.h";
 #include "Texture.h";
 #include "GameMod.h";
 #include "Shader.h";
+#include "Font.h";
 
 const std::string BaseID              = "Base";
 const std::string VanillaID           = "Vanilla";
@@ -28,6 +30,7 @@ std::vector<GameResource> Resources = {};
 std::vector<std::string> F_Other    = {};
 std::vector<std::string> F_Shaders  = {};
 std::vector<std::string> F_Textures = {};
+std::vector<std::string> F_Fonts    = {};
 std::vector<std::string> F_Sounds   = {};
 
 /* Путь до текстуры ошибки */
@@ -124,6 +127,9 @@ void DefineResource(std::string Path) {
 	else if (type == "lu_shader") {
 		F_Shaders.push_back(Path);
 	}
+	else if (type == "lu_font") {
+		F_Fonts.push_back(Path);
+	}
 	else {
 		F_Other.push_back(Path);
 	}
@@ -141,6 +147,9 @@ void CreateNewGameResourceOrSkip(std::string FullPath_, GameResourceType Type_, 
 	}
 	else {
 		GameResource GR = GameResource(FullPath_, Type_, ID_, AssetID_);
+		if (FullPath_ == ErrorTexturePath || FullPath_ == ErrorShaderPath) {
+			GR.ErrorResource = true;
+		}
 		Resources.push_back(GR);
 	}
 }
@@ -268,6 +277,27 @@ void UpdateR_Textures() {
 	Print("RES", "Textures loaded!");
 }
 
+void RemoveR_Fonts() {
+
+}
+
+void UpdateR_Fonts() {
+	for (std::string r : F_Fonts) {
+		json FontInfo = ReadJson(r);
+		if (FontInfo["Error"] == true) {
+			Error("FONT", "Unable to load font [$$Y" + r + "$$_] because its JSON file contains an error! UpdateR_Fonts();");
+		}
+		else {
+			Font F = CreateFont(r, FontInfo);
+			if (F.FullPath != "") {
+				Fonts.push_back(F);
+				CreateNewGameResourceOrSkip(r, GR_Font, Resources.size(), Fonts.size() - 1);
+			}
+		}
+	}
+	Print("RES", "Fonts loaded!");
+}
+
 void UpdateR_Sounds() {
 	for (std::string r : F_Sounds) {
 
@@ -281,6 +311,7 @@ void UpdateResources() {
 
 	Print("RES", "Loading resources has started...");
 
+	RemoveR_Fonts();
 	RemoveR_Textures();
 	RemoveR_Shaders();
 
@@ -292,6 +323,7 @@ void UpdateResources() {
 	UpdateR_Other();
 	UpdateR_Shaders();
 	UpdateR_Textures();
+	UpdateR_Fonts();
 	UpdateR_Sounds();
 	Print("RES", "Resources updated!");
 }

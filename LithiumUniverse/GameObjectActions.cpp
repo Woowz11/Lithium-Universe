@@ -243,6 +243,17 @@ void SetGameObjectLayer(int i, float l) {
 	}
 }
 
+/* Установить шрифт объекту */
+void SetGameObjectFont(int i, int f) {
+	GameObject& OBJ = GetGameObject(i, "SetGameObjectFont(" + std::to_string(i) + "," + std::to_string(f) + ");");
+	if (!OBJ.Deleted) {
+		OBJ.FontRes = f;
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectFont(" + std::to_string(i) + "," + std::to_string(f) + ");");
+	}
+}
+
 /* Установить шейдер объекту */
 void SetGameObjectShader(int i, int s) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectShader(" + std::to_string(i) + "," + std::to_string(s) + ");");

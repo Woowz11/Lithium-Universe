@@ -18,10 +18,11 @@ enum RO_Type {
 };
 
 /* Тип рендера объекта */
-enum ShapeType {
-	ST_Square  = 1, /* Квадрат */
-	ST_Polygon = 0, /* Полигон */
-	ST_Line    = 2  /* Линия   */
+enum RenderTypeEnum {
+	RT_Square  = 1, /* Квадрат */
+	RT_Polygon = 0, /* Полигон */
+	RT_Line    = 2, /* Линия   */
+	RT_Text    = 3  /* Текст   */
 };
 
 /* Тип коллизии */
@@ -48,6 +49,7 @@ public:
 	/* ==== Настройки рендера ==== */
 	int BaseTextureRes           = 0;                      /* Базовая текстура                */
 	int BaseShaderRes            = 0;                      /* Базовый шейдер                  */
+	int FontRes                  = 0;                      /* Шрифт                           */
 	glm::vec2 PositionVisual     = glm::vec2(0, 0);        /* Позиция объекта                 */
 	glm::vec4 LinePositionVisual = glm::vec4(-1, 0, 1, 0); /* Позиция начала и конца линии    */
 	glm::vec2 SizeVisual         = glm::vec2(1, 1);        /* Размер объекта                  */
@@ -55,12 +57,13 @@ public:
 	glm::vec4 Color              = glm::vec4(1, 1, 1, 1);  /* Цвет объекта                    */
 	float Layer                  = 0;                      /* Слой объекта                    */
 	bool Render                  = true;                   /* Рендерить объект?               */
-	ShapeType Shape              = ST_Square;              /* Какие вертиксы рендерить?       */
+	RenderTypeEnum RenderType    = RT_Square;              /* Какие вертиксы рендерить?       */
 	bool Selectable              = false;                  /* Мышка реагирует на этот объект? */
 
 	/* ==== Настройки интерфейса ==== */
 	bool Resize  = false;                  /* Менять размер вместе с экраном? */
 	int ButtonID = -1;                     /* Является ли компонент кнопкой?  */
+	std::string Text = "";                 /* Текст (если этот элемент текст) */
 
 	/* ==== Настройки физики ==== */
 	int BodyID             = -1;                     /* Айди b2BodyId                   */
@@ -82,6 +85,7 @@ public:
 		LinePositionVisual = glm::vec4(0, 0, 0, 0);
 		SizeVisual = glm::vec2(0, 0);
 		Color = glm::vec4(0, 0, 0, 0);
+		Text = "";
 	}
 
 	std::string ToString() {
@@ -115,7 +119,7 @@ public:
 
 	/* Сделать линией */
 	void MakeItLine(glm::vec2 StartPos, glm::vec2 EndPos, float th) {
-		Shape = ST_Line;
+		RenderType = RT_Line;
 		//BaseShader = 2;
 
 		SetLineThickness(th);

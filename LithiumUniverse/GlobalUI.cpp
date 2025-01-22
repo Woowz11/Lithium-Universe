@@ -56,6 +56,17 @@ void MakeGameObjectButton(int i, std::function<void()> WhenLeftClick, std::funct
 	Buttons.push_back(B);
 }
 
+/* Превратить объект в текст */
+void MakeGameObjectText(int i, std::string Text) {
+	GameObject& OBJ = GetGameObject(i, "MakeGameObjectText(" + std::to_string(i) + ",\"" + Text + "\");");
+	OBJ.RenderType = RT_Text;
+	OBJ.Text = Text;
+	SetGameObjectShader(i, GetResource("Base", "Shaders/Text.lu_shader").ID);
+	SetGameObjectFont(i, GetResource("Base", "Fonts/Default.lu_font").ID);
+	SetGameObjectTexture(i, GetResource("Base", "Fonts/DefaultFont.png").ID);
+	SetGameObjectSize(i, glm::vec2(0.125f, 0.125f));
+}
+
 /* Точка пересекает прямоугольник? */
 bool PointOverBox(glm::vec2 Point, glm::vec2 Pos, glm::vec2 Size) {
 	glm::vec2 p = Pos - Size;
@@ -116,7 +127,6 @@ void CreateUI(Scenes Scen) {
 				SetScene(SCENE_Game);
 			}, []() {});
 
-
 			break;
 		}
 		default: {
@@ -140,6 +150,10 @@ void CreateUI(Scenes Scen) {
 				}, []() {});
 
 			ui_test2 = ui;
+
+			ui = CreateGameObject("text", RO_UI);
+			MakeGameObjectText(ui, "0123456789 💀 9876543210");
+			SetGameObjectPosition(ui, glm::vec2(-1,0));
 
 			break;
 		}

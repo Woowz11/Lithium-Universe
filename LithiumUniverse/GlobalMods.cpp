@@ -68,7 +68,7 @@ void LoadMod(std::string FullPath) {
 	}
 }
 
-int TotalMods = 0;
+size_t TotalMods = 0;
 void LoadMods() {
 	Mods = {};
 	TotalMods = 0;
@@ -87,7 +87,7 @@ void CheckMods() {
 
 	LoadMods();
 
-	Print("MODS", "Mods (" + std::to_string(Mods.size()) + "/" + std::to_string(TotalMods) + ") loaded!");
+	Print("MODS", "Mods ($$" + std::string(Mods.size()==TotalMods ? "G" : (Mods.size()==0 ? "R" : "Y")) + std::to_string(Mods.size()) + "/" + std::to_string(TotalMods) + "$$_) loaded!");
 }
 
 void StopMods() {

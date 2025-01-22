@@ -95,6 +95,9 @@
     <ClCompile Include="Shader.cpp">
       <Filter>Scripts\Render</Filter>
     </ClCompile>
+    <ClCompile Include="Font.cpp">
+      <Filter>Scripts\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -153,6 +156,12 @@
     </ClInclude>
     <ClInclude Include="GameMod.h">
       <Filter>Scripts\GameClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Font.h">
+      <Filter>Scripts\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="FontChar.h">
+      <Filter>Scripts\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

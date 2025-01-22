@@ -1,0 +1,4 @@
+{
+	"Vertex"   : "Base:Shaders/Text.vert",
+	"Fragment" : "Base:Shaders/Text.frag"
+}

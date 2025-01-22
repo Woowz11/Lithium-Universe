@@ -20,9 +20,11 @@
 #include "GameCamera.h";
 #include "GameObject.h";
 #include "GameData.h";
+#include "FontChar.h";
 #include "Texture.h";
 #include "Console.h";
 #include "Shader.h";
+#include "Font.h";
 
 uint32_t START_WINDOW_WIDTH;
 uint32_t START_WINDOW_HEIGHT;
@@ -135,7 +137,7 @@ void RenderSquare(const GameObject& OBJ) {
     CSS.setBool("Resize", OBJ.Resize);
     CSS.setBool("DebugRender", DebugRender);
     if (OBJ.Type == RO_Phys) {
-        CSS.setBool("Sleeping", OBJ.Static? false : !b2Body_IsAwake(GetBody(OBJ.BodyID)));
+        CSS.setBool("Sleeping", OBJ.Static ? false : !b2Body_IsAwake(GetBody(OBJ.BodyID)));
     }
     else {
         CSS.setBool("Sleeping", false);
@@ -198,6 +200,52 @@ void RenderLine(const GameObject& OBJ) {
     glDrawArrays(GL_QUADS, 0, square_l);*/
 }
 
+/* Рендер текста */
+void RenderText(const GameObject& OBJ) {
+    std::string Text = OBJ.Text;
+    Font F = Fonts[GetResourceAssetID(OBJ.FontRes)];
+
+    CSS.setInt("ID", OBJ.GetID());
+    CSS.setVec2("Position", OBJ.PositionVisual);
+    CSS.setFloat("Orientation", -OBJ.OrientationVisual);
+    CSS.setVec2("Size", OBJ.SizeVisual);
+    CSS.setFloat("Layer", OBJ.Layer);
+
+    CSS.setBool("Static", OBJ.Static);
+    CSS.setBool("Physical", OBJ.Type == RO_Phys);
+    CSS.setBool("Interface", OBJ.Type == RO_UI);
+    CSS.setBool("Resize", OBJ.Resize);
+    CSS.setBool("DebugRender", DebugRender);
+    if (OBJ.Type == RO_Phys) {
+        CSS.setBool("Sleeping", OBJ.Static ? false : !b2Body_IsAwake(GetBody(OBJ.BodyID)));
+    }
+    else {
+        CSS.setBool("Sleeping", false);
+    }
+
+    CSS.setInt("TextLength", Text.size());
+
+    int i = 0;
+    for (char C : Text) {
+        glBindVertexArray(VAO);
+
+        uint32_t CharID = GetCharID(C);
+        auto it = F.Chars.find(CharID);
+        if (it == F.Chars.end()) {
+            CharID = -1;
+        }
+        FontChar Cinfo = F.Chars[CharID];
+
+        CSS.setInt("CharPosition", i);
+        CSS.setInt("CharID", CharID);
+        CSS.setVec2("FontSize", glm::vec2(13,1));
+        CSS.setVec2("FontCharPosition", glm::vec2(Cinfo.X,0));
+
+        glDrawArrays(GL_QUADS, 0, square_l);
+        i++;
+    }
+}
+
 /* Рендер картинки каждый кадр */
 void Render(std::vector<GameObject>& Scene) {
 	glClearColor(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, 1);
@@ -241,10 +289,13 @@ void Render(std::vector<GameObject>& Scene) {
 
             CSS.setVec4("Color", OBJ.Color);
 
-            switch (OBJ.Shape)
+            switch (OBJ.RenderType)
             {
-            case ST_Line:
+            case RT_Line:
                 RenderLine(OBJ);
+                break;
+            case RT_Text:
+                RenderText(OBJ);
                 break;
             default:
                 RenderSquare(OBJ);

@@ -27,6 +27,7 @@ void DeleteGameObject(int i);
 void SetGameObjectDontDelete(int i, bool b);
 void SetGameObjectResize(int i, bool b);
 void SetGameObjectLayer(int i, float l);
+void SetGameObjectFont(int i, int f);
 void SetGameObjectShader(int i, int s);
 void SetGameObjectTexture(int i, int t);
 void SetGameObjectActive(int i, bool b);
