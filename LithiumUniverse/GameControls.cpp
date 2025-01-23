@@ -225,12 +225,20 @@ void ControlsKeyboard(const int KEY, const int ACTION) {
 				Event.Event();
 			}
 		}
+
+		for (auto Event : LUA_Events_KeysPressed) {
+			Event.Event(KEY);
+		}
 	}
 	if (ACTION == GLFW_RELEASE) {
 		for (auto Event : LUA_Events_KeyReleased) {
 			if (Event.Key == KEY) {
 				Event.Event();
 			}
+		}
+
+		for (auto Event : LUA_Events_KeysReleased) {
+			Event.Event(KEY);
 		}
 	}
 }

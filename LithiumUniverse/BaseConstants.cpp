@@ -10,7 +10,7 @@
  */
 
 const int GameVersionMajor = 0;
-const int GameVersionMinor = 42;
+const int GameVersionMinor = 43;
 
 std::string GetGameVersionMinor() {
     const std::string alphabet = "aAbBcCdDxXyYzZwW";
