@@ -143,8 +143,7 @@ private:
 			glEnable(GL_DEBUG_OUTPUT);
 			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-#ifdef NDEBUG
-#else
+#ifdef DEBUG
 			glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* msg, const void* data) {
 				std::string _source;
 				std::string _type;
@@ -303,10 +302,10 @@ private:
 GameInstalls Game;
 int Run() {
 	try {
-#ifdef NDEBUG
-		DeveloperVersion = false;
-#else
+#ifdef DEBUG
 		DeveloperVersion = true;
+#else
+		DeveloperVersion = false;
 #endif
 		Version = GetGameVersion();
 		InstallConsole();

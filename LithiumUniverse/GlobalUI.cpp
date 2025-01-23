@@ -115,12 +115,12 @@ void UpdateUI(GameObject& OBJ) {
 		}
 	}
 
-	t++;
+	/*t++;
 	if (OBJ.Name == "fps" && t>1000) {
 		t = 0;
 		std::string fps = std::to_string(1 / DeltaTime);
 		SetGameObjectText(OBJ.GetID(), std::u32string(fps.begin(), fps.end()));
-	}
+	}*/
 }
 
 /* Создать интерфейс */
@@ -159,9 +159,9 @@ void CreateUI(Scenes Scen) {
 
 			ui_test2 = ui;
 
-			ui = CreateGameObject("fps", RO_UI);
+			/*ui = CreateGameObject("fps", RO_UI);
 			MakeGameObjectText(ui, U"");
-			SetGameObjectPosition(ui, glm::vec2(-0.95f,0.95f));
+			SetGameObjectPosition(ui, glm::vec2(-0.95f,0.95f));*/
 
 			break;
 		}

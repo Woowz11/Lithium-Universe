@@ -9,6 +9,7 @@
 #include "GlobalPhysic.h";
 #include "GameInstalls.h";
 #include "GameCamera.h";
+#include "GlobalLua.h";
 #include "GameData.h";
 #include "GlobalUI.h";
 
@@ -217,6 +218,21 @@ void ControlsKeyboard(const int KEY, const int ACTION) {
 	if (KEY == GLFW_KEY_8 && ACTION == GLFW_PRESS) {
 		CreateTestObject(7);
 	}
+
+	if (ACTION == GLFW_PRESS) {
+		for (auto Event : LUA_Events_KeyPressed) {
+			if (Event.Key == KEY) {
+				Event.Event();
+			}
+		}
+	}
+	if (ACTION == GLFW_RELEASE) {
+		for (auto Event : LUA_Events_KeyReleased) {
+			if (Event.Key == KEY) {
+				Event.Event();
+			}
+		}
+	}
 }
 
 /* Управление клавиатурой (Каждый тик) */
@@ -263,6 +279,12 @@ void ControlsKeyboardTick() {
 	}
 	if (LEFT && !RIGHT) {
 		Camera->MoveCameraRotation(-speed, DeltaTime);
+	}
+
+	for (auto Event : LUA_Events_KeyPress) {
+		if (KeyPressed(Event.Key) == GLFW_PRESS) {
+			Event.Event();
+		}
 	}
 }
 

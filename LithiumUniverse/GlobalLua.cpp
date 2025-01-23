@@ -11,6 +11,17 @@
 /* Основа LUA модов */
 std::unordered_map<std::string, std::unique_ptr<sol::state>> ModsLUA = {};
 
+/* ==== Ивенты ==== */
+
+/* Ивент на зажатие клавиши */
+std::vector<LUA_Class_KeyPressEvent> LUA_Events_KeyPress = {};
+/* Ивент на зажатие клавиши */
+std::vector<LUA_Class_KeyPressEvent> LUA_Events_KeyPressed = {};
+/* Ивент на зажатие клавиши */
+std::vector<LUA_Class_KeyPressEvent> LUA_Events_KeyReleased = {};
+
+/* ==== Код ==== */
+
 /* Отправить простое сообщение в консоль */
 void LUA_Print(const std::string& Message) {
 	Print("MOD", Message);
@@ -36,7 +47,34 @@ public:
 
 LUA_Game LUA_Game_;
 
+class LUA_Controls {
+public:
+	/* Ивент: клавиша зажата */
+	void KeyPress(const int& Key, const std::function<void()>& Func) {
+		LUA_Events_KeyPress.push_back(LUA_Class_KeyPressEvent(Key, Func));
+	}
+
+	/* Ивент: клавиша нажата */
+	void KeyPressed(const int& Key, const std::function<void()>& Func) {
+		LUA_Events_KeyPressed.push_back(LUA_Class_KeyPressEvent(Key, Func));
+	}
+
+	/* Ивент: клавиша отжата */
+	void KeyReleased(const int& Key, const std::function<void()>& Func) {
+		LUA_Events_KeyReleased.push_back(LUA_Class_KeyPressEvent(Key, Func));
+	}
+};
+
+LUA_Controls LUA_Controls_;
+
+/* ==== Инициализация ==== */
+
 void GameLua(sol::state& LUA) {
+	LUA["KEY_A"] = sol::as_table(65);
+	LUA["KEY_D"] = sol::as_table(68);
+	LUA["KEY_S"] = sol::as_table(83);
+	LUA["KEY_W"] = sol::as_table(87);
+
 	LUA["Resources"] = &LUA_Resources_;
 	LUA.new_usertype<LUA_Resources>(
 		"LUA_Resources",
@@ -47,6 +85,14 @@ void GameLua(sol::state& LUA) {
 	LUA.new_usertype<LUA_Game>(
 		"LUA_Game",
 		"Connect", &LUA_Game::Connect
+	);
+
+	LUA["Controls"] = &LUA_Controls_;
+	LUA.new_usertype<LUA_Controls>(
+		"LUA_Controls",
+		"KeyPress", &LUA_Controls::KeyPress,
+		"KeyPressed", &LUA_Controls::KeyPressed,
+		"KeyReleased", &LUA_Controls::KeyReleased
 	);
 
 	LUA.set_function("Print", &LUA_Print);
@@ -63,6 +109,11 @@ void LoadLua(GameMod Mod) {
 }
 
 void UnloadLua() {
+	/* Очиста ивентов */
+	LUA_Events_KeyPress = {};
+	LUA_Events_KeyPressed = {};
+	LUA_Events_KeyReleased = {};
+	
 	ModsLUA.clear();
 }
 

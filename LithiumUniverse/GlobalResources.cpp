@@ -20,7 +20,7 @@ using json = nlohmann::json;
 #include "Font.h";
 
 /* Айди игровых ресурсов */
-const std::string BaseID              = "Base";
+const std::string BaseID = "Base";
 
 /* Все ресурсы игры */
 std::vector<GameResource> Resources = {};

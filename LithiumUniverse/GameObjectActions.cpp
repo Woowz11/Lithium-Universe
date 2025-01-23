@@ -104,16 +104,16 @@ float MakeOrientation(b2Rot r) {
 }
 
 b2BodyId GetBody(int i) {
-#ifdef NDEBUG
-	return Bodies[i];
-#else
+#ifdef DEBUG
 	if (i >= 0 && i <= Bodies.size()) {
 		return Bodies[i];
-	}
+}
 	else {
 		Error("GAMEOBJ/BODY", "It is not possible to get the b2BodyId because it cannot be found by ID in the bodies! GetBody(" + std::to_string(i) + ");");
 		return b2_nullBodyId;
 	}
+#else
+	return Bodies[i];
 #endif
 }
 
@@ -122,16 +122,16 @@ bool CheckOutSceneIndex(int i) {
 }
 
 GameObject& GetGameObject(int i, std::string message) {
-#ifdef NDEBUG
-	return Scene[i];
-#else
+#ifdef DEBUG
 	if (i >= 0 && i <= Scene.size()) {
 		return Scene[i];
-	}
+}
 	else {
 		Error("GAMEOBJ", "It is not possible to get the GameObject because it cannot be found by ID in the scene! GetGameObject(" + std::to_string(i) + "); + " + message);
 		return ErrorGameObject;
 	}
+#else
+	return Scene[i];
 #endif
 }
 
