@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <string>
 
 #include "GameObject.h";
@@ -133,13 +135,19 @@ std::string u32stringToString(const std::u32string& u32str) {
 /* ==== Конвертация в строки ==== */
 
 std::string ToStringVec2(const glm::vec2 target) {
-	return "glm::vec2(" + std::to_string(target.x) + "," + std::to_string(target.y) + ")";
+	return "glm::vec2(" + ToStringNumber(target.x) + "," + ToStringNumber(target.y) + ")";
 }
 
 std::string ToStringVec4(const glm::vec4 target) {
-	return "glm::vec4(" + std::to_string(target.x) + "," + std::to_string(target.y) + "," + std::to_string(target.z) + "," + std::to_string(target.w) + ")";
+	return "glm::vec4(" + ToStringNumber(target.x) + "," + ToStringNumber(target.y) + "," + ToStringNumber(target.z) + "," + ToStringNumber(target.w) + ")";
 }
 
 std::string ToStringBool(const bool target) {
 	return target ? "true" : "false";
+}
+
+std::string ToStringNumber(const double target) {
+	std::ostringstream stream;
+	stream << std::setprecision(15) << std::noshowpoint << target;
+	return stream.str();
 }

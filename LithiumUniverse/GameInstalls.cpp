@@ -55,7 +55,7 @@ public:
 	}
 
 	std::string GetGameTitle() {
-		return "LithiumUniverse (" + Version + ") FPS: " + FillString(std::to_string(FPS),' ',10,false) + " SP: " + std::to_string(GetSimulationSpeed());
+		return "LithiumUniverse (" + Version + ") FPS: " + FillString(ToStringNumber(FPS),' ',10,false) + " SP: " + ToStringNumber(GetSimulationSpeed());
 	}
 
 	/* ==== Управление, другие функции ==== */

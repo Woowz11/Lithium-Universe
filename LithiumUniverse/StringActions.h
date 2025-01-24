@@ -15,3 +15,4 @@ std::string u32stringToString(const std::u32string& u32str);
 std::string ToStringBool(const bool target);
 std::string ToStringVec2(const glm::vec2 target);
 std::string ToStringVec4(const glm::vec4 target);
+std::string ToStringNumber(const double target);

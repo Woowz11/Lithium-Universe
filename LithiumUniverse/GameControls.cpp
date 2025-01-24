@@ -51,7 +51,7 @@ void UpdateMouseJoint() {
 			J.target = Vec2ToBVec2(MouseWorldPosition);
 			J.hertz = 5.0f;
 			J.dampingRatio = 0.7f;
-			J.maxForce = 1000000.f * b2Body_GetMass(Body);
+			J.maxForce = 10000000.f * b2Body_GetMass(Body) * Camera->Zoom;
 			MouseJoint = b2CreateMouseJoint(World, &J);
 
 			b2Body_SetAwake(Body, true);
@@ -101,6 +101,7 @@ void MouseMove() {
 	if (HasMouseJoint) {
 		if (b2Joint_IsValid(MouseJoint)) {
 			b2MouseJoint_SetTarget(MouseJoint, Vec2ToBVec2(MouseWorldPosition));
+			b2MouseJoint_SetMaxForce(MouseJoint, 10000000.f * b2Body_GetMass(b2Joint_GetBodyB(MouseJoint)) * Camera->Zoom);
 		}
 		else {
 			MouseDropGO();

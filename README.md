@@ -5,6 +5,8 @@
 
 Информация: [Info.md](https://github.com/Woowz11/Lithium-Universe/blob/main/Info.md)
 
+Есть лицензия
+
 Играли в игру:
 * Wldoui
 * PavkaLakar
