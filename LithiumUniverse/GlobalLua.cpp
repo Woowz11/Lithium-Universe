@@ -5,6 +5,7 @@
 #include "ExplorerActions.h";
 #include "GlobalResources.h";
 #include "StringActions.h";
+#include "GameInstalls.h";
 #include "GlobalLua.h";
 #include "GameMod.h";
 #include "Console.h";
@@ -13,7 +14,15 @@
 std::unordered_map<std::string, std::unique_ptr<sol::state>> ModsLUA = {};
 std::unordered_map<lua_State*, std::string> ModsLUA_LuaState = {};
 
+/* ==== Ошибочные переменные ====*/
+
+double ErrorNumber = -62122.723;
+int ErrorInt       = -6212223;
+
 /* ==== Ивенты ==== */
+
+/* Ивент вызывается каждый кадр */
+std::vector<sol::function> LUA_Events_Update = {};
 
 /* Ивент на зажатие клавиши */
 std::vector<LUA_Class_KeyPressEvent> LUA_Events_KeyPress = {};
@@ -46,8 +55,28 @@ double ObjectToDouble(const sol::object& Obj) {
 	return Obj.as<double>();
 }
 
+/* Конвертировать объект в целое число */
+int ObjectToInt(const sol::object& Obj) {
+	return (int)std::floor(ObjectToDouble(Obj));
+}
+
+/* Конвертировать объект в булеан */
+bool ObjectToBool(const sol::object& Obj) {
+	return Obj.as<bool>();
+}
+
+/* Конвертировать объект в Vector2 */
+LUA_Vector2 ObjectToVector2(const sol::object& Obj) {
+	return Obj.as<LUA_Vector2>();
+}
+
+/* Конвертировать объект в функцию */
+sol::function ObjectToFunc(const sol::object& Obj) {
+	return Obj.as<sol::function>();
+}
+
 /* Конвертировать объект в строку */
-std::string ObjectToString(const sol::object& Obj) {
+std::string ObjectToString(const sol::object& Obj, bool SaveQuotes = false) {
 	LUA_OBJ_Type T = TypeOf(Obj);
 	switch (T)
 	{
@@ -62,13 +91,16 @@ std::string ObjectToString(const sol::object& Obj) {
 		return ToStringBool(Obj.as<bool>() == true);
 		break;
 	case L_String:
-		return Obj.as<std::string>();
+		return (SaveQuotes ? "\"" : "") + Obj.as<std::string>() + (SaveQuotes ? "\"" : "");
 		break;
 	case L_Table:
 		return "Table";
 		break;
 	case L_Func:
 		return "Function";
+		break;
+	case L_Vec2:
+		return Obj.as<LUA_Vector2>().ToString();
 		break;
 	default:
 		return "?";
@@ -101,6 +133,9 @@ std::string LuaObjTypeToString(const LUA_OBJ_Type T) {
 	case L_Func:
 		return "f";
 		break;
+	case L_Vec2:
+		return "v2";
+		break;
 	default:
 		return "?";
 		break;
@@ -122,7 +157,7 @@ LUA_OBJ_Type TypeOf(const sol::object& Obj) {
 	case sol::type::number: {
 		/* Число */
 		double val_i_d = ObjectToDouble(Obj);
-		return (std::floor(val_i_d) == val_i_d) ? L_Int : L_Bool;
+		return (std::floor(val_i_d) == val_i_d) ? L_Int : L_Double;
 	}
 	case sol::type::string: {
 		/* Строка */
@@ -136,6 +171,13 @@ LUA_OBJ_Type TypeOf(const sol::object& Obj) {
 		/* Функция */
 		return L_Func;
 	}
+	case sol::type::userdata: {
+		if (Obj.is<LUA_Vector2>()) {
+			return L_Vec2;
+		}
+		return L_Unknown;
+		break;
+	}
 	default:
 		return L_Unknown;
 		break;
@@ -146,8 +188,7 @@ LUA_OBJ_Type TypeOf(const sol::object& Obj) {
 std::string LuaComplexFunction(const std::string Function, const std::vector<sol::object>& Params) {
 	std::string Result = Function + "(";
 	for (size_t i = 0; i < Params.size(); i++) {
-		Result += ObjectToString(Params[i]);
-		if (TypeOf(Params[i]) == L_String) { Result = "\"" + Result + "\""; }
+		Result += ObjectToString(Params[i], true);
 		if (i < Params.size() - 1) {
 			Result += ",";
 		}
@@ -155,6 +196,17 @@ std::string LuaComplexFunction(const std::string Function, const std::vector<sol
 	return Result + ")";
 }
 
+/* Первратить данные о Lua операторе в строку */
+std::string LuaComplexOperator(const std::string Operator, const std::string ObjA, const sol::object& ObjB) {
+	return ObjA + " " + Operator + " " + ObjectToString(ObjB, true);
+}
+
+/* Ошибка Lua (короткая) */
+void LuaErrorCompact(std::string ErrorMessage) {
+	Error("LUA", ErrorMessage);
+}
+
+/* Ошибка Lua */
 void LuaError(std::string ErrorMessage, lua_State* L) {
 	std::string ModID = GetBaseFromLuaState(L);
 	Error(ModID, ErrorMessage);
@@ -187,6 +239,12 @@ void LuaError(std::string ErrorMessage, lua_State* L) {
 	if (!is_same_env) { Error(ModID, "Environments differ!"); }
 }
 
+/* Сообщить об ошибке, что такой тип не поддерживается в операторе */
+void LuaErrorOperator(const std::string& ObjA, const std::string Operator, const sol::object& ObjB) {
+	LUA_OBJ_Type T = TypeOf(ObjB);
+	LuaErrorCompact("Variable [" + ObjectToString(ObjB, true) + " (" + LUA_TypeOf(ObjB) + ")] not supported! " + LuaComplexOperator(Operator, ObjA, ObjB));
+}
+
 /* Проверить, совпадает ли тип объекта с указанным типом */
 bool LuaCheckType(const sol::object& Obj, const LUA_OBJ_Type Type, const std::string Function, const std::vector<sol::object>& Params, lua_State* L) {
 	LUA_OBJ_Type T = TypeOf(Obj);
@@ -194,7 +252,7 @@ bool LuaCheckType(const sol::object& Obj, const LUA_OBJ_Type Type, const std::st
 		return true;
 	}
 	else {
-		LuaError("Variable [" + ObjectToString(Obj) + " (" + LUA_TypeOf(Obj) + ")] must be of type [" + LuaObjTypeToString(Type) + "]! " + LuaComplexFunction(Function, Params), L);
+		LuaError("Variable [" + ObjectToString(Obj,true) + " (" + LUA_TypeOf(Obj) + ")] must be of type [" + LuaObjTypeToString(Type) + "]! " + LuaComplexFunction(Function, Params), L);
 		return false;
 	}
 }
@@ -206,9 +264,14 @@ bool LuaCheckType2(const sol::object& Obj, const LUA_OBJ_Type Type1, const LUA_O
 		return true;
 	}
 	else {
-		LuaError("Variable [" + ObjectToString(Obj) + " (" + LUA_TypeOf(Obj) + ")] must be of type [" + LuaObjTypeToString(Type1) + " || " + LuaObjTypeToString(Type2) + "]! " + LuaComplexFunction(Function, Params), L);
+		LuaError("Variable [" + ObjectToString(Obj, true) + " (" + LUA_TypeOf(Obj) + ")] must be of type [" + LuaObjTypeToString(Type1) + " || " + LuaObjTypeToString(Type2) + "]! " + LuaComplexFunction(Function, Params), L);
 		return false;
 	}
+}
+
+/* Проверить, совпадает ли тип объекта с типом дробного или целого числа */
+bool LuaCheckNumber(const sol::object& Obj, const std::string Function, const std::vector<sol::object>& Params, lua_State* L) {
+	return LuaCheckType2(Obj, L_Int, L_Double, Function, Params, L);
 }
 
 /* ==== Код ==== */
@@ -216,9 +279,13 @@ bool LuaCheckType2(const sol::object& Obj, const LUA_OBJ_Type Type1, const LUA_O
 /* Отправить простое сообщение в консоль */
 void LUA_Print(const sol::object& Message, sol::this_state s) {
 	lua_State* L = s;
-	//if (LuaCheckType(Message, L_String, "Print", {Message}, L)) {
-		Print(GetBaseFromLuaState(L), ObjectToString(Message));
-	//}
+	Print(GetBaseFromLuaState(L), ObjectToString(Message));
+}
+
+/* Отправить простое сообщение в консоль (очень быстро, без логов и т.д) */
+void LUA_PrintFast(const sol::object& Message, sol::this_state s) {
+	lua_State* L = s;
+	PrintVeryFast(ObjectToString(Message));
 }
 
 /* Получить тип объекта */
@@ -231,6 +298,34 @@ std::string LUA_ToString(const sol::object& Obj) {
 	return ObjectToString(Obj);
 }
 
+/* Типо условия x ? y : z */
+sol::object LUA_IfThen(const sol::object& Boolean, const sol::object& ObjA, const sol::object& ObjB, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckType(Boolean, L_Bool, "IfThen", {Boolean, ObjA, ObjB}, L)) {
+		return ObjectToBool(Boolean) ? ObjA : ObjB;
+	}
+	return ObjB;
+}
+
+/* Сделать число положительным */
+double LUA_Abs(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Abs", { Value }, L)) {
+		return abs(ObjectToDouble(Value));
+	}
+	return ErrorNumber;
+}
+
+/* Возвести корень */
+double LUA_Sqrt(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Sqrt", { Value }, L)) {
+		double D = ObjectToDouble(Value);
+		return sqrt(abs(D)) * (D<0?-1:1);
+	}
+	return ErrorNumber;
+}
+
 class LUA_Resources {
 public:
 	/* Получить скрипт */
@@ -239,47 +334,80 @@ public:
 	}
 };
 
-LUA_Resources LUA_Resources_;
+LUA_Resources LUA_Resources_Instance;
 
 class LUA_Game {
 public:
-	/* Соеденить функцию с ивентом */
-	void Connect(const std::string& event_name, const sol::function& func) {
-		PrintVeryFast(event_name);
+	/* Ивент: каждый кадр выполнять */
+	void Update(const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Func, L_Func, "Game:Update", { Func }, L)) {
+			LUA_Events_Update.push_back(ObjectToFunc(Func));
+		}
 	}
 };
 
-LUA_Game LUA_Game_;
+LUA_Game LUA_Game_Instance;
 
 class LUA_Controls {
 public:
     /* Ивент: клавиша зажата */
-    void KeyPress(const int& Key, const sol::function& Func) {
-        LUA_Events_KeyPress.push_back(LUA_Class_KeyPressEvent(Key, Func));
+    void KeyPress(const sol::object& Key, const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Key, L_Int, "Controls:KeyPress", { Key,Func }, L)) {
+			if (LuaCheckType(Func, L_Func, "Controls:KeyPress", { Key,Func }, L)) {
+				LUA_Events_KeyPress.push_back(LUA_Class_KeyPressEvent(ObjectToInt(Key), ObjectToFunc(Func)));
+			}
+		}
     }
 
     /* Ивент: клавиша нажата */
-    void KeyPressed(const int& Key, const sol::function& Func) {
-        LUA_Events_KeyPressed.push_back(LUA_Class_KeyPressEvent(Key, Func));
+    void KeyPressed_(const sol::object& Key, const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Key, L_Int, "Controls:KeyPressed", { Key,Func }, L)) {
+			if (LuaCheckType(Func, L_Func, "Controls:KeyPressed", { Key,Func }, L)) {
+				LUA_Events_KeyPressed.push_back(LUA_Class_KeyPressEvent(ObjectToInt(Key), ObjectToFunc(Func)));
+			}
+		}
     }
 
     /* Ивент: клавиша отжата */
-    void KeyReleased(const int& Key, const sol::function& Func) {
-        LUA_Events_KeyReleased.push_back(LUA_Class_KeyPressEvent(Key, Func));
+    void KeyReleased(const sol::object& Key, const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Key, L_Int, "Controls:KeyReleased", { Key,Func }, L)) {
+			if (LuaCheckType(Func, L_Func, "Controls:KeyReleased", { Key,Func }, L)) {
+				LUA_Events_KeyReleased.push_back(LUA_Class_KeyPressEvent(ObjectToInt(Key), ObjectToFunc(Func)));
+			}
+		}
     }
 
     /* Ивент: клавиши нажаты */
-    void KeysPressed(const sol::function& Func) {
-        LUA_Events_KeysPressed.push_back(LUA_Class_KeyPressEvent(-1, Func));
+    void KeysPressed(const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Func, L_Func, "Controls:KeysPressed", { Func }, L)) {
+			LUA_Events_KeysPressed.push_back(LUA_Class_KeyPressEvent(-1, Func));
+		}
     }
 
     /* Ивент: клавиши отжаты */
-    void KeysReleased(const sol::function& Func) {
-        LUA_Events_KeysReleased.push_back(LUA_Class_KeyPressEvent(-1, Func));
+    void KeysReleased(const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Func, L_Func, "Controls:KeysReleased", { Func }, L)) {
+			LUA_Events_KeysReleased.push_back(LUA_Class_KeyPressEvent(-1, Func));
+		}
     }
+
+	/* Клавиша нажата в данный момент? */
+	bool KeyIsPressed(const sol::object& Key, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Key, L_Int, "Controls:KeyIsPressed", { Key }, L)) {
+			return KeyPressed(ObjectToInt(Key));
+		}
+		return false;
+	}
 };
 
-LUA_Controls LUA_Controls_;
+LUA_Controls LUA_Controls_Instance;
 
 /* ==== Константы ==== */
 
@@ -288,41 +416,83 @@ std::unordered_map<std::string, int> Keys_Constants = { {"SPACE",32},{"APOSTROPH
 /* ==== Инициализация ==== */
 
 void GameLua(sol::state& LUA) {
+	/* Константы */
 	for (auto [KeyName, KeyID] : Keys_Constants) {
 		LUA["KEY_"+KeyName] = sol::as_table(KeyID);
 	}
+	LUA["ErrorDouble"] = sol::as_table(ErrorNumber);
+	LUA["ErrorInt"] = sol::as_table(ErrorInt);
 
-	LUA["Resources"] = &LUA_Resources_;
+	/* Классы */
+	LUA.new_usertype<LUA_Vector2>("Vector2",
+		"X", &LUA_Vector2::x,
+		"Y", &LUA_Vector2::y,
+		"Length", &LUA_Vector2::Length,
+		"ToString", &LUA_Vector2::ToString,
+		"Abs", &LUA_Vector2::Abs,
+		sol::meta_function::addition, &LUA_Vector2::operator+,
+		sol::meta_function::subtraction, &LUA_Vector2::operator-,
+		sol::meta_function::multiplication, &LUA_Vector2::operator*
+	);
+	LUA.set_function("Vector2", [](sol::object x, sol::object y, sol::this_state s) {
+		lua_State* L = s;
+		if (y == sol::nil) {
+			if (x == sol::nil) {
+				return LUA_Vector2(0,0);
+			}
+			else {
+				if (LuaCheckNumber(x, "Vector2", { x,x }, L)) {
+					double d = ObjectToDouble(x);
+					return LUA_Vector2(d, d);
+				}
+			}
+		}
+		else {
+			if (LuaCheckNumber(x, "Vector2", { x,y }, L)) {
+				if (LuaCheckNumber(y, "Vector2", { x,y }, L)) {
+					return LUA_Vector2(ObjectToDouble(x), ObjectToDouble(y));
+				}
+			}
+		}
+		return LUA_Vector2(0, 0);
+	});
+
+	/* Функции*/
+	LUA["Resources"] = &LUA_Resources_Instance;
 	LUA.new_usertype<LUA_Resources>(
 		"LUA_Resources",
 		"LoadScript", &LUA_Resources::LoadScript
 	);
 
-	LUA["Game"] = &LUA_Game_;
+	LUA["Game"] = &LUA_Game_Instance;
 	LUA.new_usertype<LUA_Game>(
 		"LUA_Game",
-		"Connect", &LUA_Game::Connect
+		"Update", &LUA_Game::Update
 	);
 
-	LUA["Controls"] = &LUA_Controls_;
+	LUA["Controls"] = &LUA_Controls_Instance;
 	LUA.new_usertype<LUA_Controls>(
 		"LUA_Controls",
         "KeyPress", &LUA_Controls::KeyPress,
-        "KeyPressed", &LUA_Controls::KeyPressed,
+        "KeyPressed", &LUA_Controls::KeyPressed_,
         "KeyReleased", &LUA_Controls::KeyReleased,
         "KeysPressed", &LUA_Controls::KeysPressed,
-        "KeysReleased", &LUA_Controls::KeysReleased
+        "KeysReleased", &LUA_Controls::KeysReleased,
+		"KeyIsPressed", &LUA_Controls::KeyIsPressed
 	);
 
+	/* Локальные функции */
+	LUA.set_function("Abs", &LUA_Abs);
+	LUA.set_function("Sqrt", &LUA_Sqrt);
 	LUA.set_function("Print", &LUA_Print);
+	LUA.set_function("IfThen", &LUA_IfThen);
 	LUA.set_function("TypeOf", &LUA_TypeOf);
 	LUA.set_function("ToString", &LUA_ToString);
+	LUA.set_function("PrintFast", &LUA_PrintFast);
 }
 
 void LoadLua(GameMod Mod) {
 	auto LUA = std::make_unique<sol::state>();
-
-	LUA->open_libraries(sol::lib::base);
 
 	GameLua(*LUA);
 
@@ -333,7 +503,8 @@ void LoadLua(GameMod Mod) {
 }
 
 void UnloadLua() {
-	/* Очиста ивентов */
+	/* Очистка ивентов */
+	LUA_Events_Update       = {};
     LUA_Events_KeyPress     = {};
     LUA_Events_KeyPressed   = {};
     LUA_Events_KeyReleased  = {};

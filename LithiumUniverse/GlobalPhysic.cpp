@@ -13,6 +13,7 @@
 #include "GlobalRender.h";
 #include "GameObject.h";
 #include "GameCamera.h";
+#include "GlobalLua.h";
 #include "GlobalUI.h";
 #include "GameData.h";
 
@@ -202,6 +203,9 @@ std::vector<GameObject>& UpdatePhysic() {
 	}
 	AfterUpdatePhysic();
 	AfterUpdateUI();
+	for (sol::function F : LUA_Events_Update) {
+		F();
+	}
 	return Scene;
 }
 
