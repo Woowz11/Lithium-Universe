@@ -170,10 +170,6 @@ void ControlsKeyboard(const int KEY, const int ACTION) {
 		}
 	}
 
-	if (KEY == GLFW_KEY_HOME && ACTION == GLFW_PRESS) {
-		Camera->ResetCamera();
-	}
-
 	if (KEY == GLFW_KEY_SPACE && ACTION == GLFW_PRESS) {
 		SpacePressed = !SpacePressed;
 		SetSimulationSpeed(SpacePressed ? 0 : 1);
@@ -246,50 +242,6 @@ void ControlsKeyboard(const int KEY, const int ACTION) {
 
 /* Управление клавиатурой (Каждый тик) */
 void ControlsKeyboardTick() {
-	bool W = KeyPressed(GLFW_KEY_W) == GLFW_PRESS;
-	bool S = KeyPressed(GLFW_KEY_S) == GLFW_PRESS;
-	bool D = KeyPressed(GLFW_KEY_D) == GLFW_PRESS;
-	bool A = KeyPressed(GLFW_KEY_A) == GLFW_PRESS;
-
-	SHIFT   = KeyPressed(GLFW_KEY_LEFT_SHIFT  ) == GLFW_PRESS;
-	CONTROL = KeyPressed(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS;
-
-	float speed = (SHIFT ? 3 : (CONTROL ? 0.3f : 1));
-
-	if (W && !S) {
-		Camera->MoveCamera(0, speed, DeltaTime);
-	}
-	if (S && !W) {
-		Camera->MoveCamera(0, -speed, DeltaTime);
-	}
-
-	if (D && !A) {
-		Camera->MoveCamera(speed, 0, DeltaTime);
-	}
-	if (A && !D) {
-		Camera->MoveCamera(-speed, 0, DeltaTime);
-	}
-
-	bool PLUS  = KeyPressed(GLFW_KEY_EQUAL) == GLFW_PRESS;
-	bool MINUS = KeyPressed(GLFW_KEY_MINUS) == GLFW_PRESS;
-
-	if (PLUS && !MINUS) {
-		Camera->MoveCameraZoom(speed, DeltaTime);
-	}
-	if (MINUS && !PLUS) {
-		Camera->MoveCameraZoom(-speed, DeltaTime);
-	}
-
-	bool RIGHT = KeyPressed(GLFW_KEY_RIGHT) == GLFW_PRESS;
-	bool LEFT  = KeyPressed(GLFW_KEY_LEFT ) == GLFW_PRESS;
-
-	if (RIGHT && !LEFT) {
-		Camera->MoveCameraRotation(speed, DeltaTime);
-	}
-	if (LEFT && !RIGHT) {
-		Camera->MoveCameraRotation(-speed, DeltaTime);
-	}
-
 	for (auto Event : LUA_Events_KeyPress) {
 		if (KeyPressed(Event.Key) == GLFW_PRESS) {
 			Event.Event();

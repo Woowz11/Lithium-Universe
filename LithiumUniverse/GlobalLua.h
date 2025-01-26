@@ -28,8 +28,8 @@ public:
 	}
 };
 
-extern double ErrorNumber;
-extern int ErrorInt;
+extern const double ErrorNumber;
+extern const int ErrorInt;
 
 extern std::vector<sol::function> LUA_Events_Update;
 extern std::vector<LUA_Class_KeyPressEvent> LUA_Events_KeyPress;

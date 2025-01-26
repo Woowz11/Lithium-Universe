@@ -7,6 +7,7 @@
 #include "StringActions.h";
 #include "GameInstalls.h";
 #include "GlobalLua.h";
+#include "GameData.h";
 #include "GameMod.h";
 #include "Console.h";
 
@@ -14,10 +15,14 @@
 std::unordered_map<std::string, std::unique_ptr<sol::state>> ModsLUA = {};
 std::unordered_map<lua_State*, std::string> ModsLUA_LuaState = {};
 
+/* ==== Константы ==== */
+
+const double PI = 3.14159265358;
+
 /* ==== Ошибочные переменные ====*/
 
-double ErrorNumber = -62122.723;
-int ErrorInt       = -6212223;
+const double ErrorNumber = -62122.723;
+const int ErrorInt       = -6212223;
 
 /* ==== Ивенты ==== */
 
@@ -316,6 +321,15 @@ double LUA_Abs(const sol::object& Value, sol::this_state s) {
 	return ErrorNumber;
 }
 
+/* Возвести число в синус */
+double LUA_Sin(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Sin", { Value }, L)) {
+		return sin(ObjectToDouble(Value));
+	}
+	return ErrorNumber;
+}
+
 /* Возвести корень */
 double LUA_Sqrt(const sol::object& Value, sol::this_state s) {
 	lua_State* L = s;
@@ -324,6 +338,11 @@ double LUA_Sqrt(const sol::object& Value, sol::this_state s) {
 		return sqrt(abs(D)) * (D<0?-1:1);
 	}
 	return ErrorNumber;
+}
+
+/* Получить DeltaTime */
+double LUA_DeltaTime() {
+	return DeltaTime;
 }
 
 class LUA_Resources {
@@ -409,6 +428,66 @@ public:
 
 LUA_Controls LUA_Controls_Instance;
 
+class LUA_Camera {
+public:
+	/* Подвинуть камеру */
+	void Move(const sol::object& Dir, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Dir, L_Vec2, "Camera:Move", { Dir }, L)) {
+			LUA_Vector2 V2 = ObjectToVector2(Dir);
+			Camera->MoveCamera(V2.x, V2.y, DeltaTime);
+		}
+	}
+
+	/* Изменить зум камере */
+	void MoveZoom(const sol::object& Zoom, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckNumber(Zoom, "Camera:MoveZoom", { Zoom }, L)) {
+			Camera->MoveCameraZoom(ObjectToDouble(Zoom), DeltaTime);
+		}
+	}
+
+	/* Повернуть камеру */
+	void Rotate(const sol::object& Angle, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckNumber(Angle, "Camera:Rotate", { Angle }, L)) {
+			Camera->MoveCameraRotation(ObjectToDouble(Angle), DeltaTime);
+		}
+	}
+
+	/* Установить позицию камере */
+	void SetPosition(const sol::object& Pos, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Pos, L_Vec2, "Camera:SetPosition", { Pos }, L)) {
+			LUA_Vector2 V2 = ObjectToVector2(Pos);
+			Camera->SetCameraPosition(V2.x, V2.y);
+		}
+	}
+
+	/* Установить зум камере */
+	void SetZoom(const sol::object& Zoom, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckNumber(Zoom, "Camera:SetZoom", { Zoom }, L)) {
+			Camera->SetCameraZoom(ObjectToDouble(Zoom));
+		}
+	}
+
+	/* Установить поворот камере */
+	void SetOrientation(const sol::object& Angle, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckNumber(Angle, "Camera:SetOrientation", { Angle }, L)) {
+			Camera->SetCameraRotation(ObjectToDouble(Angle));
+		}
+	}
+
+	/* Вернуть камеру в начальное положение */
+	void Reset() {
+		Camera->ResetCamera();
+	}
+};
+
+LUA_Camera LUA_Camera_Instance;
+
 /* ==== Константы ==== */
 
 std::unordered_map<std::string, int> Keys_Constants = { {"SPACE",32},{"APOSTROPHE",39},{"COMMA",44},{"MINUS",45},{"PERIOD",46},{"SLASH",47},{"0",48},{"1",49},{"2",50},{"3",51},{"4",52},{"5",53},{"6",54},{"7",55},{"8",56},{"9",57},{"SEMICOLON",59},{"EQUAL",61},{"A",65},{"B",66},{"C",67},{"D",68},{"E",69},{"F",70},{"G",71},{"H",72},{"I",73},{"J",74},{"K",75},{"L",76},{"M",77},{"N",78},{"O",79},{"P",80},{"Q",81},{"R",82},{"S",83},{"T",84},{"U",85},{"V",86},{"W",87},{"X",88},{"Y",89},{"Z",90},{"LEFT_BRACKET",91},{"BACKSLASH",92},{"RIGHT_BRACKET",93},{"GRAVE_ACCENT",96},{"WORLD_1",161},{"WORLD_2",162},{"ESCAPE",256},{"ENTER",257},{"TAB",258},{"BACKSPACE",259},{"INSERT",260},{"DELETE",261},{"RIGHT",262},{"LEFT",263},{"DOWN",264},{"UP",265},{"PAGE_UP",266},{"PAGE_DOWN",267},{"HOME",268},{"END",269},{"CAPS_LOCK",280},{"SCROLL_LOCK",281},{"NUM_LOCK",282},{"PRINT_SCREEN",283},{"PAUSE",284},{"F1",290},{"F2",291},{"F3",292},{"F4",293},{"F5",294},{"F6",295},{"F7",296},{"F8",297},{"F9",298},{"F10",299},{"F11",300},{"F12",301},{"F13",302},{"F14",303},{"F15",304},{"F16",305},{"F17",306},{"F18",307},{"F19",308},{"F20",309},{"F21",310},{"F22",311},{"F23",312},{"F24",313},{"F25",314},{"KP_0",320},{"KP_1",321},{"KP_2",322},{"KP_3",323},{"KP_4",324},{"KP_5",325},{"KP_6",326},{"KP_7",327},{"KP_8",328},{"KP_9",329},{"KP_DECIMAL",330},{"KP_DIVIDE",331},{"KP_MULTIPLY",332},{"KP_SUBTRACT",333},{"KP_ADD",334},{"KP_ENTER",335},{"KP_EQUAL",336},{"LEFT_SHIFT",340},{"LEFT_CONTROL",341},{"LEFT_ALT",342},{"LEFT_SUPER",343},{"RIGHT_SHIFT",344},{"RIGHT_CONTROL",345},{"RIGHT_ALT",346},{"RIGHT_SUPER",347},{"MENU",348} };
@@ -422,6 +501,7 @@ void GameLua(sol::state& LUA) {
 	}
 	LUA["ErrorDouble"] = sol::as_table(ErrorNumber);
 	LUA["ErrorInt"] = sol::as_table(ErrorInt);
+	LUA["PI"] = sol::as_table(PI);
 
 	/* Классы */
 	LUA.new_usertype<LUA_Vector2>("Vector2",
@@ -481,13 +561,27 @@ void GameLua(sol::state& LUA) {
 		"KeyIsPressed", &LUA_Controls::KeyIsPressed
 	);
 
+	LUA["Camera"] = &LUA_Camera_Instance;
+	LUA.new_usertype<LUA_Camera>(
+		"LUA_Camera",
+		"Move", &LUA_Camera::Move,
+		"MoveZoom", &LUA_Camera::MoveZoom,
+		"Rotate", &LUA_Camera::Rotate,
+		"SetPosition", &LUA_Camera::SetPosition,
+		"SetZoom", &LUA_Camera::SetZoom,
+		"SetOrientation", &LUA_Camera::SetOrientation,
+		"Reset", &LUA_Camera::Reset
+	);
+
 	/* Локальные функции */
 	LUA.set_function("Abs", &LUA_Abs);
+	LUA.set_function("Sin", &LUA_Sin);
 	LUA.set_function("Sqrt", &LUA_Sqrt);
 	LUA.set_function("Print", &LUA_Print);
 	LUA.set_function("IfThen", &LUA_IfThen);
 	LUA.set_function("TypeOf", &LUA_TypeOf);
 	LUA.set_function("ToString", &LUA_ToString);
+	LUA.set_function("DeltaTime", &LUA_DeltaTime);
 	LUA.set_function("PrintFast", &LUA_PrintFast);
 }
 
