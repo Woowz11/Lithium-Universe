@@ -1,9 +1,9 @@
 {
-	"Name": "Vanilla Controller",
+	"Name": "Vanilla Controler",
 	"Version" : "0.0",
 	"Author" : "Woowz11",
 	"Description" : "Regular Lithium Universe Controls\nCamera control, drag and drop, etc.",
-	"MainScript" : "VanillaController:Base.lua",
+	"MainScript" : "VanillaControler:Base.lua",
 	"Compatibility" : [""],
 	"Incompatible" : [""]
 }

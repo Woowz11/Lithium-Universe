@@ -5,6 +5,7 @@
 std::string ReplaceStringToString(const std::string Target, const std::string This, const std::string ToThat);
 std::string Trim(const std::string& Target);
 std::string FillString(const std::string&, const char Symbol, const int Length, const bool ToLeft);
+std::string RemoveStringPart(const std::string& Target, const int Length);
 std::string ReplaceCharsToChars(const std::string& Target, const char ToThis, const char ToThat);
 std::string ReplaceCharsToString(const std::string& Target, const char ToThis, const std::string ToThat);
 char GetLastSymbol(const std::string& Target);

@@ -27,6 +27,12 @@ float DeltaTime = 0;
 /* Число сглаживающее время с фпс и на которое влияет игровое время */
 float GameDeltaTime = 0;
 
+/* FPS */
+float FPS = -1;
+
+/* Время нужное для обработки кадра */
+float MS = -1;
+
 /* Игра скомпилирована в Dev режиме? */
 bool DeveloperVersion = false;
 

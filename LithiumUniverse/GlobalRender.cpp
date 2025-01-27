@@ -241,7 +241,7 @@ void Render(const std::vector<GameObject>& Scene) {
             CSS.setVec2("ScreenSize", ScreenSize);
             CSS.setVec2("MousePosition", MousePositionScreen);
 
-            CSS.setVec2("CameraPosition", Camera->Position);
+            CSS.setVec2("CameraPosition", -Camera->Position);
             CSS.setFloat("CameraOrientation", Camera->Orientation);
             CSS.setFloat("CameraZoom", Camera->Zoom);
 
@@ -272,7 +272,7 @@ void Render(const std::vector<GameObject>& Scene) {
 }
 
 /* Позицию экранную в мировую */
-glm::vec2 ScreenPositionToWorld(const glm::vec2& Pos, const bool IgnoreCamera, const bool Resize) {
+glm::vec2 ScreenPositionToWorld(const glm::vec2 Pos, const bool IgnoreCamera, const bool Resize) {
     glm::vec2 Result = Pos;
     //800px => 20.0f / 3
     Result *= ScreenScale;
@@ -281,8 +281,8 @@ glm::vec2 ScreenPositionToWorld(const glm::vec2& Pos, const bool IgnoreCamera, c
     }
     if (!IgnoreCamera) {
         Result *= Camera->Zoom;
-        Result = glm::rotate(Result, Camera->Orientation);
-        Result -= Camera->Position;
+        Result = glm::rotate(Result, -Camera->Orientation);
+        Result -= -Camera->Position;
     }
     return Result;
 }

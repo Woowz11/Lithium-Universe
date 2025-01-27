@@ -5,6 +5,7 @@
 #include "ExplorerActions.h";
 #include "GlobalResources.h";
 #include "StringActions.h";
+#include "GlobalRender.h";
 #include "GameInstalls.h";
 #include "GlobalLua.h";
 #include "GameData.h";
@@ -21,13 +22,22 @@ const double PI = 3.14159265358;
 
 /* ==== Ошибочные переменные ====*/
 
-const double ErrorNumber = -62122.723;
-const int ErrorInt       = -6212223;
+const double ErrorNumber       = -62122.723;
+const int ErrorInt             = -6212223;
+const LUA_Vector2 ErrorVector2 = LUA_Vector2(ErrorNumber, ErrorNumber);
 
 /* ==== Ивенты ==== */
 
 /* Ивент вызывается каждый кадр */
 std::vector<sol::function> LUA_Events_Update = {};
+
+/* Ивент вызывается когда двигается колёсико мыши */
+std::vector<sol::function> LUA_Events_MouseScroll = {};
+
+/* Ивент вызывается когда нажимается на клавишу на мышке */
+std::vector<sol::function> LUA_Events_MousePressed = {};
+/* Ивент вызывается когда отжимается клавиша на мышке */
+std::vector<sol::function> LUA_Events_MouseReleased = {};
 
 /* Ивент на зажатие клавиши */
 std::vector<LUA_Class_KeyPressEvent> LUA_Events_KeyPress = {};
@@ -345,6 +355,32 @@ double LUA_DeltaTime() {
 	return DeltaTime;
 }
 
+/* Получить мировую позицию мыши */
+LUA_Vector2 LUA_MouseWorldPosition() {
+	return LUA_Vector2(MouseWorldPosition.x, MouseWorldPosition.y);
+}
+
+/* Получить позицию мыши (размер окна не виляет на него) */
+LUA_Vector2 LUA_MouseLocalPosition() {
+	return LUA_Vector2(MousePositionNonResize.x, MousePositionNonResize.y);
+}
+
+/* Получить позицию мыши */
+LUA_Vector2 LUA_MousePosition() {
+	return LUA_Vector2(MousePosition.x, MousePosition.y);
+}
+
+/* Сделать экранную позицию в мировую */
+LUA_Vector2 LUA_ScreenToWorldPosition(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckType(Value, L_Vec2, "ScreenToWorldPosition", { Value }, L)) {
+		LUA_Vector2 V2 = ObjectToVector2(Value);
+		glm::vec2 Result = ScreenPositionToWorld(glm::vec2(V2.x, V2.y), false, true);
+		return LUA_Vector2(Result.x, Result.y);
+	}
+	return ErrorVector2;
+}
+
 class LUA_Resources {
 public:
 	/* Получить скрипт */
@@ -424,6 +460,30 @@ public:
 		}
 		return false;
 	}
+
+	/* Ивент: колёсико мышки двигается */
+	void MouseScroll(const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Func, L_Func, "Controls:MouseScroll", { Func }, L)) {
+			LUA_Events_MouseScroll.push_back(ObjectToFunc(Func));
+		}
+	}
+
+	/* Ивент: клавиша на мыши нажимается */
+	void MousePressed(const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Func, L_Func, "Controls:MousePreesed", { Func }, L)) {
+			LUA_Events_MousePressed.push_back(ObjectToFunc(Func));
+		}
+	}
+
+	/* Ивент: клавиша на мыши отжимается */
+	void MouseReleased(const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Func, L_Func, "Controls:MouseReleased", { Func }, L)) {
+			LUA_Events_MouseReleased.push_back(ObjectToFunc(Func));
+		}
+	}
 };
 
 LUA_Controls LUA_Controls_Instance;
@@ -439,11 +499,32 @@ public:
 		}
 	}
 
+	/* Подвинуть камеру с своим DeltaTime */
+	void MoveCustom(const sol::object& Dir, const sol::object& DT, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Dir, L_Vec2, "Camera:MoveCustom", { Dir, DT }, L)) {
+			if (LuaCheckNumber(DT, "Camera:MoveCustom", { Dir, DT }, L)) {
+				LUA_Vector2 V2 = ObjectToVector2(Dir);
+				Camera->MoveCamera(V2.x, V2.y, ObjectToDouble(DT));
+			}
+		}
+	}
+
 	/* Изменить зум камере */
 	void MoveZoom(const sol::object& Zoom, sol::this_state s) {
 		lua_State* L = s;
 		if (LuaCheckNumber(Zoom, "Camera:MoveZoom", { Zoom }, L)) {
 			Camera->MoveCameraZoom(ObjectToDouble(Zoom), DeltaTime);
+		}
+	}
+
+	/* Изменить зум камере с своим DeltaTime */
+	void MoveZoomCustom(const sol::object& Zoom, const sol::object& DT, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckNumber(Zoom, "Camera:MoveZoomCustom", { Zoom, DT }, L)) {
+			if (LuaCheckNumber(DT, "Camera:MoveZoomCustom", { Zoom, DT }, L)) {
+				Camera->MoveCameraZoom(ObjectToDouble(Zoom), ObjectToDouble(DT));
+			}
 		}
 	}
 
@@ -484,6 +565,21 @@ public:
 	void Reset() {
 		Camera->ResetCamera();
 	}
+
+	/* Получить зум камеры */
+	double Zoom() {
+		return Camera->Zoom;
+	}
+
+	/* Получить позицию камеры */
+	LUA_Vector2 Position() {
+		return LUA_Vector2(Camera->Position.x, Camera->Position.y);
+	}
+
+	/* Получить поворот камеры */
+	double Orientation() {
+		return Camera->Orientation;
+	}
 };
 
 LUA_Camera LUA_Camera_Instance;
@@ -499,20 +595,36 @@ void GameLua(sol::state& LUA) {
 	for (auto [KeyName, KeyID] : Keys_Constants) {
 		LUA["KEY_"+KeyName] = sol::as_table(KeyID);
 	}
-	LUA["ErrorDouble"] = sol::as_table(ErrorNumber);
-	LUA["ErrorInt"] = sol::as_table(ErrorInt);
+	LUA["KEY_MOUSE_LEFT"] = sol::as_table(0);
+	LUA["KEY_MOUSE_RIGHT"] = sol::as_table(1);
+	LUA["KEY_MOUSE_MIDDLE"] = sol::as_table(2);
+
 	LUA["PI"] = sol::as_table(PI);
+
+	LUA["ErrorInt"] = sol::as_table(ErrorInt);
+	LUA["ErrorDouble"] = sol::as_table(ErrorNumber);
+	LUA["ErrorVector2"] = sol::as_table(ErrorVector2);
 
 	/* Классы */
 	LUA.new_usertype<LUA_Vector2>("Vector2",
 		"X", &LUA_Vector2::x,
 		"Y", &LUA_Vector2::y,
+		"Abs", &LUA_Vector2::Abs,
+		"Rotate", &LUA_Vector2::Rotate,
 		"Length", &LUA_Vector2::Length,
 		"ToString", &LUA_Vector2::ToString,
-		"Abs", &LUA_Vector2::Abs,
 		sol::meta_function::addition, &LUA_Vector2::operator+,
 		sol::meta_function::subtraction, &LUA_Vector2::operator-,
-		sol::meta_function::multiplication, &LUA_Vector2::operator*
+		sol::meta_function::multiplication, &LUA_Vector2::operator*,
+		sol::meta_function::division, &LUA_Vector2::operator/,
+		sol::meta_function::unary_minus, &LUA_Vector2::operator~,
+		sol::meta_function::equal_to, &LUA_Vector2::operator==,
+		sol::meta_function::less_than, &LUA_Vector2::operator<,
+		sol::meta_function::less_than_or_equal_to, &LUA_Vector2::operator<=,
+		sol::meta_function::concatenation, sol::overload(
+			[](const char* A, LUA_Vector2& B) { return A + B.ToString(); },
+			[](LUA_Vector2& B, const char* A) { return B.ToString() + A; }
+		)
 	);
 	LUA.set_function("Vector2", [](sol::object x, sol::object y, sol::this_state s) {
 		lua_State* L = s;
@@ -554,23 +666,31 @@ void GameLua(sol::state& LUA) {
 	LUA.new_usertype<LUA_Controls>(
 		"LUA_Controls",
         "KeyPress", &LUA_Controls::KeyPress,
-        "KeyPressed", &LUA_Controls::KeyPressed_,
-        "KeyReleased", &LUA_Controls::KeyReleased,
-        "KeysPressed", &LUA_Controls::KeysPressed,
-        "KeysReleased", &LUA_Controls::KeysReleased,
-		"KeyIsPressed", &LUA_Controls::KeyIsPressed
+        "KeyPressed", &LUA_Controls::KeysPressed,
+		"MouseScroll", &LUA_Controls::MouseScroll,
+		"KeyReleased", &LUA_Controls::KeysReleased,
+		"KeyIsPressed", &LUA_Controls::KeyIsPressed,
+		"MousePressed", &LUA_Controls::MousePressed,
+		"MouseReleased", &LUA_Controls::MouseReleased,
+		"KeyPressedSingle", &LUA_Controls::KeyPressed_,
+		"KeyReleasedSingle", &LUA_Controls::KeyReleased
 	);
 
 	LUA["Camera"] = &LUA_Camera_Instance;
 	LUA.new_usertype<LUA_Camera>(
 		"LUA_Camera",
 		"Move", &LUA_Camera::Move,
-		"MoveZoom", &LUA_Camera::MoveZoom,
+		"Zoom", &LUA_Camera::Zoom,
+		"Reset", &LUA_Camera::Reset,
 		"Rotate", &LUA_Camera::Rotate,
-		"SetPosition", &LUA_Camera::SetPosition,
 		"SetZoom", &LUA_Camera::SetZoom,
+		"Position", &LUA_Camera::Position,
+		"MoveZoom", &LUA_Camera::MoveZoom,
+		"MoveCustom", &LUA_Camera::MoveCustom,
+		"SetPosition", &LUA_Camera::SetPosition,
+		"Orientation", &LUA_Camera::Orientation,
 		"SetOrientation", &LUA_Camera::SetOrientation,
-		"Reset", &LUA_Camera::Reset
+		"MoveZoomCustom", &LUA_Camera::MoveZoomCustom
 	);
 
 	/* Локальные функции */
@@ -583,6 +703,10 @@ void GameLua(sol::state& LUA) {
 	LUA.set_function("ToString", &LUA_ToString);
 	LUA.set_function("DeltaTime", &LUA_DeltaTime);
 	LUA.set_function("PrintFast", &LUA_PrintFast);
+	LUA.set_function("MousePosition", &LUA_MousePosition);
+	LUA.set_function("MouseLocalPosition", &LUA_MouseLocalPosition);
+	LUA.set_function("MouseWorldPosition", &LUA_MouseWorldPosition);
+	LUA.set_function("ScreenToWorldPosition", &LUA_ScreenToWorldPosition);
 }
 
 void LoadLua(GameMod Mod) {
@@ -598,12 +722,15 @@ void LoadLua(GameMod Mod) {
 
 void UnloadLua() {
 	/* Очистка ивентов */
-	LUA_Events_Update       = {};
-    LUA_Events_KeyPress     = {};
-    LUA_Events_KeyPressed   = {};
-    LUA_Events_KeyReleased  = {};
-    LUA_Events_KeysPressed  = {};
-    LUA_Events_KeysReleased = {};
+	LUA_Events_Update        = {};
+	LUA_Events_MouseScroll   = {};
+	LUA_Events_MousePressed  = {};
+	LUA_Events_MouseReleased = {};
+    LUA_Events_KeyPress      = {};
+    LUA_Events_KeyPressed    = {};
+    LUA_Events_KeyReleased   = {};
+    LUA_Events_KeysPressed   = {};
+    LUA_Events_KeysReleased  = {};
 	
 	ModsLUA.clear();
 }

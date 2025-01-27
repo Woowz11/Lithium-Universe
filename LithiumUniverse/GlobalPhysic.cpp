@@ -197,6 +197,9 @@ std::vector<GameObject>& UpdatePhysic() {
 				UpdateUI(OBJ);
 				break;
 			default:
+				if (OBJ.Name == "CameraObject") {
+					SetGameObjectPosition(OBJ.GetID(), Camera->Position);
+				}
 				break;
 			}
 		}

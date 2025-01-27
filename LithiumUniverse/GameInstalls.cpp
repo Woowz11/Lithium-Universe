@@ -13,6 +13,7 @@
 #include <fstream>
 #include <cstdint>
 #include <limits>
+#include <thread>
 #include <string>
 #include <vector>
 #include <chrono>
@@ -40,36 +41,13 @@ enum GameInstallError {
 };
 
 class GameInstalls {
-public:
-	GLFWwindow* Window = NULL;
-
-	float FPS = -1;
-
-	/* Запуск игры */
-	void Run() {
-		RunAll();
-		if (GlobalError==SUCCESS) {
-			Loop();
-		}
-		DestroyAll();
-	}
-
-	std::string GetGameTitle() {
-		return "LithiumUniverse (" + Version + ") FPS: " + FillString(ToStringNumber(FPS),' ',10,false) + " SP: " + ToStringNumber(GetSimulationSpeed());
-	}
-
-	/* ==== Управление, другие функции ==== */
-
-	int KeyPressed(int Key) {
-		return glfwGetKey(Window, Key);
-	}
-
-	void ExitGame() {
-		glfwSetWindowShouldClose(Window, true);
-	}
-
 private:
+	/* Ошибка */
 	GameInstallError GlobalError = SUCCESS;
+
+	/* Лимит FPS */
+	std::chrono::duration<float> FrameDuration;
+	bool FPSLimit = false;
 
 	/* ==== Основа ==== */
 	 
@@ -238,11 +216,18 @@ private:
 	/* Вычесление FPS */
 	float LastFPSTime = 0.0f;
 	float LastFPSTimeForSecond = 0.0f;
+	std::chrono::high_resolution_clock::time_point LastFPSTimePoint;
 	void CalculateFPS() {
 		Time = glfwGetTime();
-		DeltaTime = Time - LastFPSTime;
-		LastFPSTime = Time;
-		FPS = (1 / DeltaTime);
+
+		auto Now = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<float> Elapsed = Now - LastFPSTimePoint;
+		DeltaTime = Elapsed.count();
+		LastFPSTimePoint = Now;
+
+		if (DeltaTime > 0) {
+			FPS = (1 / DeltaTime);
+		}
 		GameDeltaTime = DeltaTime * GetSimulationSpeed();
 	}
 
@@ -269,15 +254,38 @@ private:
 		MouseMove();
 	}
 
+	/* Ограничить FPS */
+	std::chrono::steady_clock::time_point FrameStart;
+	void LimitFPS() {
+		auto FrameEnd = std::chrono::steady_clock::now();
+		std::chrono::duration<float> FrameTime = FrameEnd - FrameStart;
+		if (FrameTime < FrameDuration) {
+			std::this_thread::sleep_for(FrameDuration - FrameTime);
+		}
+	}
+
 	/* Цикл всего */
 	void Loop() {
 		while (!glfwWindowShouldClose(Window)) {
+			auto StartTime = std::chrono::high_resolution_clock::now();
+
+			if (FPSLimit) {
+				FrameStart = std::chrono::high_resolution_clock::now();
+			}
+
 			Controls();
 
 			Render(UpdatePhysic());
-			CalculateFPS();
 
 			LoopGLFW();
+			
+			if (FPSLimit) {
+				LimitFPS();
+			}
+			CalculateFPS();
+
+			auto EndTime = std::chrono::high_resolution_clock::now();
+			MS = std::chrono::duration_cast<std::chrono::milliseconds>(EndTime - StartTime).count();
 		}
 	}
 
@@ -295,6 +303,43 @@ private:
 			DestroyGLFW();
 		}
 		ClearData();
+	}
+public:
+	GLFWwindow* Window = NULL;
+
+	/* Запуск игры */
+	void Run() {
+		RunAll();
+		if (GlobalError == SUCCESS) {
+			Loop();
+		}
+		DestroyAll();
+	}
+
+	std::string GetGameTitle() {
+		return "LithiumUniverse (" + Version + ") MS: " + RemoveStringPart(ToStringNumber(MS), 4) + " FPS: " + RemoveStringPart(ToStringNumber(FPS),6) + " SP: " + RemoveStringPart(ToStringNumber(GetSimulationSpeed()),3);
+	}
+
+	/* ==== Управление, другие функции ==== */
+
+	int KeyPressed(int Key) {
+		return glfwGetKey(Window, Key);
+	}
+
+	void ExitGame() {
+		glfwSetWindowShouldClose(Window, true);
+	}
+
+	void SetFPSLimit(int newFpsLimit) {
+		if (newFpsLimit <= 0) {
+			FPSLimit = false;
+			Print("LU", "FPS limit removed!");
+		}
+		else {
+			FrameDuration = std::chrono::duration<float>(1.0f / newFpsLimit);
+			FPSLimit = true;
+			Print("LU","FPS limit set to " + std::to_string(newFpsLimit) + "!");
+		}
 	}
 };
 
@@ -334,4 +379,9 @@ int KeyPressed(int Key) {
 /* Закрыть игру */
 void ExitGame() {
 	Game.ExitGame();
+}
+
+/* Установить лимит FPS */
+void SetFPSLimit(int NewFPSLimit) {
+	Game.SetFPSLimit(NewFPSLimit);
 }

@@ -159,6 +159,8 @@ void CreateUI(Scenes Scen) {
 
 			ui_test2 = ui;
 
+			ui = CreateGameObject("CameraObject", RO_Default);
+
 			/*ui = CreateGameObject("fps", RO_UI);
 			MakeGameObjectText(ui, U"");
 			SetGameObjectPosition(ui, glm::vec2(-0.95f,0.95f));*/

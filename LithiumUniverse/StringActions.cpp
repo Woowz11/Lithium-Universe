@@ -66,6 +66,15 @@ std::string ReplaceCharsToString(const std::string& Target, const char ToThis, c
 	return Result;
 }
 
+/* Удалить часть строки */
+std::string RemoveStringPart(const std::string& Target, const int Length) {
+	std::string Result = Target;
+	if (Result.length() > Length) {
+		Result = Result.substr(0, Length);
+	}
+	return Result;
+}
+
 /* Получить последний символ строки */
 char GetLastSymbol(const std::string& Target) {
 	if (Target.empty()) {

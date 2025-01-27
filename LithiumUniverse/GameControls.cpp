@@ -90,12 +90,6 @@ void ProcessUIClick(const int i, const bool Left) {
 
 /* ==== Основа ==== */
 
-bool SHIFT = false;
-bool CONTROL = false;
-
-bool CameraDrag = false;
-glm::vec2 CameraDragOffset = glm::vec2(0, 0);
-
 /* Курсор двигается */
 void MouseMove() {
 	if (HasMouseJoint) {
@@ -106,11 +100,6 @@ void MouseMove() {
 		else {
 			MouseDropGO();
 		}
-	}
-
-	if (CameraDrag) {
-		glm::vec2 Dif = CameraDragOffset - MouseWorldPosition;
-		Camera->MoveCamera(Dif.x, Dif.y, (1/Camera->Zoom) * DeltaTime * 10);
 	}
 }
 
@@ -142,20 +131,23 @@ void MouseClick(const int KEY, const int ACTION) {
 		}
 	}
 
-	if (KEY == GLFW_MOUSE_BUTTON_MIDDLE) {
-		if (ACTION == GLFW_PRESS) {
-			CameraDrag = true;
-			CameraDragOffset = MouseWorldPosition;
+	if (ACTION == GLFW_PRESS) {
+		for (sol::function F : LUA_Events_MousePressed) {
+			F(KEY);
 		}
-		if (ACTION == GLFW_RELEASE) {
-			CameraDrag = false;
+	}
+	if (ACTION == GLFW_RELEASE) {
+		for (sol::function F : LUA_Events_MouseReleased) {
+			F(KEY);
 		}
 	}
 }
 
 /* Колёсико мышки двигается */
 void MouseScroll(const float scroll) {
-	Camera->MoveCameraZoom(scroll * (SHIFT ? 3 : (CONTROL ? 0.3f : 1)) * 0.1f, 1);
+	for (sol::function F : LUA_Events_MouseScroll) {
+		F(scroll);
+	}
 }
 
 /* Управление клавиатурой */
@@ -178,6 +170,18 @@ void ControlsKeyboard(const int KEY, const int ACTION) {
 	if (KEY == GLFW_KEY_G && ACTION == GLFW_PRESS) {
 		SpacePressed = false;
 		SetSimulationSpeed(0.1f);
+	}
+
+	if (KEY == GLFW_KEY_KP_7 && ACTION == GLFW_PRESS) {
+		SetFPSLimit(15);
+	}
+
+	if (KEY == GLFW_KEY_KP_8 && ACTION == GLFW_PRESS) {
+		SetFPSLimit(60);
+	}
+
+	if (KEY == GLFW_KEY_KP_9 && ACTION == GLFW_PRESS) {
+		SetFPSLimit(0);
 	}
 
 	if (KEY == GLFW_KEY_Z && ACTION == GLFW_PRESS) {

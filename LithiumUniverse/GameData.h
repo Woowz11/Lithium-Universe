@@ -17,6 +17,8 @@ enum Scenes {
 extern float Time;
 extern float DeltaTime;
 extern float GameDeltaTime;
+extern float FPS;
+extern float MS;
 extern bool DeveloperVersion;
 
 extern glm::vec2 MousePositionScreen;
