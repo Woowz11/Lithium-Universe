@@ -6,6 +6,7 @@
 #include "nlohmann/json.hpp";
 using json = nlohmann::json;
 
+#include "GameObjectActions.h";
 #include "ExplorerActions.h";
 #include "GlobalRender.h";
 #include "GameResource.h";
@@ -168,11 +169,11 @@ void CreateNewGameResourceOrSkip(const std::string FullPath_, const GameResource
 
 /* Получить все ресурсы игры */
 void GetAllFilesInGamePath() {
-	F_Shaders  = {};
-	F_Fonts    = {};
-	F_Textures = {};
-	F_Sounds   = {};
-	F_Other    = {};
+	F_Shaders     = {};
+	F_Fonts       = {};
+	F_Textures    = {};
+	F_Sounds      = {};
+	F_Other       = {};
 
 	std::string ResourcesPath = GamePath + "/Resources";
 	std::string ModsPath      = GamePath + "/Mods";
@@ -346,4 +347,43 @@ void UpdateResources() {
 	UpdateR_Sounds();
 	FinishLoadingResources();
 	Print("RES", "Resources updated!");
+}
+
+/* ==== Работа с игровыми объектами ==== */
+
+/* Сохранённые игровые объекты */
+std::unordered_map<std::string, int> F_GameObjects = {};
+
+void ClearModsResources() {
+	F_GameObjects = {};
+}
+
+void SaveGameObject(const int i, const std::string ModID, const std::string Name) {
+	if (CheckOutSceneIndex(i)) {
+		Error("RES","GameObject could not be saved because its ID was not found or is outside the Scene! SaveGameObject(" + std::to_string(i) + ",\"" + ModID + "\",\"" + Name + "\");");
+	}
+	else {
+		std::string ID = ModID + ":" + Name;
+		if (F_GameObjects.find(ID) == F_GameObjects.end()) {
+			F_GameObjects[ID] = i;
+			SetGameObjectActive(i, false);
+		}
+		else {
+			Error("RES","GameObject could not be saved because this path [" + ID + "] to GameObject is already taken! SaveGameObject(" + std::to_string(i) + ",\"" + ModID + "\",\"" + Name + "\");");
+		}
+	}
+}
+
+int CloneSavedGameObject(const std::string ComplexPath) {
+	int Result = -1;
+
+	if (F_GameObjects.find(ComplexPath) == F_GameObjects.end()) {
+		Error("RES","Cannot clone saved GameObject because no such object with the given path [" + ComplexPath + "] was found! CloneSavedGameObject(\"" + ComplexPath + "\");");
+	}
+	else {
+		Result = CloneGameObject(F_GameObjects[ComplexPath]);
+		SetGameObjectActive(Result, true);
+	}
+
+	return Result;
 }

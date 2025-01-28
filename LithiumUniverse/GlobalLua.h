@@ -38,8 +38,10 @@ public:
 
 extern const double ErrorNumber;
 extern const int ErrorInt;
+extern const std::string ErrorString;
 
 extern std::vector<sol::function> LUA_Events_Update;
+extern std::vector<sol::function> LUA_Events_GameObjectLoading;
 extern std::vector<sol::function> LUA_Events_MouseScroll;
 extern std::vector<sol::function> LUA_Events_MousePressed;
 extern std::vector<sol::function> LUA_Events_MouseReleased;
@@ -54,6 +56,7 @@ double ObjectToDouble(const sol::object& Obj);
 void LuaErrorOperator(const std::string& Obj, const std::string Operator, const sol::object& ObjB);
 bool LuaCheckNumber(const sol::object& Obj, const std::string Function, const std::vector<sol::object>& Params, lua_State* L);
 
+std::string TableToString(const sol::table& Table, int Hierarchy);
 LUA_OBJ_Type TypeOf(const sol::object& Obj);
 
 std::string LUA_TypeOf(const sol::object& Obj);

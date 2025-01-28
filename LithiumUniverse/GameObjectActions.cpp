@@ -6,6 +6,7 @@
 #include <vector>
 #include <box2d/box2d.h>
 
+#include "GameObjectActions.h";
 #include "GlobalResources.h";
 #include "StringActions.h";
 #include "GlobalPhysic.h";
@@ -90,53 +91,89 @@ void RefreshGameObjectCollider__(GameObject& OBJ) {
 	}
 }
 
-glm::vec2 BVec2ToVec2(b2Vec2 v) {
+void CloneGameObjectValuesToOther__(GameObject& A, GameObject& B) {
+	if (!A.Deleted && !B.Deleted) {
+		A.Name = B.Name;
+		A.Type = B.Type;
+		A.Active = B.Active;
+		A.DontDelete = B.DontDelete;
+		A.BaseTextureRes = B.BaseTextureRes;
+		A.BaseShaderRes = B.BaseShaderRes;
+		A.FontRes = B.FontRes;
+		A.PositionVisual = B.PositionVisual;
+		A.LinePositionVisual = B.LinePositionVisual;
+		A.SizeVisual = B.SizeVisual;
+		A.OrientationVisual = B.OrientationVisual;
+		A.Color = B.Color;
+		A.Layer = B.Layer;
+		A.Render = B.Render;
+		A.RenderType = B.RenderType;
+		A.Selectable = B.Selectable;
+		A.Resize = B.Resize;
+		A.Text = B.Text;
+		A.Static = B.Static;
+		A.Collider = B.Collider;
+
+		int i = A.GetID();
+
+		if (B.Type == RO_Phys) {
+			SetGameObjectTransform(i,B.PositionVisual, B.OrientationVisual);
+			SetGameObjectStatic(i, B.Static);
+			SetGameObjectCollider(i, B.Collider);
+		}
+	}
+	else {
+		Error("GAMEOBJ", "Cannot clone data from [" + A.ToString() + "] to [" + B.ToString() + "] because one of the objects has been deleted! CloneGameObjectValuesToOther__(" + A.ToString() + "," + B.ToString() + ");");
+	}
+}
+
+glm::vec2 BVec2ToVec2(const b2Vec2 v) {
 	return glm::vec2(v.x, v.y);
 }
-b2Vec2 Vec2ToBVec2(glm::vec2 v) {
+b2Vec2 Vec2ToBVec2(const glm::vec2 v) {
 	return b2Vec2(v.x, v.y);
 }
-b2Rot Makeb2Rot(float o) {
+b2Rot Makeb2Rot(const float o) {
 	return b2Rot(cosf(-o), sinf(o));
 }
-float MakeOrientation(b2Rot r) {
+float MakeOrientation(const b2Rot r) {
 	return -atan2(r.s, r.c);
 }
 
-b2BodyId GetBody(int i) {
-#ifdef DEBUG
+b2BodyId GetBody(const int i) {
+#ifdef NDEBUG
+	return Bodies[i];
+#else
 	if (i >= 0 && i <= Bodies.size()) {
 		return Bodies[i];
-}
+	}
 	else {
 		Error("GAMEOBJ/BODY", "It is not possible to get the b2BodyId because it cannot be found by ID in the bodies! GetBody(" + std::to_string(i) + ");");
 		return b2_nullBodyId;
 	}
-#else
-	return Bodies[i];
 #endif
 }
 
-bool CheckOutSceneIndex(int i) {
+bool CheckOutSceneIndex(const int i) {
 	return !(i >= 0 && i <= Scene.size());
 }
 
-GameObject& GetGameObject(int i, std::string message) {
-#ifdef DEBUG
+GameObject& GetGameObject(const int i, const std::string message) {
+#ifdef NDEBUG
+	return Scene[i];
+#else
 	if (i >= 0 && i <= Scene.size()) {
 		return Scene[i];
-}
+	}
 	else {
 		Error("GAMEOBJ", "It is not possible to get the GameObject because it cannot be found by ID in the scene! GetGameObject(" + std::to_string(i) + "); + " + message);
 		return ErrorGameObject;
 	}
-#else
-	return Scene[i];
 #endif
 }
 
 /* Получить объект через физический объект */
-GameObject& GetGameObjectFromBody(b2BodyId b) {
+GameObject& GetGameObjectFromBody(const b2BodyId b) {
 	auto it = std::find_if(Bodies.begin(), Bodies.end(),
 		[&b](const b2BodyId& body) { return body.index1 == b.index1; });
 
@@ -160,17 +197,17 @@ GameObject& GetGameObjectFromBody(b2BodyId b) {
 }
 
 /* Предупредить, что объект не подходит для физики (private) */
-void GameObjectNotSuitableForPhysics__(GameObject& OBJ, std::string Func) {
+void GameObjectNotSuitableForPhysics__(GameObject& OBJ, const std::string Func) {
 	WarnSerious("GAMEOBJ", "It is impossible to perform function " + Func + " because " + OBJ.ToString() + " is not for physics!");
 }
 
 /* Предупредить, что объект не подходит для всего, потому-что удалён (private) */
-void GameObjectDeleted__(GameObject& OBJ, std::string Func) {
+void GameObjectDeleted__(GameObject& OBJ, const std::string Func) {
 	WarnSerious("GAMEOBJ", "It is impossible to perform function " + Func + " because " + OBJ.ToString() + " has been deleted!");
 }
 
 /* Сделать объект физичным (private) */
-void MakeGameObjectPhysical__(int i) {
+void MakeGameObjectPhysical__(const int i) {
 	GameObject& OBJ = GetGameObject(i, "MakeGameObjectPhysical__(" + std::to_string(i) + ");");
 	OBJ.Type = RO_Phys;
 	OBJ.Selectable = true;
@@ -187,7 +224,7 @@ void MakeGameObjectPhysical__(int i) {
 }
 
 /* Получить игровой объект находящийся на этой точке */
-int GetGameObjectFromPoint(glm::vec2 PointPos) {
+int GetGameObjectFromPoint(const glm::vec2 PointPos) {
 	int result = -1;
 
 	b2World_OverlapPoint(World, Vec2ToBVec2(PointPos), b2Transform_identity, b2DefaultQueryFilter(), [](b2ShapeId shapeId, void* context) {
@@ -211,7 +248,7 @@ int GetGameObjectFromPoint(glm::vec2 PointPos) {
 }
 
 /* Установить, удаляемый ли объект? */
-void SetGameObjectDontDelete(int i, bool b) {
+void SetGameObjectDontDelete(const int i, const bool b) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectDontDelete(" + std::to_string(i) + "," + ToStringBool(b) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.DontDelete = b;
@@ -222,7 +259,7 @@ void SetGameObjectDontDelete(int i, bool b) {
 }
 
 /* Установить, менять ли размер объекту взависимости от размера экрана? */
-void SetGameObjectResize(int i, bool b) {
+void SetGameObjectResize(const int i, const bool b) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectResize(" + std::to_string(i) + "," + ToStringBool(b) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.Resize = b;
@@ -233,7 +270,7 @@ void SetGameObjectResize(int i, bool b) {
 }
 
 /* Установить визуальный слой объекта */
-void SetGameObjectLayer(int i, float l) {
+void SetGameObjectLayer(const int i, const float l) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectLayer(" + std::to_string(i) + "," + std::to_string(l) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.Layer = l;
@@ -244,7 +281,7 @@ void SetGameObjectLayer(int i, float l) {
 }
 
 /* Установить текст объекту */
-void SetGameObjectText(int i, std::u32string t) {
+void SetGameObjectText(const int i, const std::u32string t) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectText(" + std::to_string(i) + "," + u32stringToString(t) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.Text = t;
@@ -255,7 +292,7 @@ void SetGameObjectText(int i, std::u32string t) {
 }
 
 /* Установить шрифт объекту */
-void SetGameObjectFont(int i, int f) {
+void SetGameObjectFont(const int i, const int f) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectFont(" + std::to_string(i) + "," + std::to_string(f) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.FontRes = f;
@@ -266,7 +303,7 @@ void SetGameObjectFont(int i, int f) {
 }
 
 /* Установить шейдер объекту */
-void SetGameObjectShader(int i, int s) {
+void SetGameObjectShader(const int i, const int s) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectShader(" + std::to_string(i) + "," + std::to_string(s) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.BaseShaderRes = s;
@@ -277,7 +314,7 @@ void SetGameObjectShader(int i, int s) {
 }
 
 /* Установить текстуру объекту */
-void SetGameObjectTexture(int i, int t) {
+void SetGameObjectTexture(const int i, const int t) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectTexture(" + std::to_string(i) + "," + std::to_string(t) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.BaseTextureRes = t;
@@ -288,7 +325,7 @@ void SetGameObjectTexture(int i, int t) {
 }
 
 /* Установить, ативный ли объект? */
-void SetGameObjectActive(int i, bool b) {
+void SetGameObjectActive(const int i, const bool b) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectActive(" + std::to_string(i) + "," + ToStringBool(b) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.Active = b;
@@ -308,7 +345,7 @@ void SetGameObjectActive(int i, bool b) {
 }
 
 /* Установить тип коллизии */
-void SetGameObjectCollider(int i, ColliderType CT) {
+void SetGameObjectCollider(const int i, const ColliderType CT) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectCollider(" + std::to_string(i) + "," + std::to_string(CT) + ");");
 	if (!OBJ.Deleted && OBJ.Type == RO_Phys) {
 		OBJ.Collider = CT;
@@ -320,7 +357,7 @@ void SetGameObjectCollider(int i, ColliderType CT) {
 }
 
 /* Сделать объект выделяемым */
-void SetGameObjectSelectable(int i, bool b) {
+void SetGameObjectSelectable(const int i, const bool b) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectSelectable(" + std::to_string(i) + "," + ToStringBool(b) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.Selectable = b;
@@ -331,12 +368,12 @@ void SetGameObjectSelectable(int i, bool b) {
 }
 
 /* Получить цвет объекта */
-glm::vec4 GetGameObjectColor(int i) {
+glm::vec4 GetGameObjectColor(const int i) {
 	return GetGameObject(i, "GetGameObjectColor(" + std::to_string(i) + ");").Color;
 }
 
 /* Установить цвет объекту */
-void SetGameObjectColor(int i, glm::vec4 c) {
+void SetGameObjectColor(const int i, const glm::vec4 c) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectSize(" + std::to_string(i) + "," + ToStringVec4(c) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.Color = c;
@@ -347,12 +384,12 @@ void SetGameObjectColor(int i, glm::vec4 c) {
 }
 
 /* Получить размер объекта */
-glm::vec2 GetGameObjectSize(int i) {
+glm::vec2 GetGameObjectSize(const int i) {
 	return GetGameObject(i, "GetGameObjectSize(" + std::to_string(i) + ");").SizeVisual;
 }
 
 /* Установить размер объекту */
-void SetGameObjectSize(int i, glm::vec2 s) {
+void SetGameObjectSize(const int i, const glm::vec2 s) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectSize(" + std::to_string(i) + "," + ToStringVec2(s) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.SizeVisual = s;
@@ -366,22 +403,22 @@ void SetGameObjectSize(int i, glm::vec2 s) {
 }
 
 /* Установить, рендерить ли объект? */
-void SetGameObjectRenderable(int i, bool b) {
+void SetGameObjectRenderable(const int i, const bool b) {
 	GetGameObject(i, "SetGameObjectRenderable(" + std::to_string(i) + "," + ToStringBool(b) + ");").Render = b;
 }
 
 /* Получить позицию объекта */
-glm::vec2 GetGameObjectPosition(int i) {
+glm::vec2 GetGameObjectPosition(const int i) {
 	return GetGameObject(i, "GetGameObjectPosition(" + std::to_string(i) + ");").PositionVisual;
 }
 
 /* Получить поворот объекта */
-float GetGameObjectOrientation(int i) {
+float GetGameObjectOrientation(const int i) {
 	return GetGameObject(i, "GetGameObjectOrientation(" + std::to_string(i) + ");").OrientationVisual;
 }
 
 /* Установить позицию объекту */
-void SetGameObjectPosition(int i, glm::vec2 p) {
+void SetGameObjectPosition(const int i, const glm::vec2 p) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectPosition(" + std::to_string(i) + "," + ToStringVec2(p) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.PositionVisual = p;
@@ -395,7 +432,7 @@ void SetGameObjectPosition(int i, glm::vec2 p) {
 }
 
 /* Установить поворот объекту */
-void SetGameObjectOrientation(int i, float r) {
+void SetGameObjectOrientation(const int i, const float r) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectOrientation(" + std::to_string(i) + "," + std::to_string(r) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.OrientationVisual = r;
@@ -409,7 +446,7 @@ void SetGameObjectOrientation(int i, float r) {
 }
 
 /* Установить позицию и поворот объекту */
-void SetGameObjectTransform(int i, glm::vec2 p, float r) {
+void SetGameObjectTransform(const int i, const glm::vec2 p, const float r) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectPosition(" + std::to_string(i) + "," + ToStringVec2(p) + "," + std::to_string(r) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.PositionVisual = p;
@@ -424,7 +461,7 @@ void SetGameObjectTransform(int i, glm::vec2 p, float r) {
 }
 
 /* Сделать объект статичным? */
-void SetGameObjectStatic(int i, bool b) {
+void SetGameObjectStatic(const int i, const bool b) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectStatic(" + std::to_string(i) + "," + ToStringBool(b) + ");");
 	if (!OBJ.Deleted && OBJ.Type == RO_Phys) {
 		OBJ.Static = b;
@@ -436,7 +473,7 @@ void SetGameObjectStatic(int i, bool b) {
 }
 
 /* Уничтожить объект */
-void DeleteGameObject(int i, bool IgnoreError) {
+void DeleteGameObject(const int i, bool IgnoreError) {
 	bool Out = CheckOutSceneIndex(i);
 	if (IgnoreError && Out) { return; }
 	GameObject& OBJ = GetGameObject(i, "DeleteGameObject(" + std::to_string(i) + ");");
@@ -456,10 +493,26 @@ void DeleteGameObject(int i, bool IgnoreError) {
 		}
 	}
 }
-void DeleteGameObject(int i) { DeleteGameObject(i, false); }
+void DeleteGameObject(const int i) {
+	DeleteGameObject(i, true);
+}
+
+/* Клонировать объект */
+int CloneGameObject(const int i) {
+	if (CheckOutSceneIndex(i)) {
+		Error("GAMEOBJ","Failed to clone GameObject because it was not found! CloneGameObject(" + std::to_string(i) + ");");
+		return -1;
+	}
+	else {
+		GameObject& OBJ = GetGameObject(i, "CloneGameObject(" + std::to_string(i) + ");");
+		int ClonedObject = CreateGameObject(OBJ.Name, OBJ.Type);
+		CloneGameObjectValuesToOther__(GetGameObject(ClonedObject, "CloneGameObject(" + std::to_string(i) + "); #CLONED#"), OBJ);
+		return ClonedObject;
+	}
+}
 
 /* Создать объект */
-int CreateGameObject(std::string Name = "[New GameObject]", RO_Type ObjectType = RO_Default) {
+int CreateGameObject(const std::string Name = "[New GameObject]", const RO_Type ObjectType = RO_Default) {
 	int i = Scene.size();
 	GameObject OBJ = GameObject(Name, i);
 	Scene.push_back(OBJ);
@@ -478,6 +531,7 @@ int CreateGameObject(std::string Name = "[New GameObject]", RO_Type ObjectType =
 			MakeGameObjectPhysical__(i);
 			break;
 		default:
+			Error("GAMEOBJ","Object type (" + std::to_string(ObjectType) + ") not found! CreateGameObject(\"" + Name + "\"," + std::to_string(ObjectType) + ");");
 			break;
 	}
 	return OBJ.GetID();

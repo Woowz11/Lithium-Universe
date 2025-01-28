@@ -1,4 +1,4 @@
-# Lithium Universe 0.2y DEV
+# Lithium Universe 0.2z DEV
 ## Texture files loading list!
 | |ID |Atlas     |Texture Path                                                                                        |
 |-|:-:|:--------:|:---------------------------------------------------------------------------------------------------|

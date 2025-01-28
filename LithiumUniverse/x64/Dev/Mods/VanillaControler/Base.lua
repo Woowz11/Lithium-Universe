@@ -4,4 +4,4 @@ Game:Update(function()
 	UpdateCamera()
 end)
 
-Print("VanillaControler runned!")
+Print("VanillaControler loaded!")

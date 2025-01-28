@@ -4,6 +4,6 @@
 	"Author" : "Woowz11",
 	"Description" : "Regular Lithium Universe Controls\nCamera control, drag and drop, etc.",
 	"MainScript" : "VanillaControler:Base.lua",
-	"Compatibility" : [""],
-	"Incompatible" : [""]
+	"Compatibility" : [],
+	"Incompatible" : []
 }

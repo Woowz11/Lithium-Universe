@@ -8,6 +8,7 @@
 #include "StringActions.h";
 #include "GameResource.h";
 #include "GameData.h";
+#include "Console.h";
 #include "Texture.h";
 
 /* Тип объекта */
@@ -89,7 +90,7 @@ public:
 	}
 
 	std::string ToString() {
-		return "GameObject(" + Name + "," + std::to_string(GetID()) + ");";
+		return "GameObject(" + std::to_string(GetID()) + "," + Name + "," + std::to_string(Type) + "," + ToStringBool(Active) + "," + ToStringBool(Deleted) + ");";
 	}
 
 	/* Установить ширину линии */

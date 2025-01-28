@@ -38,7 +38,7 @@ void ReloadShaderTime() {
 }
 
 /* Константа на размер окна */
-const glm::vec2 ScreenScale = glm::vec2(10.0f / 3, 7.5f / 3);
+const glm::vec2 ScreenScale = glm::vec2(10.0f / 3, 2.5f);
 
 /* Отладочный рендер */
 const bool DebugRender = false;
@@ -63,7 +63,8 @@ int Square_l = 4; /* Кол-во строк в square */
 
 /* Проверка на GL ошибку */
 void CheckGLError(const std::string Script) {
-#ifdef DEBUG
+#ifdef NDEBUG
+#else
     GLenum E = glGetError();
     if (E != GLFW_NO_ERROR) {
         Error("GL CHECK", "Error ID (" + std::to_string(E) + ") " + Script);

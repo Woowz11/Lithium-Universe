@@ -8,7 +8,11 @@ std::string FillString(const std::string&, const char Symbol, const int Length, 
 std::string RemoveStringPart(const std::string& Target, const int Length);
 std::string ReplaceCharsToChars(const std::string& Target, const char ToThis, const char ToThat);
 std::string ReplaceCharsToString(const std::string& Target, const char ToThis, const std::string ToThat);
+bool StringStartWith(const std::string& Target, const std::string StartWith);
+int GetLinesCountFromString(const std::string& Target);
+std::string GetLineFromString(const std::string& Target, const int SelectedLine);
 char GetLastSymbol(const std::string& Target);
+std::string RepeatString(const std::string& Target, const int CoutRepeat);
 std::string RemoveLastSymbol(const std::string& Target);
 std::string RemoveFirstSymbol(const std::string& Target);
 std::string u32stringToString(const std::u32string& u32str);

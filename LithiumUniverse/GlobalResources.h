@@ -1,10 +1,12 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <map>
 
 #include "GameResource.h";
 
 extern std::vector<GameResource> Resources;
+extern std::unordered_map<std::string, int> F_GameObjects;
 
 int GetResourceAssetID(const int ID, const int IfNotFound);
 int GetResourceAssetID(const int ID);
@@ -17,3 +19,7 @@ std::string GetBaseFromPath(const std::string Path);
 GameResource GetResourceDebug(const std::string FullPath);
 GameResource GetResource(const std::string Base, const std::string Path);
 void UpdateResources();
+
+void ClearModsResources();
+void SaveGameObject(const int i, const std::string ModID, const std::string Name);
+int CloneSavedGameObject(const std::string ComplexPath);

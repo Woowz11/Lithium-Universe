@@ -160,6 +160,7 @@ void CreateUI(Scenes Scen) {
 			ui_test2 = ui;
 
 			ui = CreateGameObject("CameraObject", RO_Default);
+			SetGameObjectActive(ui, false);
 
 			/*ui = CreateGameObject("fps", RO_UI);
 			MakeGameObjectText(ui, U"");

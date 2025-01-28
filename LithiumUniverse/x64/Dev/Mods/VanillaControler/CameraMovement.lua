@@ -63,7 +63,7 @@ function UpdateCamera()
 	
 	if (CameraDrag) then
 		local Dif = CameraDragOffset - MouseLocalPosition()
-		Dif = Dif * Camera:Zoom() * (10/3)
+		Dif = Dif * Camera:Zoom() * ScreenScale
 		Camera:SetPosition(CameraDragPosition + Dif:Rotate(-Camera:Orientation()))
 	end
 	

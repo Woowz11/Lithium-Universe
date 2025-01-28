@@ -1,7 +1,12 @@
 ﻿#include "sol/sol.hpp";
 
 #include <unordered_map>
+#include <iostream>
+#include <utility>
+#include <string>
+#include <regex>
 
+#include "GameObjectActions.h";
 #include "ExplorerActions.h";
 #include "GlobalResources.h";
 #include "StringActions.h";
@@ -25,11 +30,15 @@ const double PI = 3.14159265358;
 const double ErrorNumber       = -62122.723;
 const int ErrorInt             = -6212223;
 const LUA_Vector2 ErrorVector2 = LUA_Vector2(ErrorNumber, ErrorNumber);
+const std::string ErrorString  = "Error_GwevWET23g3#G_#1d";
 
 /* ==== Ивенты ==== */
 
 /* Ивент вызывается каждый кадр */
 std::vector<sol::function> LUA_Events_Update = {};
+
+/* Ивент вызывается при загрузке игровых объектов */
+std::vector<sol::function> LUA_Events_GameObjectLoading = {};
 
 /* Ивент вызывается когда двигается колёсико мыши */
 std::vector<sol::function> LUA_Events_MouseScroll = {};
@@ -71,8 +80,13 @@ double ObjectToDouble(const sol::object& Obj) {
 }
 
 /* Конвертировать объект в целое число */
-int ObjectToInt(const sol::object& Obj) {
-	return (int)std::floor(ObjectToDouble(Obj));
+int ObjectToInt(const sol::object& Obj, bool ThatMaybeDouble = false) {
+	if (ThatMaybeDouble) {
+		return (int)std::floor(ObjectToDouble(Obj));
+	}
+	else {
+		return (int)ObjectToDouble(Obj);
+	}
 }
 
 /* Конвертировать объект в булеан */
@@ -90,8 +104,13 @@ sol::function ObjectToFunc(const sol::object& Obj) {
 	return Obj.as<sol::function>();
 }
 
+/* Конвертировать объект в таблицу */
+sol::table ObjectToTable(const sol::object& Obj) {
+	return Obj.as<sol::table>();
+}
+
 /* Конвертировать объект в строку */
-std::string ObjectToString(const sol::object& Obj, bool SaveQuotes = false) {
+std::string ObjectToString(const sol::object& Obj, bool SaveQuotes = false, int TableHierarchy = 0) {
 	LUA_OBJ_Type T = TypeOf(Obj);
 	switch (T)
 	{
@@ -109,7 +128,16 @@ std::string ObjectToString(const sol::object& Obj, bool SaveQuotes = false) {
 		return (SaveQuotes ? "\"" : "") + Obj.as<std::string>() + (SaveQuotes ? "\"" : "");
 		break;
 	case L_Table:
-		return "Table";
+		if (TableHierarchy>0) {
+			return TableToString(Obj, TableHierarchy);
+		}
+		else {
+			int TableSize = 0;
+			for (const auto& pair : Obj.as<sol::table>()) {
+				TableSize++;
+			}
+			return "Table{" + std::to_string(TableSize) + "}";
+		}
 		break;
 	case L_Func:
 		return "Function";
@@ -217,47 +245,49 @@ std::string LuaComplexOperator(const std::string Operator, const std::string Obj
 }
 
 /* Ошибка Lua (короткая) */
-void LuaErrorCompact(std::string ErrorMessage) {
+void LuaErrorCompact(const std::string ErrorMessage) {
 	Error("LUA", ErrorMessage);
 }
 
+/* Ошибка Lua (кастомная) */
+void LuaErrorCustom(const std::string ModID, const std::string ErrorCode, const int ErrorLine, std::string What) {
+	Error(ModID, ErrorCode + " $$R:$$_ " + std::to_string(ErrorLine) + " $$R: " + What);
+}
+
 /* Ошибка Lua */
-void LuaError(std::string ErrorMessage, lua_State* L) {
+void LuaError(const std::string ErrorMessage, lua_State* L) {
 	std::string ModID = GetBaseFromLuaState(L);
-	Error(ModID, ErrorMessage);
 	
 	lua_Debug LDebug;
 
 	int level = 1;
 	int pre_stack_size = lua_gettop(L);
 	if (lua_getstack(L, level, &LDebug) != 1) {
-		Error(ModID, "Unable to traverse thestack!");
+		Error(ModID, ErrorMessage);
+		Error(ModID, "$$RUnable to traverse thestack!");
 		lua_settop(L, pre_stack_size);
 		return;
 	}
 
 	if (lua_getinfo(L, "fnluS", &LDebug) == 0) {
-		Error(ModID, "Unable to get stack information!");
+		Error(ModID, ErrorMessage);
+		Error(ModID, "$$RUnable to get stack information!");
 		lua_settop(L, pre_stack_size);
 		return;
 	}
 
-	Error(ModID, "[" + std::to_string(level) + "] " + std::string(LDebug.short_src) + " : " + std::to_string(LDebug.currentline) + " - " + (LDebug.name ? LDebug.name : "<unknown>") + " (" + LDebug.what + ")");
-	sol::function f(L, -1);
-	sol::environment env(sol::env_key, f);
-	if (!env.valid()) {
-		Error(ModID, "No environment to get!");
-	}
-	sol::state_view lua(L);
-	sol::environment freshenv = lua["freshenv"];
-	bool is_same_env = freshenv == env;
-	if (!is_same_env) { Error(ModID, "Environments differ!"); }
+	std::string Code = LDebug.source;
+	int ErrorLine = LDebug.currentline;
+
+	std::string ErrorCode = GetLineFromString(Code, ErrorLine);
+
+	LuaErrorCustom(ModID, ErrorCode, ErrorLine, ErrorMessage);
 }
 
 /* Сообщить об ошибке, что такой тип не поддерживается в операторе */
 void LuaErrorOperator(const std::string& ObjA, const std::string Operator, const sol::object& ObjB) {
 	LUA_OBJ_Type T = TypeOf(ObjB);
-	LuaErrorCompact("Variable [" + ObjectToString(ObjB, true) + " (" + LUA_TypeOf(ObjB) + ")] not supported! " + LuaComplexOperator(Operator, ObjA, ObjB));
+	LuaErrorCompact("$$RVariable [$$_" + ObjectToString(ObjB, true) + " $$R($$_" + LUA_TypeOf(ObjB) + "$$R)] not supported! $$_" + LuaComplexOperator(Operator, ObjA, ObjB));
 }
 
 /* Проверить, совпадает ли тип объекта с указанным типом */
@@ -267,7 +297,7 @@ bool LuaCheckType(const sol::object& Obj, const LUA_OBJ_Type Type, const std::st
 		return true;
 	}
 	else {
-		LuaError("Variable [" + ObjectToString(Obj,true) + " (" + LUA_TypeOf(Obj) + ")] must be of type [" + LuaObjTypeToString(Type) + "]! " + LuaComplexFunction(Function, Params), L);
+		LuaError("$$RVariable [$$_" + ObjectToString(Obj,true) + " $$R($$_" + LUA_TypeOf(Obj) + "$$R)] must be of type [$$_" + LuaObjTypeToString(Type) + "$$R]! $$_" + LuaComplexFunction(Function, Params), L);
 		return false;
 	}
 }
@@ -279,7 +309,7 @@ bool LuaCheckType2(const sol::object& Obj, const LUA_OBJ_Type Type1, const LUA_O
 		return true;
 	}
 	else {
-		LuaError("Variable [" + ObjectToString(Obj, true) + " (" + LUA_TypeOf(Obj) + ")] must be of type [" + LuaObjTypeToString(Type1) + " || " + LuaObjTypeToString(Type2) + "]! " + LuaComplexFunction(Function, Params), L);
+		LuaError("$$RVariable [$$_" + ObjectToString(Obj, true) + " $$R($$_" + LUA_TypeOf(Obj) + "$$R)] must be of type [$$_" + LuaObjTypeToString(Type1) + " || " + LuaObjTypeToString(Type2) + "$$R]! $$_" + LuaComplexFunction(Function, Params), L);
 		return false;
 	}
 }
@@ -289,12 +319,38 @@ bool LuaCheckNumber(const sol::object& Obj, const std::string Function, const st
 	return LuaCheckType2(Obj, L_Int, L_Double, Function, Params, L);
 }
 
+/* Превратить таблицу в строку */
+std::string TableToString(const sol::table& Table, int Hierarchy) {
+	if (!Table.valid() || Table.empty()) {
+		return "{}";
+	}
+	else {
+		std::string Result = "{\n";
+		for (const auto& pair : Table) {
+			sol::object Key = pair.first;
+			sol::object Value = pair.second;
+			Result += RepeatString("   ", Hierarchy + 1) + "[" + ObjectToString(Key, true, Hierarchy + 1) + "] = " + ObjectToString(Value, true, Hierarchy + 1) + ",\n";
+		}
+		return Result + RepeatString("   ", Hierarchy) + "}";
+	}
+}
+
 /* ==== Код ==== */
 
 /* Отправить простое сообщение в консоль */
 void LUA_Print(const sol::object& Message, sol::this_state s) {
 	lua_State* L = s;
 	Print(GetBaseFromLuaState(L), ObjectToString(Message));
+}
+
+/* Превратить таблицу в строку */
+std::string LUA_TableToString(const sol::object& Table, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckType(Table, L_Table, "TalbeToString", { Table }, s)) {
+		sol::table T = ObjectToTable(Table);
+		return TableToString(T,0);
+	}
+	return ErrorString;
 }
 
 /* Отправить простое сообщение в консоль (очень быстро, без логов и т.д) */
@@ -381,16 +437,6 @@ LUA_Vector2 LUA_ScreenToWorldPosition(const sol::object& Value, sol::this_state 
 	return ErrorVector2;
 }
 
-class LUA_Resources {
-public:
-	/* Получить скрипт */
-	void LoadScript(const std::string& Path) {
-		RunScript(Path);
-	}
-};
-
-LUA_Resources LUA_Resources_Instance;
-
 class LUA_Game {
 public:
 	/* Ивент: каждый кадр выполнять */
@@ -400,57 +446,65 @@ public:
 			LUA_Events_Update.push_back(ObjectToFunc(Func));
 		}
 	}
+
+	/* Ивент: вызывается при загрузке игровых объектов */
+	void GameObjectLoading(const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Func, L_Func, "Game:GameObjectLoading", { Func }, L)) {
+			LUA_Events_GameObjectLoading.push_back(ObjectToFunc(Func));
+		}
+	}
 };
 
 LUA_Game LUA_Game_Instance;
 
 class LUA_Controls {
 public:
-    /* Ивент: клавиша зажата */
-    void KeyPress(const sol::object& Key, const sol::object& Func, sol::this_state s) {
+	/* Ивент: клавиша зажата */
+	void KeyPress(const sol::object& Key, const sol::object& Func, sol::this_state s) {
 		lua_State* L = s;
 		if (LuaCheckType(Key, L_Int, "Controls:KeyPress", { Key,Func }, L)) {
 			if (LuaCheckType(Func, L_Func, "Controls:KeyPress", { Key,Func }, L)) {
 				LUA_Events_KeyPress.push_back(LUA_Class_KeyPressEvent(ObjectToInt(Key), ObjectToFunc(Func)));
 			}
 		}
-    }
+	}
 
-    /* Ивент: клавиша нажата */
-    void KeyPressed_(const sol::object& Key, const sol::object& Func, sol::this_state s) {
+	/* Ивент: клавиша нажата */
+	void KeyPressed_(const sol::object& Key, const sol::object& Func, sol::this_state s) {
 		lua_State* L = s;
 		if (LuaCheckType(Key, L_Int, "Controls:KeyPressed", { Key,Func }, L)) {
 			if (LuaCheckType(Func, L_Func, "Controls:KeyPressed", { Key,Func }, L)) {
 				LUA_Events_KeyPressed.push_back(LUA_Class_KeyPressEvent(ObjectToInt(Key), ObjectToFunc(Func)));
 			}
 		}
-    }
+	}
 
-    /* Ивент: клавиша отжата */
-    void KeyReleased(const sol::object& Key, const sol::object& Func, sol::this_state s) {
+	/* Ивент: клавиша отжата */
+	void KeyReleased(const sol::object& Key, const sol::object& Func, sol::this_state s) {
 		lua_State* L = s;
 		if (LuaCheckType(Key, L_Int, "Controls:KeyReleased", { Key,Func }, L)) {
 			if (LuaCheckType(Func, L_Func, "Controls:KeyReleased", { Key,Func }, L)) {
 				LUA_Events_KeyReleased.push_back(LUA_Class_KeyPressEvent(ObjectToInt(Key), ObjectToFunc(Func)));
 			}
 		}
-    }
+	}
 
-    /* Ивент: клавиши нажаты */
-    void KeysPressed(const sol::object& Func, sol::this_state s) {
+	/* Ивент: клавиши нажаты */
+	void KeysPressed(const sol::object& Func, sol::this_state s) {
 		lua_State* L = s;
 		if (LuaCheckType(Func, L_Func, "Controls:KeysPressed", { Func }, L)) {
 			LUA_Events_KeysPressed.push_back(LUA_Class_KeyPressEvent(-1, Func));
 		}
-    }
+	}
 
-    /* Ивент: клавиши отжаты */
-    void KeysReleased(const sol::object& Func, sol::this_state s) {
+	/* Ивент: клавиши отжаты */
+	void KeysReleased(const sol::object& Func, sol::this_state s) {
 		lua_State* L = s;
 		if (LuaCheckType(Func, L_Func, "Controls:KeysReleased", { Func }, L)) {
 			LUA_Events_KeysReleased.push_back(LUA_Class_KeyPressEvent(-1, Func));
 		}
-    }
+	}
 
 	/* Клавиша нажата в данный момент? */
 	bool KeyIsPressed(const sol::object& Key, sol::this_state s) {
@@ -584,6 +638,73 @@ public:
 
 LUA_Camera LUA_Camera_Instance;
 
+class LUA_Resources {
+public:
+	/* Загрузить скрипт */
+	void LoadScript(const sol::object& Path, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Path, L_String, "Resources:LoadScript", { Path }, L)) {
+			RunScript(ObjectToString(Path));
+		}
+	}
+
+	/* Сохранить игровой объект в ресурсы */
+	void SaveGameObject_(const sol::object& ID, const sol::object& Name, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(ID, L_Int, "Resources:SaveGameObject", { ID, Name }, L)) {
+			if (LuaCheckType(Name, L_String, "Resources:SaveGameObject", { ID, Name }, L)) {
+				SaveGameObject(ObjectToInt(ID), GetBaseFromLuaState(L), ObjectToString(Name));
+			}
+		}
+	}
+
+	/* Клонировать объект из ресурсов */
+	int CloneGameObject_(const sol::object& Path, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Path, L_String, "Resources:CloneGameObject", { Path }, L)) {
+			return CloneSavedGameObject(ObjectToString(Path));
+		}
+		return -1;
+	}
+};
+
+LUA_Resources LUA_Resources_Instance;
+
+class LUA_GameObject {
+public:
+	/* Создать игровой объект */
+	int Create(const sol::object& Name, const sol::object& Type, sol::this_state s) {
+		lua_State* L = s;
+		std::string Name_ = "New [" + GetBaseFromLuaState(L) + "] GameObject";
+		if (Name != sol::nil) {
+			if (LuaCheckType(Name, L_String, "GameObject:Create", { Name, Type }, L)) {
+				Name_ = ObjectToString(Name);
+			}
+		}
+		int Type_ = 0;
+		if (Type != sol::nil) {
+			if (LuaCheckType(Type, L_Int, "GameObject:Create", { Name, Type }, L)) {
+				Type_ = ObjectToInt(Type);
+			}
+		}
+		int OBJ = CreateGameObject(Name_, RO_Type(Type_));
+		return OBJ;
+	}
+
+	/* Изменить позицию игровому объекту */
+	void SetPosition(const sol::object& ID, const sol::object& NewPosition, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(ID, L_Int, "GameObject:SetPosition", { ID, NewPosition }, L)) {
+			if (LuaCheckType(NewPosition, L_Vec2, "GameObject:SetPosition", { ID, NewPosition }, L)) {
+				LUA_Vector2 V2 = ObjectToVector2(NewPosition);
+				SetGameObjectPosition(ObjectToInt(ID), glm::vec2(V2.x, V2.y));
+			}
+		}
+	}
+};
+
+LUA_GameObject LUA_GameObject_Instance;
+
 /* ==== Константы ==== */
 
 std::unordered_map<std::string, int> Keys_Constants = { {"SPACE",32},{"APOSTROPHE",39},{"COMMA",44},{"MINUS",45},{"PERIOD",46},{"SLASH",47},{"0",48},{"1",49},{"2",50},{"3",51},{"4",52},{"5",53},{"6",54},{"7",55},{"8",56},{"9",57},{"SEMICOLON",59},{"EQUAL",61},{"A",65},{"B",66},{"C",67},{"D",68},{"E",69},{"F",70},{"G",71},{"H",72},{"I",73},{"J",74},{"K",75},{"L",76},{"M",77},{"N",78},{"O",79},{"P",80},{"Q",81},{"R",82},{"S",83},{"T",84},{"U",85},{"V",86},{"W",87},{"X",88},{"Y",89},{"Z",90},{"LEFT_BRACKET",91},{"BACKSLASH",92},{"RIGHT_BRACKET",93},{"GRAVE_ACCENT",96},{"WORLD_1",161},{"WORLD_2",162},{"ESCAPE",256},{"ENTER",257},{"TAB",258},{"BACKSPACE",259},{"INSERT",260},{"DELETE",261},{"RIGHT",262},{"LEFT",263},{"DOWN",264},{"UP",265},{"PAGE_UP",266},{"PAGE_DOWN",267},{"HOME",268},{"END",269},{"CAPS_LOCK",280},{"SCROLL_LOCK",281},{"NUM_LOCK",282},{"PRINT_SCREEN",283},{"PAUSE",284},{"F1",290},{"F2",291},{"F3",292},{"F4",293},{"F5",294},{"F6",295},{"F7",296},{"F8",297},{"F9",298},{"F10",299},{"F11",300},{"F12",301},{"F13",302},{"F14",303},{"F15",304},{"F16",305},{"F17",306},{"F18",307},{"F19",308},{"F20",309},{"F21",310},{"F22",311},{"F23",312},{"F24",313},{"F25",314},{"KP_0",320},{"KP_1",321},{"KP_2",322},{"KP_3",323},{"KP_4",324},{"KP_5",325},{"KP_6",326},{"KP_7",327},{"KP_8",328},{"KP_9",329},{"KP_DECIMAL",330},{"KP_DIVIDE",331},{"KP_MULTIPLY",332},{"KP_SUBTRACT",333},{"KP_ADD",334},{"KP_ENTER",335},{"KP_EQUAL",336},{"LEFT_SHIFT",340},{"LEFT_CONTROL",341},{"LEFT_ALT",342},{"LEFT_SUPER",343},{"RIGHT_SHIFT",344},{"RIGHT_CONTROL",345},{"RIGHT_ALT",346},{"RIGHT_SUPER",347},{"MENU",348} };
@@ -601,9 +722,16 @@ void GameLua(sol::state& LUA) {
 
 	LUA["PI"] = sol::as_table(PI);
 
+	LUA["ScreenScale"] = sol::as_table(LUA_Vector2(10.0/3, 2.5));
+
 	LUA["ErrorInt"] = sol::as_table(ErrorInt);
 	LUA["ErrorDouble"] = sol::as_table(ErrorNumber);
+	LUA["ErrorString"] = sol::as_table(ErrorString);
 	LUA["ErrorVector2"] = sol::as_table(ErrorVector2);
+
+	LUA["GO_Default"] = sol::as_table(RO_Default);
+	LUA["GO_Physical"] = sol::as_table(RO_Phys);
+	LUA["GO_UI"] = sol::as_table(RO_UI);
 
 	/* Классы */
 	LUA.new_usertype<LUA_Vector2>("Vector2",
@@ -653,13 +781,23 @@ void GameLua(sol::state& LUA) {
 	LUA["Resources"] = &LUA_Resources_Instance;
 	LUA.new_usertype<LUA_Resources>(
 		"LUA_Resources",
-		"LoadScript", &LUA_Resources::LoadScript
+		"LoadScript", &LUA_Resources::LoadScript,
+		"SaveGameObject", &LUA_Resources::SaveGameObject_,
+		"CloneGameObject", &LUA_Resources::CloneGameObject_
 	);
 
 	LUA["Game"] = &LUA_Game_Instance;
 	LUA.new_usertype<LUA_Game>(
 		"LUA_Game",
-		"Update", &LUA_Game::Update
+		"Update", &LUA_Game::Update,
+		"GameObjectLoading", &LUA_Game::GameObjectLoading
+	);
+
+	LUA["GameObject"] = &LUA_GameObject_Instance;
+	LUA.new_usertype<LUA_GameObject>(
+		"LUA_GameObject",
+		"Create", &LUA_GameObject::Create,
+		"SetPosition", &LUA_GameObject::SetPosition
 	);
 
 	LUA["Controls"] = &LUA_Controls_Instance;
@@ -704,6 +842,7 @@ void GameLua(sol::state& LUA) {
 	LUA.set_function("DeltaTime", &LUA_DeltaTime);
 	LUA.set_function("PrintFast", &LUA_PrintFast);
 	LUA.set_function("MousePosition", &LUA_MousePosition);
+	LUA.set_function("TableToString", &LUA_TableToString);
 	LUA.set_function("MouseLocalPosition", &LUA_MouseLocalPosition);
 	LUA.set_function("MouseWorldPosition", &LUA_MouseWorldPosition);
 	LUA.set_function("ScreenToWorldPosition", &LUA_ScreenToWorldPosition);
@@ -739,18 +878,66 @@ void InstallLua() {
 	Print("LUA", "Lua 5.4.2");
 }
 
+const std::string WhatTheFuckLuaError = "There was an error getting Lua error, please report it to the author Lithium Universe";
 void RunScript(const std::string& ScriptPath) {
-	std::string Script = ReadFile(ComplexToFullPath(ScriptPath));
+	std::string Path = ComplexToFullPath(ScriptPath);
+	std::string Script = ReadFile(Path);
 	std::string ModID = GetBaseFromPath(ScriptPath);
 
 	auto it = ModsLUA.find(ModID);
 	if (it != ModsLUA.end()) {
 		sol::state& LUA = *(it->second);
-		sol::protected_function_result Result = LUA.script(Script, &sol::script_pass_on_error);
+		sol::protected_function_result Result = LUA.safe_script(Script, &sol::script_pass_on_error);
 		if (!Result.valid()) {
 			sol::error ErrorLua = Result;
-			Error("LUA", "Error in script $$Y" + ScriptPath + "$$_!");
-			Error("LUA", ErrorLua.what());
+			std::string What = std::string(ErrorLua.what());
+			Error(ModID, "$$RError in script $$_" + ScriptPath + "$$R!");
+
+			bool SingleLineError = StringStartWith(What,"[string");
+
+			std::regex Pattern(R"(:(\d+):)");
+			std::smatch Matches;
+
+			std::string ErrorLine_str = "-1";
+
+			if (std::regex_search(What, Matches, Pattern)) {
+				ErrorLine_str = Matches[1].str();
+			}
+
+			if (ErrorLine_str == "-1") {
+				PrintImportant("LUA", WhatTheFuckLuaError + " (not found error line)");
+				PrintImportant(ModID, ErrorLua.what());
+				return;
+			}
+
+			int ErrorLine = -1;
+			try {
+				ErrorLine = std::stoi(ErrorLine_str);
+			}
+			catch (...) {
+				PrintImportant("LUA", WhatTheFuckLuaError + " (can't convert \"" + ErrorLine_str + "\" to error line)");
+				PrintImportant(ModID, ErrorLua.what());
+				return;
+			}
+			std::string ErrorCode = GetLineFromString(Script, ErrorLine);
+			if (SingleLineError) {
+				Pattern = std::regex(R"(:\d+:\s*(.*))");
+				if (std::regex_search(What, Matches, Pattern)) {
+					What = Matches[1].str();
+				}
+				else {
+					PrintImportant("LUA", WhatTheFuckLuaError + " (not found what after error line)");
+					PrintImportant(ModID, ErrorLua.what());
+					return;
+				}
+			}
+			else {
+				What = GetLineFromString(What, 1);
+			}
+			LuaErrorCustom(ModID, ErrorCode, ErrorLine, What);
+			if (DeveloperVersion) {
+				PrintImportant(ModID, ErrorLua.what());
+			}
 		}
 	}
 	else {

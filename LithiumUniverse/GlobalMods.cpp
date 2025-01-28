@@ -4,6 +4,7 @@
 #include "nlohmann/json.hpp";
 using json = nlohmann::json;
 
+#include "GlobalResources.h";
 #include "ExplorerActions.h";
 #include "GlobalLua.h";
 #include "GameData.h";
@@ -95,8 +96,13 @@ void StopMods() {
 }
 
 void RunMods() {
+	ClearModsResources();
 	for (GameMod GM : Mods) {
 		LoadLua(GM);
 		RunScript(GM.MainScript);
+	}
+
+	for (auto F : LUA_Events_GameObjectLoading) {
+		F();
 	}
 }

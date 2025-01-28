@@ -75,6 +75,54 @@ std::string RemoveStringPart(const std::string& Target, const int Length) {
 	return Result;
 }
 
+/* Повторить строку несколько раз */
+std::string RepeatString(const std::string& Target, const int CoutRepeat) {
+	if (CoutRepeat <= 0) { return ""; }
+
+	std::string Result;
+	Result.reserve(Target.size() * CoutRepeat);
+
+	for (int i = 0; i < CoutRepeat; i++) {
+		Result += Target;
+	}
+
+	return Result;
+}
+
+/* Строка начинается с StartWith? */
+bool StringStartWith(const std::string& Target, const std::string StartWith) {
+	return Target.find(StartWith) == 0;
+}
+
+/* Узнать кол-во линий в строке */
+int GetLinesCountFromString(const std::string& Target) {
+	int lines = std::count(Target.begin(), Target.end(), '\n');
+	if (!Target.empty() && Target.back() != '\n') {
+		lines++;
+	}
+	return lines;
+}
+
+/* Получить линию строки из строки */
+std::string GetLineFromString(const std::string& Target, const int SelectedLine) {
+	if (SelectedLine <= 0) {
+		return "";
+	}
+
+	std::istringstream Stream(Target);
+	std::string Line;
+	int CurrentLine = 0;
+
+	while (std::getline(Stream, Line)) {
+		CurrentLine++;
+		if (CurrentLine == SelectedLine) {
+			return Line;
+		}
+	}
+
+	return "";
+}
+
 /* Получить последний символ строки */
 char GetLastSymbol(const std::string& Target) {
 	if (Target.empty()) {
