@@ -74,7 +74,7 @@ void CreateTestObject(int type) {
 		SetGameObjectTexture(box, GetResource("Base", "Textures/Circle.png").ID);
 		break;
 	case 7:
-		MakeGameObjectText(box, U"0123456789 9876543210");
+		MakeGameObjectText(box, "0123456789 9876543210");
 		break;
 	default:
 		SetGameObjectStatic(box, true);
@@ -185,7 +185,9 @@ void CreateScene(Scenes Scen) {
 /* Обновить физику */
 std::vector<GameObject>& UpdatePhysic() {
 	float step = GameInFocus ? GameDeltaTime : 0;
-	b2World_Step(World, step, 4);
+	if (step > 0) {
+		b2World_Step(World, step, 4);
+	}
 	for (GameObject& OBJ : Scene) {
 		if (!OBJ.Deleted && OBJ.Active) {
 			switch (OBJ.Type)

@@ -271,7 +271,7 @@ private:
 			auto StartTime = std::chrono::high_resolution_clock::now();
 
 			if (FPSLimit) {
-				FrameStart = std::chrono::high_resolution_clock::now();
+				FrameStart = StartTime;
 			}
 
 			Controls();
@@ -286,7 +286,7 @@ private:
 			CalculateFPS();
 
 			auto EndTime = std::chrono::high_resolution_clock::now();
-			MS = std::chrono::duration_cast<std::chrono::milliseconds>(EndTime - StartTime).count();
+			MS = std::chrono::duration_cast<std::chrono::microseconds>(EndTime - StartTime).count() / 1000.0;
 		}
 	}
 
@@ -318,7 +318,7 @@ public:
 	}
 
 	std::string GetGameTitle() {
-		return "LithiumUniverse (" + Version + ") MS: " + RemoveStringPart(ToStringNumber(MS), 4) + " FPS: " + RemoveStringPart(ToStringNumber(FPS),6) + " SP: " + RemoveStringPart(ToStringNumber(GetSimulationSpeed()),3);
+		return "LithiumUniverse (" + Version + ") MS[" + RemoveStringPart(ToStringNumber(MS), 4) + "] FPS[" + RemoveStringPart(ToStringNumber(FPS),6) + "] SP[" + RemoveStringPart(ToStringNumber(GetSimulationSpeed()),3) + "]";
 	}
 
 	/* ==== Управление, другие функции ==== */

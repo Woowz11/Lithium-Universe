@@ -20,6 +20,7 @@ b2BodyId GetBody(const int i);
 GameObject& GetGameObject(const int i, const std::string message);
 bool CheckOutSceneIndex(const int i);
 
+int CreateGameObject(const std::string Name, const RO_Type ObjectType, bool Modded);
 int CreateGameObject(const std::string Name, const RO_Type ObjectType);
 int CloneGameObject(const int i);
 void DeleteGameObject(const int i, bool IgnoreError);
@@ -28,7 +29,7 @@ void DeleteGameObject(const int i);
 void SetGameObjectDontDelete(const int i, const bool b);
 void SetGameObjectResize(const int i, const bool b);
 void SetGameObjectLayer(const int i, const float l);
-void SetGameObjectText(const int i, const std::u32string t);
+void SetGameObjectText(const int i, const std::string t);
 void SetGameObjectFont(const int i, const int f);
 void SetGameObjectShader(const int i, const int s);
 void SetGameObjectTexture(const int i, const int t);

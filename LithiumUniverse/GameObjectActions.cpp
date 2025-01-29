@@ -91,7 +91,8 @@ void RefreshGameObjectCollider__(GameObject& OBJ) {
 	}
 }
 
-void CloneGameObjectValuesToOther__(GameObject& A, GameObject& B) {
+/* Клонировать данные одного игрового объекта в другой (private) */
+void CloneGameObjectValuesFromOther__(GameObject& A, GameObject& B) {
 	if (!A.Deleted && !B.Deleted) {
 		A.Name = B.Name;
 		A.Type = B.Type;
@@ -155,7 +156,7 @@ b2BodyId GetBody(const int i) {
 }
 
 bool CheckOutSceneIndex(const int i) {
-	return !(i >= 0 && i <= Scene.size());
+	return !(i >= 0 && i < Scene.size());
 }
 
 GameObject& GetGameObject(const int i, const std::string message) {
@@ -281,13 +282,13 @@ void SetGameObjectLayer(const int i, const float l) {
 }
 
 /* Установить текст объекту */
-void SetGameObjectText(const int i, const std::u32string t) {
-	GameObject& OBJ = GetGameObject(i, "SetGameObjectText(" + std::to_string(i) + "," + u32stringToString(t) + ");");
+void SetGameObjectText(const int i, const std::string t) {
+	GameObject& OBJ = GetGameObject(i, "SetGameObjectText(" + std::to_string(i) + ",\"" + t + "\");");
 	if (!OBJ.Deleted) {
 		OBJ.Text = t;
 	}
 	else {
-		GameObjectDeleted__(OBJ, "SetGameObjectText(" + std::to_string(i) + "," + u32stringToString(t) + ");");
+		GameObjectDeleted__(OBJ, "SetGameObjectText(" + std::to_string(i) + ",\"" + t + "\");");
 	}
 }
 
@@ -504,17 +505,21 @@ int CloneGameObject(const int i) {
 		return -1;
 	}
 	else {
-		GameObject& OBJ = GetGameObject(i, "CloneGameObject(" + std::to_string(i) + ");");
-		int ClonedObject = CreateGameObject(OBJ.Name, OBJ.Type);
-		CloneGameObjectValuesToOther__(GetGameObject(ClonedObject, "CloneGameObject(" + std::to_string(i) + "); #CLONED#"), OBJ);
+		GameObject OBJ = GetGameObject(i, "CloneGameObject(" + std::to_string(i) + ");");
+		int ClonedObject = CreateGameObject(OBJ.Name, OBJ.Type, OBJ.CreatedFromMods);
+		GameObject OBJ1 = GetGameObject(ClonedObject, "CloneGameObject(" + std::to_string(i) + "); #CLONED#");
+		CloneGameObjectValuesFromOther__(OBJ1, OBJ);
 		return ClonedObject;
 	}
 }
 
 /* Создать объект */
-int CreateGameObject(const std::string Name = "[New GameObject]", const RO_Type ObjectType = RO_Default) {
+int CreateGameObject(const std::string Name = "[New GameObject]", const RO_Type ObjectType = RO_Default, bool Modded = false) {
 	int i = Scene.size();
+	if (i < 0) { Error("GAMEOBJ", "Invalid Scene [" + std::to_string(i) + "] size! CreateGameObject(\"" + Name + "\"," + std::to_string(ObjectType) + ");"); }
 	GameObject OBJ = GameObject(Name, i);
+	if (OBJ.GetID() < 0) { Error("GAMEOBJ", "Invalid GameObject ID [" + std::to_string(OBJ.GetID()) + "]! CreateGameObject(\"" + Name + "\"," + std::to_string(ObjectType) + ");"); }
+	OBJ.CreatedFromMods = Modded;
 	Scene.push_back(OBJ);
 
 	SetGameObjectShader (OBJ.GetID(), GetResource("Base", "Shaders/Default.lu_shader"        ).ID);
@@ -535,4 +540,7 @@ int CreateGameObject(const std::string Name = "[New GameObject]", const RO_Type 
 			break;
 	}
 	return OBJ.GetID();
+}
+int CreateGameObject(const std::string Name = "[New GameObject]", const RO_Type ObjectType = RO_Default) {
+	return CreateGameObject(Name, ObjectType, false);
 }

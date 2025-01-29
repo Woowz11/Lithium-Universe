@@ -57,8 +57,8 @@ void MakeGameObjectButton(int i, std::function<void()> WhenLeftClick, std::funct
 }
 
 /* Превратить объект в текст */
-void MakeGameObjectText(int i, std::u32string Text) {
-	GameObject& OBJ = GetGameObject(i, "MakeGameObjectText(" + std::to_string(i) + ",\"" + u32stringToString(Text) + "\");");
+void MakeGameObjectText(int i, std::string Text) {
+	GameObject& OBJ = GetGameObject(i, "MakeGameObjectText(" + std::to_string(i) + ",\"" + Text + "\");");
 	OBJ.RenderType = RT_Text;
 	SetGameObjectText(i, Text);
 	SetGameObjectShader(i, GetResource("Base", "Shaders/Text.lu_shader").ID);

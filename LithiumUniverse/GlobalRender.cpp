@@ -159,7 +159,7 @@ void RenderLine(const GameObject& OBJ) {
 
 /* Рендер текста */
 void RenderText(const GameObject& OBJ) {
-    std::u32string Text = OBJ.Text;
+    std::string Text = OBJ.Text;
     Font F = Fonts[GetResourceAssetID(OBJ.FontRes)];
 
     CSS.setInt("ID", OBJ.GetID());
@@ -190,8 +190,8 @@ void RenderText(const GameObject& OBJ) {
 
     glBindVertexArray(VAO);
 
-    for (char32_t C : Text) {
-        uint32_t CharID = C;
+    for (char C : Text) {
+        int CharID = C;
         auto it = F.Chars.find(CharID);
         if (it == F.Chars.end()) {
             CharID = -1;

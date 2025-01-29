@@ -23,7 +23,8 @@ enum LUA_OBJ_Type {
 	L_String  = 4,
 	L_Table   = 5,
 	L_Func    = 6,
-	L_Vec2    = 7
+	L_Vec2    = 7,
+	L_Color   = 8
 };
 
 class LUA_Class_KeyPressEvent {
@@ -67,6 +68,21 @@ void UnloadLua();
 void InstallLua();
 
 /* === Классы ==== */
+
+class LUA_Color {
+public:
+	double r, g, b, a;
+	LUA_Color(double r, double g, double b, double a) : r(r), g(g), b(b), a(a) {}
+
+	std::string ToString() const {
+		if (a == 1) {
+			return "Color(" + ToStringNumber(r) + "," + ToStringNumber(g) + "," + ToStringNumber(b) + ")";
+		}
+		else {
+			return "Color(" + ToStringNumber(r) + "," + ToStringNumber(g) + "," + ToStringNumber(b) + "," + ToStringNumber(a) + ")";
+		}
+	}
+};
 
 class LUA_Vector2 {
 public:

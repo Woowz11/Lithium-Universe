@@ -41,11 +41,12 @@ private:
 public:
 
 	/* ==== Основные настройки ==== */
-	std::string Name;          /* Название объекта  */
-	RO_Type Type = RO_Default; /* Тип объекта       */
-	bool Active = true;        /* Объект активен?   */
-	bool Deleted = false;	   /* Объект удалённый? */
-	bool DontDelete = false;   /* Не удалять объект */
+	std::string Name;             /* Название объекта     */
+	RO_Type Type = RO_Default;    /* Тип объекта          */
+	bool Active = true;           /* Объект активен?      */
+	bool Deleted = false;	      /* Объект удалённый?    */
+	bool DontDelete = false;      /* Не удалять объект    */
+	bool CreatedFromMods = false; /* Объект создан модом? */
 
 	/* ==== Настройки рендера ==== */
 	int BaseTextureRes           = 0;                      /* Базовая текстура                */
@@ -64,7 +65,7 @@ public:
 	/* ==== Настройки интерфейса ==== */
 	bool Resize  = false;                  /* Менять размер вместе с экраном? */
 	int ButtonID = -1;                     /* Является ли компонент кнопкой?  */
-	std::u32string Text = U"";                 /* Текст (если этот элемент текст) */
+	std::string Text = "";                 /* Текст (если этот элемент текст) */
 
 	/* ==== Настройки физики ==== */
 	int BodyID             = -1;                     /* Айди b2BodyId                   */
@@ -86,11 +87,11 @@ public:
 		LinePositionVisual = glm::vec4(0, 0, 0, 0);
 		SizeVisual = glm::vec2(0, 0);
 		Color = glm::vec4(0, 0, 0, 0);
-		Text = U"";
+		Text = "";
 	}
 
 	std::string ToString() {
-		return "GameObject(" + std::to_string(GetID()) + "," + Name + "," + std::to_string(Type) + "," + ToStringBool(Active) + "," + ToStringBool(Deleted) + ");";
+		return "GameObject(" + std::to_string(GetID()) + ",\"" + Name + "\"," + std::to_string(Type) + "," + ToStringBool(Active) + "," + ToStringBool(CreatedFromMods) + "," + ToStringBool(Deleted) + ");";
 	}
 
 	/* Установить ширину линии */

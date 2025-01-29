@@ -99,6 +99,11 @@ LUA_Vector2 ObjectToVector2(const sol::object& Obj) {
 	return Obj.as<LUA_Vector2>();
 }
 
+/* Конвертировать объект в Color */
+LUA_Color ObjectToColor(const sol::object& Obj) {
+	return Obj.as<LUA_Color>();
+}
+
 /* Конвертировать объект в функцию */
 sol::function ObjectToFunc(const sol::object& Obj) {
 	return Obj.as<sol::function>();
@@ -145,6 +150,9 @@ std::string ObjectToString(const sol::object& Obj, bool SaveQuotes = false, int 
 	case L_Vec2:
 		return Obj.as<LUA_Vector2>().ToString();
 		break;
+	case L_Color:
+		return Obj.as<LUA_Color>().ToString();
+		break;
 	default:
 		return "?";
 		break;
@@ -178,6 +186,9 @@ std::string LuaObjTypeToString(const LUA_OBJ_Type T) {
 		break;
 	case L_Vec2:
 		return "v2";
+		break;
+	case L_Color:
+		return "c";
 		break;
 	default:
 		return "?";
@@ -217,6 +228,9 @@ LUA_OBJ_Type TypeOf(const sol::object& Obj) {
 	case sol::type::userdata: {
 		if (Obj.is<LUA_Vector2>()) {
 			return L_Vec2;
+		}
+		if (Obj.is<LUA_Color>()) {
+			return L_Color;
 		}
 		return L_Unknown;
 		break;
@@ -310,6 +324,31 @@ bool LuaCheckType2(const sol::object& Obj, const LUA_OBJ_Type Type1, const LUA_O
 	}
 	else {
 		LuaError("$$RVariable [$$_" + ObjectToString(Obj, true) + " $$R($$_" + LUA_TypeOf(Obj) + "$$R)] must be of type [$$_" + LuaObjTypeToString(Type1) + " || " + LuaObjTypeToString(Type2) + "$$R]! $$_" + LuaComplexFunction(Function, Params), L);
+		return false;
+	}
+}
+
+/* Проверить, подходит ли игровой объект? */
+bool LuaCheckGameObject(const sol::object& Obj, const std::string Function, const std::vector<sol::object>& Params, lua_State* L) {
+	LUA_OBJ_Type T = TypeOf(Obj);
+	if (T == L_Int) {
+		int ObjID = ObjectToInt(Obj);
+		if (CheckOutSceneIndex(ObjID)) {
+			LuaError("$$RGameObject [$$_" + std::to_string(ObjID) + "$$R] is outside of ID's Scene!" + LuaComplexFunction(Function, Params), L);
+			return false;
+		}
+		else {
+			if (GetGameObject(ObjID, "LuaCheckGameObject(?,\"" + Function + "\",?,?);").CreatedFromMods) {
+				return true;
+			}
+			else {
+				LuaError("$$RGameObject[$$_" + std::to_string(ObjID) + "$$R] can't be obtained because it's not a moddable GameObject!" + LuaComplexFunction(Function, Params), L);
+				return false;
+			}
+		}
+	}
+	else {
+		LuaError("$$RVariable [$$_" + ObjectToString(Obj, true) + " $$R($$_" + LUA_TypeOf(Obj) + "$$R)] must be of type [$$_" + LuaObjTypeToString(L_Int) + "$$R]! $$_" + LuaComplexFunction(Function, Params), L);
 		return false;
 	}
 }
@@ -687,17 +726,28 @@ public:
 				Type_ = ObjectToInt(Type);
 			}
 		}
-		int OBJ = CreateGameObject(Name_, RO_Type(Type_));
+		int OBJ = CreateGameObject(Name_, RO_Type(Type_), true);
 		return OBJ;
 	}
 
 	/* Изменить позицию игровому объекту */
 	void SetPosition(const sol::object& ID, const sol::object& NewPosition, sol::this_state s) {
 		lua_State* L = s;
-		if (LuaCheckType(ID, L_Int, "GameObject:SetPosition", { ID, NewPosition }, L)) {
+		if (LuaCheckGameObject(ID, "GameObject:SetPosition", { ID, NewPosition }, L)) {
 			if (LuaCheckType(NewPosition, L_Vec2, "GameObject:SetPosition", { ID, NewPosition }, L)) {
 				LUA_Vector2 V2 = ObjectToVector2(NewPosition);
 				SetGameObjectPosition(ObjectToInt(ID), glm::vec2(V2.x, V2.y));
+			}
+		}
+	}
+
+	/* Изменить цвет игровому объекту */
+	void SetColor(const sol::object& ID, const sol::object& NewColor, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetColor", { ID, NewColor }, L)) {
+			if (LuaCheckType(NewColor, L_Color, "GameObject:SetColor", { ID, NewColor }, L)) {
+				LUA_Color C = ObjectToColor(NewColor);
+				SetGameObjectColor(ObjectToInt(ID), glm::vec4(C.r, C.g, C.b, C.a));
 			}
 		}
 	}
@@ -777,6 +827,70 @@ void GameLua(sol::state& LUA) {
 		return LUA_Vector2(0, 0);
 	});
 
+	LUA.new_usertype<LUA_Color>("Color",
+		"R", &LUA_Color::r,
+		"G", &LUA_Color::g,
+		"B", &LUA_Color::b,
+		"A", &LUA_Color::a,
+		"ToString", &LUA_Color::ToString,
+		sol::meta_function::concatenation, sol::overload(
+			[](const char* A, LUA_Color& B) { return A + B.ToString(); },
+			[](LUA_Color& B, const char* A) { return B.ToString() + A; }
+		)
+	);
+	LUA.set_function("Color", [](sol::object r, sol::object g, sol::object b, sol::object a, sol::this_state s) {
+		lua_State* L = s;
+		double R = 0;
+		double G = 0;
+		double B = 0;
+		double A = 1;
+		if (r != sol::nil) {
+			if (LuaCheckNumber(r, "Color", { r,g,b,a }, L)) {
+				double r_ = ObjectToDouble(r);
+				if (r_ < 0 || r_ > 1) {
+					LuaError("$$rRed$$R in color should not go beyond $$_0$$R and $$_1$$R!$$_ Color(" + ObjectToString(r) + "," + ObjectToString(g) + "," + ObjectToString(b) + "," + ObjectToString(a) + ");", L);
+				}
+				else {
+					R = r_;
+				}
+			}
+		}
+		if (g != sol::nil) {
+			if (LuaCheckNumber(g, "Color", { r,g,b,a }, L)) {
+				double g_ = ObjectToDouble(g);
+				if (g_ < 0 || g_ > 1) {
+					LuaError("$$GGreen$$R in color should not go beyond $$_0$$R and $$_1$$R!$$_ Color(" + ObjectToString(r) + "," + ObjectToString(g) + "," + ObjectToString(b) + "," + ObjectToString(a) + ");", L);
+				}
+				else {
+					G = g_;
+				}
+			}
+		}
+		if (b != sol::nil) {
+			if (LuaCheckNumber(b, "Color", { r,g,b,a }, L)) {
+				double b_ = ObjectToDouble(b);
+				if (b_ < 0 || b_ > 1) {
+					LuaError("$$BBlue$$R in color should not go beyond $$_0$$R and $$_1$$R!$$_ Color(" + ObjectToString(r) + "," + ObjectToString(g) + "," + ObjectToString(b) + "," + ObjectToString(a) + ");", L);
+				}
+				else {
+					B = b_;
+				}
+			}
+		}
+		if (a != sol::nil) {
+			if (LuaCheckNumber(a, "Color", { r,g,b,a }, L)) {
+				double a_ = ObjectToDouble(a);
+				if (a_ < 0 || a_ > 1) {
+					LuaError("$$WAlpha$$R in color should not go beyond $$_0$$R and $$_1$$R!$$_ Color(" + ObjectToString(r) + "," + ObjectToString(g) + "," + ObjectToString(b) + "," + ObjectToString(a) + ");", L);
+				}
+				else {
+					A = a_;
+				}
+			}
+		}
+		return LUA_Color(R, G, B, A);
+	});
+
 	/* Функции*/
 	LUA["Resources"] = &LUA_Resources_Instance;
 	LUA.new_usertype<LUA_Resources>(
@@ -797,6 +911,7 @@ void GameLua(sol::state& LUA) {
 	LUA.new_usertype<LUA_GameObject>(
 		"LUA_GameObject",
 		"Create", &LUA_GameObject::Create,
+		"SetColor", &LUA_GameObject::SetColor,
 		"SetPosition", &LUA_GameObject::SetPosition
 	);
 
