@@ -57,6 +57,11 @@ GameResource GetResource(const std::string Base, const std::string Path) {
 	return GetResourceDebug(GamePath + "/" + (Base == BaseID ? "Resources" : "Mods/" + Base) + "/" + Path);
 }
 
+/* Получить ресурс по пути (соклащённому) */
+GameResource GetResource(const std::string Path) {
+	return GetResourceDebug(ComplexToFullPath(Path));
+}
+
 /* Получить айди ресурса */
 int GetResourceID(const int ID, const int IfNotFound) {
 #ifdef NDEBUG
@@ -79,6 +84,9 @@ int GetResourceID(const int ID, const int IfNotFound) {
 }
 int GetResourceID(const int ID) {
 	return GetResourceID(ID, GetResourceDebug(ErrorTexturePath).ID);
+}
+int GetResourceID(const std::string Path, const std::string IfNotFound) {
+	return GetResourceID(GetResource(Path).ID, GetResource(IfNotFound).ID);
 }
 
 /* Получить айди ассета ресурса */
@@ -346,6 +354,7 @@ void UpdateResources() {
 	UpdateR_Fonts();
 	UpdateR_Sounds();
 	FinishLoadingResources();
+	UpdateGameObjectsFromUpdateResources();
 	Print("RES", "Resources updated!");
 }
 

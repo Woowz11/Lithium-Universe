@@ -59,6 +59,7 @@ public:
         }
 
         glUseProgram(ID);
+        UpdateUniforms();
     }
 
     void DeleteShader() {
@@ -67,11 +68,67 @@ public:
         }
     }
 
+    GLint UNIFORM_POSITION;
+    GLint UNIFORM_ID;
+    GLint UNIFORM_ORIENTATION;
+    GLint UNIFORM_SIZE;
+    GLint UNIFORM_LAYER;
+    GLint UNIFORM_STATIC;
+    GLint UNIFORM_PHYSICAL;
+    GLint UNIFORM_INTERFACE;
+    GLint UNIFORM_RESIZE;
+
+    GLint UNIFORM_TEXTURESIZE;
+    GLint UNIFORM_SCREENSTARTSIZE;
+    GLint UNIFORM_SCREENSIZE;
+    GLint UNIFORM_MOUSEPOSITION;
+    GLint UNIFORM_CAMERAPOSITION;
+    GLint UNIFORM_CAMERAORIENTATION;
+    GLint UNIFORM_CAMERAZOOM;
+    GLint UNIFORM_RANDOM;
+    GLint UNIFORM_LOCALRANDOM;
+    GLint UNIFORM_TIME;
+    GLint UNIFORM_COLOR;
+    GLint UNIFORM_DEBUGRENDER;
+
+    void UpdateUniforms() {
+        UNIFORM_POSITION    = glGetUniformLocation(ID, "Position");
+        UNIFORM_ID          = glGetUniformLocation(ID, "ID");
+        UNIFORM_ORIENTATION = glGetUniformLocation(ID, "Orientation");
+        UNIFORM_SIZE        = glGetUniformLocation(ID, "Size");
+        UNIFORM_LAYER       = glGetUniformLocation(ID, "Layer");
+        UNIFORM_STATIC      = glGetUniformLocation(ID, "Static");
+        UNIFORM_PHYSICAL    = glGetUniformLocation(ID, "Physical");
+        UNIFORM_INTERFACE   = glGetUniformLocation(ID, "Interface");
+        UNIFORM_RESIZE      = glGetUniformLocation(ID, "Resize");
+
+        UNIFORM_TEXTURESIZE       = glGetUniformLocation(ID, "TextureSize");
+        UNIFORM_SCREENSTARTSIZE   = glGetUniformLocation(ID, "ScreenStartSize");
+        UNIFORM_SCREENSIZE        = glGetUniformLocation(ID, "ScreenSize");
+        UNIFORM_MOUSEPOSITION     = glGetUniformLocation(ID, "MousePosition");
+        UNIFORM_CAMERAPOSITION    = glGetUniformLocation(ID, "CameraPosition");
+        UNIFORM_CAMERAORIENTATION = glGetUniformLocation(ID, "CameraOrientation");
+        UNIFORM_CAMERAZOOM        = glGetUniformLocation(ID, "CameraZoom");
+        UNIFORM_RANDOM            = glGetUniformLocation(ID, "Random");
+        UNIFORM_LOCALRANDOM       = glGetUniformLocation(ID, "LocalRandom");
+        UNIFORM_TIME              = glGetUniformLocation(ID, "Time");
+        UNIFORM_COLOR             = glGetUniformLocation(ID, "Color");
+        UNIFORM_DEBUGRENDER       = glGetUniformLocation(ID, "DebugRender");
+    }
+
+    void setBool(const GLint& id, bool value) const
+    {
+        glUniform1i(id, (int)value);
+    }
     void setBool(const std::string& name, bool value) const
     {
         glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
     }
 
+    void setInt(const GLint& id, int value) const
+    {
+        glUniform1i(id, value);
+    }
     void setInt(const std::string& name, int value) const
     {
         glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
@@ -81,47 +138,36 @@ public:
     {
         glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
     }
+    void setFloat(const GLint& id, float value) const
+    {
+        glUniform1f(id, value);
+    }
 
+    void setVec2(const GLint& id, const glm::vec2& value) const
+    {
+        glUniform2fv(id, 1, &value[0]);
+    }
     void setVec2(const std::string& name, const glm::vec2& value) const
     {
         glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
-    void setVec2(const std::string& name, float x, float y) const
-    {
-        glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);
-    }
 
+    void setVec3(const GLint& id, const glm::vec3& value) const
+    {
+        glUniform3fv(id, 1, &value[0]);
+    }
     void setVec3(const std::string& name, const glm::vec3& value) const
     {
         glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
-    void setVec3(const std::string& name, float x, float y, float z) const
-    {
-        glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
-    }
 
+    void setVec4(const GLint& id, const glm::vec4& value) const
+    {
+        glUniform4fv(id, 1, &value[0]);
+    }
     void setVec4(const std::string& name, const glm::vec4& value) const
     {
         glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
-    }
-    void setVec4(const std::string& name, float x, float y, float z, float w) const
-    {
-        glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w);
-    }
-
-    void setMat2(const std::string& name, const glm::mat2& mat) const
-    {
-        glUniformMatrix2fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-    }
-
-    void setMat3(const std::string& name, const glm::mat3& mat) const
-    {
-        glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-    }
-
-    void setMat4(const std::string& name, const glm::mat4& mat) const
-    {
-        glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
 
 private:

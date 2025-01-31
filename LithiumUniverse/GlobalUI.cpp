@@ -162,6 +162,9 @@ void CreateUI(Scenes Scen) {
 			ui = CreateGameObject("CameraObject", RO_Default);
 			SetGameObjectActive(ui, false);
 
+			//ui = CreateGameObject("text", RO_Default);
+			//MakeGameObjectText(ui, "0123456789 !@#$%^&*()");
+				
 			/*ui = CreateGameObject("fps", RO_UI);
 			MakeGameObjectText(ui, U"");
 			SetGameObjectPosition(ui, glm::vec2(-0.95f,0.95f));*/

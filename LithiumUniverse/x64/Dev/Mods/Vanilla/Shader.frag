@@ -10,5 +10,6 @@ void main()
 {
     vec4 TextureColor = texture(Texture, UV) * Color;
     if(TextureColor.a == 0){ discard; }
+	TextureColor = vec4(1-TextureColor.r,1-TextureColor.g,1-TextureColor.b,TextureColor.a);
     PixelColor = TextureColor;
 }

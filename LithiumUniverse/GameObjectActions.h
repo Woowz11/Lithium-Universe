@@ -11,6 +11,8 @@
 extern std::vector<GameObject>  Scene;
 extern std::vector<b2BodyId> Bodies;
 
+void UpdateGameObjectsFromUpdateResources();
+
 glm::vec2 BVec2ToVec2(const b2Vec2 v);
 b2Vec2 Vec2ToBVec2(const glm::vec2 v);
 b2Rot Makeb2Rot(const float o);

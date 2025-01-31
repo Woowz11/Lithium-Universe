@@ -20,6 +20,7 @@ enum RO_Type {
 
 /* Тип рендера объекта */
 enum RenderTypeEnum {
+	RT_NotSelected = -1,
 	RT_Square  = 1, /* Квадрат */
 	RT_Polygon = 0, /* Полигон */
 	RT_Line    = 2, /* Линия   */
@@ -50,7 +51,9 @@ public:
 
 	/* ==== Настройки рендера ==== */
 	int BaseTextureRes           = 0;                      /* Базовая текстура                */
+	int BaseTextureID            = -1;
 	int BaseShaderRes            = 0;                      /* Базовый шейдер                  */
+	int BaseShaderID             = -1;
 	int FontRes                  = 0;                      /* Шрифт                           */
 	glm::vec2 PositionVisual     = glm::vec2(0, 0);        /* Позиция объекта                 */
 	glm::vec4 LinePositionVisual = glm::vec4(-1, 0, 1, 0); /* Позиция начала и конца линии    */

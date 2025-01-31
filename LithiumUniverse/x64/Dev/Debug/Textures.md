@@ -11,6 +11,10 @@
 |C|7  |Test      |**Base**:Textures/Default.png                                                                       |
 |C|8  |Test      |**Base**:Textures/Default2.png                                                                      |
 |C|9  |Test      |**Base**:Textures/Error/NotSelected.png                                                             |
+|C|10 |Test      |**Vanilla**:1.png                                                                                   |
+|C|11 |Test      |**Vanilla**:2.png                                                                                   |
+|C|12 |Test      |**Vanilla**:3.png                                                                                   |
+|C|13 |Test      |**Vanilla**:4.png                                                                                   |
 
 ## Texture files showing
 |ID |Texture                                                                                                          |
@@ -24,3 +28,7 @@
 |7  |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Resources/Textures/Default.png)                                  |
 |8  |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Resources/Textures/Default2.png)                                 |
 |9  |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Resources/Textures/Error/NotSelected.png)                        |
+|10 |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Vanilla/1.png)                                              |
+|11 |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Vanilla/2.png)                                              |
+|12 |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Vanilla/3.png)                                              |
+|13 |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Vanilla/4.png)                                              |

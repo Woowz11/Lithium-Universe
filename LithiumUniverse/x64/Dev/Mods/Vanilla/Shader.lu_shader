@@ -1,0 +1,4 @@
+{
+	"Vertex"   : "Vanilla:Shader.vert",
+	"Fragment" : "Vanilla:Shader.frag"
+}

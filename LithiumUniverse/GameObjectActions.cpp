@@ -99,7 +99,9 @@ void CloneGameObjectValuesFromOther__(GameObject& A, GameObject& B) {
 		A.Active = B.Active;
 		A.DontDelete = B.DontDelete;
 		A.BaseTextureRes = B.BaseTextureRes;
+		A.BaseTextureID = B.BaseTextureID;
 		A.BaseShaderRes = B.BaseShaderRes;
+		A.BaseShaderID = B.BaseShaderID;
 		A.FontRes = B.FontRes;
 		A.PositionVisual = B.PositionVisual;
 		A.LinePositionVisual = B.LinePositionVisual;
@@ -308,6 +310,7 @@ void SetGameObjectShader(const int i, const int s) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectShader(" + std::to_string(i) + "," + std::to_string(s) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.BaseShaderRes = s;
+		OBJ.BaseShaderID = GetResourceAssetID(s);
 	}
 	else {
 		GameObjectDeleted__(OBJ, "SetGameObjectShader(" + std::to_string(i) + "," + std::to_string(s) + ");");
@@ -319,6 +322,7 @@ void SetGameObjectTexture(const int i, const int t) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectTexture(" + std::to_string(i) + "," + std::to_string(t) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.BaseTextureRes = t;
+		OBJ.BaseTextureID = GetResourceAssetID(t);
 	}
 	else {
 		GameObjectDeleted__(OBJ, "SetGameObjectTexture(" + std::to_string(i) + "," + std::to_string(t) + ");");
@@ -470,6 +474,14 @@ void SetGameObjectStatic(const int i, const bool b) {
 	}
 	else {
 		GameObjectNotSuitableForPhysics__(OBJ, "SetGameObjectStatic(" + std::to_string(i) + "," + ToStringBool(b) + ");");
+	}
+}
+
+/* Обновить объекты после обновления ресурсов */
+void UpdateGameObjectsFromUpdateResources() {
+	for (GameObject& OBJ : Scene) {
+		OBJ.BaseTextureID = GetResourceAssetID(OBJ.BaseTextureRes);
+		OBJ.BaseShaderID = GetResourceAssetID(OBJ.BaseShaderRes);
 	}
 }
 

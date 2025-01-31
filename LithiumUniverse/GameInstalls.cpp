@@ -245,13 +245,23 @@ private:
 
 		double xpos, ypos;
 		glfwGetCursorPos(Window, &xpos, &ypos);
-		glm::vec2 Pos  = (glm::vec2(xpos / (double)CURRENT_WINDOW_WIDTH, ypos / (double)CURRENT_WINDOW_HEIGHT) * glm::vec2(1,-1) - glm::vec2(0.5f, -0.5f)) * glm::vec2(2,2);
-		glm::vec2 Pos2 = (glm::vec2(xpos / (double)START_WINDOW_WIDTH, ypos / (double)START_WINDOW_HEIGHT) * glm::vec2(1, -1) - glm::vec2(0.5f, -0.5f)) * glm::vec2(2, 2);
-		glm::vec2 Pos3 = Pos2 + glm::vec2(1 - (double)CURRENT_WINDOW_WIDTH / (double)START_WINDOW_WIDTH, -(1 - (double)CURRENT_WINDOW_HEIGHT / (double)START_WINDOW_HEIGHT));
-		MousePosition = Pos;
-		MousePositionNonResize = Pos3;
-		MouseWorldPosition = ScreenPositionToWorld(Pos3, false, true);
-		MousePositionScreen = glm::vec2(xpos, CURRENT_WINDOW_HEIGHT - ypos);
+
+
+		float normX = static_cast<float>(xpos) / CURRENT_WINDOW_WIDTH;
+		float normY = static_cast<float>(ypos) / CURRENT_WINDOW_HEIGHT;
+		MousePosition = glm::vec2(normX * 2.0f - 1.0f, -(normY * 2.0f - 1.0f));
+
+		float normX2 = static_cast<float>(xpos) / START_WINDOW_WIDTH;
+		float normY2 = static_cast<float>(ypos) / START_WINDOW_HEIGHT;
+		MousePositionNonResize = glm::vec2(
+			normX2 * 2.0f - 1.0f + (1.0f - static_cast<float>(CURRENT_WINDOW_WIDTH) / START_WINDOW_WIDTH),
+			-(normY2 * 2.0f - 1.0f + (1.0f - static_cast<float>(CURRENT_WINDOW_HEIGHT) / START_WINDOW_HEIGHT))
+		);
+
+		MouseWorldPosition = ScreenPositionToWorld(MousePositionNonResize, false, true);
+
+		MousePositionScreen = glm::vec2(static_cast<float>(xpos), CURRENT_WINDOW_HEIGHT - static_cast<float>(ypos));
+
 		MouseMove();
 	}
 

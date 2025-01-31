@@ -1,0 +1,4 @@
+{
+	"Vertex"   : "Base:Shaders/trash)/LineDefault.vert",
+	"Fragment" : "Base:Shaders/Default.frag"
+}

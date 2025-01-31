@@ -1,9 +1,10 @@
 #version 330 core
-layout (location = 0) in vec3 PointPosition;
+
+layout (location = 0) in vec2 PointPosition;
 layout (location = 1) in vec2 TextureUV;
 layout (location = 2) in int PointID;
 
-out vec2 TextureCoord;
+out vec2 UV;
 
 uniform vec2 Position;
 uniform float Orientation;
@@ -69,14 +70,12 @@ mat4 Translate(mat4 mat, vec2 vec){
 }
 
 mat4 Ortho(float L, float R, float B, float T){
-	float ZN = -1000;
-	float ZF = 1000;
-	mat4 Result;
-	Result[0] = vec4(2/(R-L),0,0,0);
-	Result[1] = vec4(0,2/(T-B),0,0);
-	Result[2] = vec4(0,0,-(1/(ZF-ZN)),0);
-	Result[3] = vec4(-((R+L)/(R-L)),-((T+B)/(T-B)),-(ZN/(ZF-ZN)),1);
-	return Result;
+	return mat4(
+         2/(R - L), 0        , 0          , 0,
+         0        , 2/(T - B), 0          , 0,
+         0        , 0        , -1.0/2000.0, 0,
+        -(R + L)/(R - L), -(T + B)/(T - B), -0.5, 1
+    );
 }
 
 const vec2 ScreenScale = vec2(10.0/3, 7.5/3);
@@ -86,27 +85,20 @@ void main()
 	float SW = Resize ? ScreenStartSize.x : ScreenSize.x;
 	float SH = Resize ? ScreenStartSize.y : ScreenSize.y;
 
-	float Z = Interface ? 1 : 1/CameraZoom;
+	float Z = Interface ? 1 : 1 / CameraZoom;
 
-	float PLeft  = -SW / 240;
-	float PRight =  SW / 240;
-	float PDown  = -SH / 240;
-	float PUp    =  SH / 240;
-	mat4 Projection = Ortho(PLeft/Z, PRight/Z, PDown/Z, PUp/Z);
+	mat4 Projection = Ortho(-SW / (240 * Z), SW / (240 * Z), -SH / (240 * Z), SH / (240 * Z));
 
-	vec2 ScreenDifference = vec2(ScreenSize.x/ScreenStartSize.x, ScreenSize.y/ScreenStartSize.y);
+	vec2 ScreenDifference = ScreenSize / ScreenStartSize;
+    vec2 ScaleFactor = Interface ? (Resize ? ScreenScale : ScreenScale * ScreenDifference) : vec2(1.0);
 
-	mat4 RPosition;
-	RPosition[0] = vec4(1,0,0,0);
-	RPosition[1] = vec4(0,1,0,0);
-	RPosition[2] = vec4(0,0,1,0);
-	RPosition[3] = vec4(0,0,0,1);
+	mat4 RPosition = mat4(1);
 	
 	if(!Interface){
 		RPosition = Rotate(RPosition, CameraOrientation);
 	}
 	
-	RPosition = Translate(RPosition, vec3(Position * (Interface ? (Resize ? ScreenScale : ScreenScale * ScreenDifference) : vec2(1,1)), (Layer + (float(ID)/100))/100));
+	RPosition = Translate(RPosition, vec3(Position * ScaleFactor, (Layer + (float(ID)/100))/100));
 	
 	if(!Interface){
 		RPosition = Translate(RPosition, CameraPosition);
@@ -116,6 +108,7 @@ void main()
 	
 	RPosition = Scale(RPosition, Size);
 	
-    gl_Position = Projection * RPosition * vec4(PointPosition, 1.0f);
-    TextureCoord = vec2(TextureUV.x, 1.0 - TextureUV.y);
+    gl_Position = Projection * RPosition * vec4(PointPosition, 1.0f, 1.0f);
+	
+    UV = vec2(TextureUV.x, 1.0 - TextureUV.y);
 }

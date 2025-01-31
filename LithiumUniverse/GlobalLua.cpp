@@ -32,6 +32,9 @@ const int ErrorInt             = -6212223;
 const LUA_Vector2 ErrorVector2 = LUA_Vector2(ErrorNumber, ErrorNumber);
 const std::string ErrorString  = "Error_GwevWET23g3#G_#1d";
 
+const std::string ErrorTexture = "Base:Textures/Error/NotFound.png";
+const std::string ErrorShader = "Base:Shaders/Error.lu_shader";
+
 /* ==== Ивенты ==== */
 
 /* Ивент вызывается каждый кадр */
@@ -476,6 +479,11 @@ LUA_Vector2 LUA_ScreenToWorldPosition(const sol::object& Value, sol::this_state 
 	return ErrorVector2;
 }
 
+/* Возвращает быстро случайное число от 0 до 1 */
+double LUA_RandomFast() {
+	return (static_cast<double>(rand()) / RAND_MAX);
+}
+
 class LUA_Game {
 public:
 	/* Ивент: каждый кадр выполнять */
@@ -751,6 +759,37 @@ public:
 			}
 		}
 	}
+
+	/* Изменить размер игровому объекту */
+	void SetSize(const sol::object& ID, const sol::object& NewSize, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetSize", { ID, NewSize }, L)) {
+			if (LuaCheckType(NewSize, L_Vec2, "GameObject:SetSize", { ID, NewSize }, L)) {
+				LUA_Vector2 V2 = ObjectToVector2(NewSize);
+				SetGameObjectSize(ObjectToInt(ID), glm::vec2(V2.x, V2.y));
+			}
+		}
+	}
+
+	/* Изменить текстуру игровому объекту */
+	void SetTexture(const sol::object& ID, const sol::object& Path, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetTexture", { ID, Path }, L)) {
+			if (LuaCheckType(Path, L_String, "GameObject:SetTexture", { ID, Path }, L)) {
+				SetGameObjectTexture(ObjectToInt(ID), GetResourceID(ObjectToString(Path), ErrorTexture));
+			}
+		}
+	}
+
+	/* Изменить шейдер игровому объекту */
+	void SetShader(const sol::object& ID, const sol::object& Path, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetShader", { ID, Path }, L)) {
+			if (LuaCheckType(Path, L_String, "GameObject:SetShader", { ID, Path }, L)) {
+				SetGameObjectShader(ObjectToInt(ID), GetResourceID(ObjectToString(Path), ErrorShader));
+			}
+		}
+	}
 };
 
 LUA_GameObject LUA_GameObject_Instance;
@@ -778,6 +817,9 @@ void GameLua(sol::state& LUA) {
 	LUA["ErrorDouble"] = sol::as_table(ErrorNumber);
 	LUA["ErrorString"] = sol::as_table(ErrorString);
 	LUA["ErrorVector2"] = sol::as_table(ErrorVector2);
+
+	LUA["ErrorTexture"] = sol::as_table(ErrorTexture);
+	LUA["ErrorShader"] = sol::as_table(ErrorShader);
 
 	LUA["GO_Default"] = sol::as_table(RO_Default);
 	LUA["GO_Physical"] = sol::as_table(RO_Phys);
@@ -911,7 +953,10 @@ void GameLua(sol::state& LUA) {
 	LUA.new_usertype<LUA_GameObject>(
 		"LUA_GameObject",
 		"Create", &LUA_GameObject::Create,
+		"SetSize", &LUA_GameObject::SetSize,
 		"SetColor", &LUA_GameObject::SetColor,
+		"SetShader", &LUA_GameObject::SetShader,
+		"SetTexture", &LUA_GameObject::SetTexture,
 		"SetPosition", &LUA_GameObject::SetPosition
 	);
 
@@ -956,6 +1001,7 @@ void GameLua(sol::state& LUA) {
 	LUA.set_function("ToString", &LUA_ToString);
 	LUA.set_function("DeltaTime", &LUA_DeltaTime);
 	LUA.set_function("PrintFast", &LUA_PrintFast);
+	LUA.set_function("RandomFast", &LUA_RandomFast);
 	LUA.set_function("MousePosition", &LUA_MousePosition);
 	LUA.set_function("TableToString", &LUA_TableToString);
 	LUA.set_function("MouseLocalPosition", &LUA_MouseLocalPosition);

@@ -1,4 +1,4 @@
 {
-	"Vertex"   : "Base:Shaders/Error.vert",
+	"Vertex"   : "Base:Shaders/Default.vert",
 	"Fragment" : "Base:Shaders/Error.frag"
 }
