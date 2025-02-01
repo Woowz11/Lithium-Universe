@@ -189,7 +189,9 @@ private:
 					Warn("GL " + _source + "/" + _type, msg);
 					break;
 				case GL_DEBUG_SEVERITY_NOTIFICATION:
-					PrintImportant("GL " + _source + "/" + _type, msg);
+					if (!(source == GL_DEBUG_SOURCE_API && type == GL_DEBUG_TYPE_OTHER)) {
+						PrintImportant("GL " + _source + "/" + _type, msg);
+					}
 					break;
 				default:
 					Print("GL " + _source + "/" + _type, msg);

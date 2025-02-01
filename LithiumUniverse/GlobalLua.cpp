@@ -438,12 +438,131 @@ double LUA_Sin(const sol::object& Value, sol::this_state s) {
 	return ErrorNumber;
 }
 
-/* Возвести корень */
+/* Возвести число в косинус */
+double LUA_Cos(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Cos", { Value }, L)) {
+		return cos(ObjectToDouble(Value));
+	}
+	return ErrorNumber;
+}
+
+/* Округлить число */
+double LUA_Round(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Round", { Value }, L)) {
+		return floor(ObjectToDouble(Value) + 0.5);
+	}
+	return ErrorNumber;
+}
+
+/* Округлить число (при 0.5 равно 0) */
+double LUA_RoundLower(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "RoundLower", { Value }, L)) {
+		return floor(ObjectToDouble(Value) + 0.49999);
+	}
+	return ErrorNumber;
+}
+
+/* Убрать дробную часть числа */
+double LUA_Floor(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Floor", { Value }, L)) {
+		return floor(ObjectToDouble(Value));
+	}
+	return ErrorNumber;
+}
+
+/* Если число дробное, убрать дробную часть, и +1 к числу */
+double LUA_Ceil(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Ceil", { Value }, L)) {
+		return ceil(ObjectToDouble(Value));
+	}
+	return ErrorNumber;
+}
+
+/* Убрать дробную часть числа */
+double LUA_Trunc(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Trunc", { Value }, L)) {
+		double D = ObjectToDouble(Value);
+		double N = (D < 0 ? -1 : 1);
+		return floor(abs(D)) * N;
+	}
+	return ErrorNumber;
+}
+
+/* Возвести в квадратный корень */
 double LUA_Sqrt(const sol::object& Value, sol::this_state s) {
 	lua_State* L = s;
 	if (LuaCheckNumber(Value, "Sqrt", { Value }, L)) {
 		double D = ObjectToDouble(Value);
-		return sqrt(abs(D)) * (D<0?-1:1);
+		return sqrt(abs(D)) * (D < 0 ? -1 : 1);
+	}
+	return ErrorNumber;
+}
+
+/* Возвести в кубический корень */
+double LUA_Cbrt(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Cbrt", { Value }, L)) {
+		return cbrt(ObjectToDouble(Value));
+	}
+	return ErrorNumber;
+}
+
+/* Получить знак числа */
+double LUA_Sgn(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Sgn", { Value }, L)) {
+		double D = ObjectToDouble(Value);
+		return (D==0?0:(D>0?1:-1));
+	}
+	return ErrorNumber;
+}
+
+/* Получить максимальное число */
+double LUA_Max(const sol::object& ValueA, const sol::object& ValueB, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(ValueA, "Max", { ValueA, ValueB }, L)) {
+		if (LuaCheckNumber(ValueB, "Max", { ValueA, ValueB }, L)) {
+			double A = ObjectToDouble(ValueA);
+			double B = ObjectToDouble(ValueB);
+			return A > B ? A : B;
+		}
+	}
+	return ErrorNumber;
+}
+
+/* Получить минимальное число */
+double LUA_Min(const sol::object& ValueA, const sol::object& ValueB, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(ValueA, "Min", { ValueA, ValueB }, L)) {
+		if (LuaCheckNumber(ValueB, "Min", { ValueA, ValueB }, L)) {
+			double A = ObjectToDouble(ValueA);
+			double B = ObjectToDouble(ValueB);
+			return A < B ? A : B;
+		}
+	}
+	return ErrorNumber;
+}
+
+/* Градус -> радиан */
+double LUA_Rad(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Rad", { Value }, L)) {
+		return ObjectToDouble(Value) * (PI/180);
+	}
+	return ErrorNumber;
+}
+
+/* Радиан -> градус */
+double LUA_Deg(const sol::object& Value, sol::this_state s) {
+	lua_State* L = s;
+	if (LuaCheckNumber(Value, "Deg", { Value }, L)) {
+		return ObjectToDouble(Value) * (180/PI);
 	}
 	return ErrorNumber;
 }
@@ -994,14 +1113,26 @@ void GameLua(sol::state& LUA) {
 	/* Локальные функции */
 	LUA.set_function("Abs", &LUA_Abs);
 	LUA.set_function("Sin", &LUA_Sin);
+	LUA.set_function("Cos", &LUA_Cos);
+	LUA.set_function("Rad", &LUA_Rad);
+	LUA.set_function("Deg", &LUA_Deg);
+	LUA.set_function("Max", &LUA_Max);
+	LUA.set_function("Min", &LUA_Min);
+	LUA.set_function("Sgn", &LUA_Sgn);
 	LUA.set_function("Sqrt", &LUA_Sqrt);
+	LUA.set_function("Cbrt", &LUA_Cbrt);
+	LUA.set_function("Ceil", &LUA_Ceil);
+	LUA.set_function("Floor", &LUA_Floor);
+	LUA.set_function("Round", &LUA_Round);
 	LUA.set_function("Print", &LUA_Print);
+	LUA.set_function("Trunc", &LUA_Trunc);
 	LUA.set_function("IfThen", &LUA_IfThen);
 	LUA.set_function("TypeOf", &LUA_TypeOf);
 	LUA.set_function("ToString", &LUA_ToString);
 	LUA.set_function("DeltaTime", &LUA_DeltaTime);
 	LUA.set_function("PrintFast", &LUA_PrintFast);
 	LUA.set_function("RandomFast", &LUA_RandomFast);
+	LUA.set_function("RoundLower", &LUA_RoundLower);
 	LUA.set_function("MousePosition", &LUA_MousePosition);
 	LUA.set_function("TableToString", &LUA_TableToString);
 	LUA.set_function("MouseLocalPosition", &LUA_MouseLocalPosition);

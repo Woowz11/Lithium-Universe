@@ -23,6 +23,7 @@ void LoadMod(std::string FullPath) {
 	if (HasFile(ModInfoPath)) {
 		json ModInfo = ReadJson(ModInfoPath);
 		std::string NotHasThis = "";
+		std::string FrongType = "";
 		if (ModInfo["Error"] == true) {
 			Error("MODS","Unable to load modification because file $$Y" + ModID + ".lu_mod$$_ has an error! LoadMod(\"" + FullPath + "\");");
 		}
@@ -30,37 +31,72 @@ void LoadMod(std::string FullPath) {
 			if (!ModInfo.contains("Incompatible")) {
 				NotHasThis = "Incompatible";
 			}
+
 			if (!ModInfo.contains("Compatibility")) {
 				NotHasThis = "Compatibility";
 			}
-			if (!ModInfo.contains("Description")) {
+
+			if (ModInfo.contains("Description")) {
+				if (!ModInfo["Description"].is_string()) {
+					FrongType = "Description";
+				}
+			}
+			else {
 				NotHasThis = "Description";
 			}
-			if (!ModInfo.contains("Version")) {
+
+			if (ModInfo.contains("Version")) {
+				if (!ModInfo["Version"].is_string()) {
+					FrongType = "Version";
+				}
+			}
+			else {
 				NotHasThis = "Version";
 			}
-			if (!ModInfo.contains("Author")) {
+
+			if (ModInfo.contains("Author")) {
+				if (!ModInfo["Author"].is_string()) {
+					FrongType = "Author";
+				}
+			}
+			else {
 				NotHasThis = "Author";
 			}
-			if (!ModInfo.contains("MainScript")) {
-				NotHasThis = "MainScript";
+
+			if (ModInfo.contains("Name")) {
+				if (!ModInfo["Name"].is_string()) {
+					FrongType = "Name";
+				}
 			}
-			if (!ModInfo.contains("Name")) {
+			else {
 				NotHasThis = "Name";
 			}
 
+			if (ModInfo.contains("MainScript")) {
+				if (!ModInfo["MainScript"].is_string()) {
+					FrongType = "MainScript";
+				}
+			}
+
 			if (NotHasThis == "") {
-				GameMod GM = GameMod(FullPath, ModID);
-				GM.Name       = ModInfo["Name"];
-				GM.MainScript = ModInfo["MainScript"];
-				GM.Author     = ModInfo["Author"];
-				GM.Version    = ModInfo["Version"];
-				GM.Desc       = ModInfo["Description"];
-				Mods.push_back(GM);
-				Print("MODS", "Mod $$Y" + ModID + " " + GM.Version + "$$_ $$Gsuccessfully$$_ loaded!");
+				if (FrongType == "") {
+					GameMod GM = GameMod(FullPath, ModID);
+					GM.Name = ModInfo["Name"];
+					if (ModInfo.contains("MainScript")) {
+						GM.MainScript = ModInfo["MainScript"];
+					}
+					GM.Author = ModInfo["Author"];
+					GM.Version = ModInfo["Version"];
+					GM.Desc = ModInfo["Description"];
+					Mods.push_back(GM);
+					Print("MODS", "Mod $$Y" + ModID + " " + GM.Version + "$$_ $$Gsuccessfully$$_ loaded!");
+				}
+				else {
+					Error("MODS", "Unable to load modification because the field [$$Y" + FrongType + "$$_] is of the wrong type (not string) in the file $$Y" + ModID + ".lu_mod$$_! LoadMod(\"" + FullPath + "\");");
+				}
 			}
 			else {
-				Error("MODS", "Unable to load modification because the field $$Y" + NotHasThis + "$$_ is missing in the file $$Y" + ModID + ".lu_mod$$_! LoadMod(\"" + FullPath + "\");");
+				Error("MODS", "Unable to load modification because the field [$$Y" + NotHasThis + "$$_] is missing in the file $$Y" + ModID + ".lu_mod$$_! LoadMod(\"" + FullPath + "\");");
 			}
 		}
 	}
@@ -98,8 +134,10 @@ void StopMods() {
 void RunMods() {
 	ClearModsResources();
 	for (GameMod GM : Mods) {
-		LoadLua(GM);
-		RunScript(GM.MainScript);
+		if (!GM.MainScript.empty()) {
+			LoadLua(GM);
+			RunScript(GM.MainScript);
+		}
 	}
 
 	for (auto F : LUA_Events_GameObjectLoading) {

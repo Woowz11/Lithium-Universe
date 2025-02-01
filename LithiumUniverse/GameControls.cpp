@@ -106,10 +106,6 @@ void MouseMove() {
 
 /* Кнопка на мыши нажата */
 void MouseClick(const int KEY, const int ACTION) {
-	if (KEY == GLFW_MOUSE_BUTTON_RIGHT && ACTION == GLFW_PRESS) {
-		CreateTestObject(1);
-	}
-
 	if (KEY == GLFW_MOUSE_BUTTON_LEFT) {
 		if (ACTION == GLFW_PRESS) {
 			if (MouseOnInterface) {

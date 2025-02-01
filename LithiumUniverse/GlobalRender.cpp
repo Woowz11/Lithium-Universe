@@ -241,34 +241,33 @@ void RenderText(const GameObject& OBJ) {
     glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
 
     std::string Text = OBJ.Text;
-    Text = "55";
-    Font F = Fonts[GetResourceAssetID(OBJ.FontRes)];
+    Font F = Fonts[OBJ.FontID];
 
-    CSS.setInt("ID", OBJ.GetID());
-    CSS.setVec2("Position", OBJ.PositionVisual);
-    CSS.setFloat("Orientation", -OBJ.OrientationVisual);
-    CSS.setVec2("Size", OBJ.SizeVisual);
-    CSS.setFloat("Layer", OBJ.Layer);
+    CSS.setInt(CSS.UNIFORM_ID, OBJ.GetID());
+    CSS.setVec2(CSS.UNIFORM_POSITION, OBJ.PositionVisual);
+    CSS.setBool(CSS.UNIFORM_INTERFACE, OBJ.Type == RO_UI);
+    CSS.setBool(CSS.UNIFORM_RESIZE, OBJ.Resize);
+    CSS.setFloat(CSS.UNIFORM_ORIENTATION, -OBJ.OrientationVisual);
+    CSS.setVec2(CSS.UNIFORM_SIZE, OBJ.SizeVisual);
+    CSS.setFloat(CSS.UNIFORM_LAYER, OBJ.Layer);
 
-    CSS.setBool("Static", OBJ.Static);
-    CSS.setBool("Physical", OBJ.Type == RO_Phys);
-    CSS.setBool("Interface", OBJ.Type == RO_UI);
-    CSS.setBool("Resize", OBJ.Resize);
-    if (OBJ.Type == RO_Phys) {
-        CSS.setBool("Sleeping", OBJ.Static ? false : !b2Body_IsAwake(GetBody(OBJ.BodyID)));
+    CSS.setBool(CSS.UNIFORM_STATIC, OBJ.Static);
+    CSS.setBool(CSS.UNIFORM_PHYSICAL, OBJ.Type == RO_Phys);
+    /*if (OBJ.Type == RO_Phys) {
+        CSS.setBool(CSS., OBJ.Static ? false : !b2Body_IsAwake(GetBody(OBJ.BodyID)));
     }
     else {
         CSS.setBool("Sleeping", false);
-    }
+    }*/
 
-    CSS.setInt("TextLength", Text.size());
+    //CSS.setInt("TextLength", Text.size());
 
     FontChar& CinfoError = F.Chars[-1];
-    CSS.setVec2("ErrorCharSize", glm::vec2(CinfoError.W, CinfoError.H));
+    //CSS.setVec2("ErrorCharSize", glm::vec2(CinfoError.W, CinfoError.H));
 
     std::vector<TextVertex> TextVertices;
-    float x = -1.2f;
-    float Spacing = 2.0f;
+    float x = 0;
+    float Spacing = (1.0f/8);
     for (size_t i = 0; i < Text.size(); i++) {
         int CharID = Text[i];
         auto it = F.Chars.find(CharID);
@@ -306,24 +305,24 @@ void RenderText(const GameObject& OBJ) {
         }*/
 
         glm::vec2 pos[4] = {
-            {x - 0.0f, -0.0f},
-            {x + 1.0f, -0.0f},
-            {x + 1.0f,  1.0f},
-            {x - 0.0f,  1.0f}
+            {x       , 0.0f},
+            {x + 1.0f, 0.0f},
+            {x + 1.0f, 1.0f},
+            {x       , 1.0f}
         };
 
         glm::vec2 uv[4] = {
-            {Cinfo.X, Cinfo.Y},
-            {Cinfo.X + Cinfo.W, Cinfo.Y},
+            {Cinfo.X,           Cinfo.Y + Cinfo.H},
             {Cinfo.X + Cinfo.W, Cinfo.Y + Cinfo.H},
-            {Cinfo.X, Cinfo.Y + Cinfo.H}
+            {Cinfo.X + Cinfo.W, Cinfo.Y},
+            {Cinfo.X,           Cinfo.Y}
         };
 
         for (int j = 0; j < 4; j++) {
             TextVertices.push_back(TextVertex(uv[j], glm::vec2(Cinfo.W, Cinfo.H), CharID, i, pos[j]));
         }
 
-        x += 2.2f;//Cinfo.W + Spacing;
+        x += 1.0f + Spacing;//Cinfo.W + Spacing;
         //CSS.setInt("TextCharSize", TotalW);
 
         //i++;

@@ -103,6 +103,7 @@ void CloneGameObjectValuesFromOther__(GameObject& A, GameObject& B) {
 		A.BaseShaderRes = B.BaseShaderRes;
 		A.BaseShaderID = B.BaseShaderID;
 		A.FontRes = B.FontRes;
+		A.FontID = B.FontID;
 		A.PositionVisual = B.PositionVisual;
 		A.LinePositionVisual = B.LinePositionVisual;
 		A.SizeVisual = B.SizeVisual;
@@ -299,6 +300,7 @@ void SetGameObjectFont(const int i, const int f) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectFont(" + std::to_string(i) + "," + std::to_string(f) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.FontRes = f;
+		OBJ.FontID = GetResourceAssetID(f);
 	}
 	else {
 		GameObjectDeleted__(OBJ, "SetGameObjectFont(" + std::to_string(i) + "," + std::to_string(f) + ");");
@@ -482,6 +484,7 @@ void UpdateGameObjectsFromUpdateResources() {
 	for (GameObject& OBJ : Scene) {
 		OBJ.BaseTextureID = GetResourceAssetID(OBJ.BaseTextureRes);
 		OBJ.BaseShaderID = GetResourceAssetID(OBJ.BaseShaderRes);
+		OBJ.FontID = GetResourceAssetID(OBJ.FontRes);
 	}
 }
 

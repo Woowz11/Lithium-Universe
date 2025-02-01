@@ -55,6 +55,7 @@ public:
 	int BaseShaderRes            = 0;                      /* Базовый шейдер                  */
 	int BaseShaderID             = -1;
 	int FontRes                  = 0;                      /* Шрифт                           */
+	int FontID                   = -1;
 	glm::vec2 PositionVisual     = glm::vec2(0, 0);        /* Позиция объекта                 */
 	glm::vec4 LinePositionVisual = glm::vec4(-1, 0, 1, 0); /* Позиция начала и конца линии    */
 	glm::vec2 SizeVisual         = glm::vec2(1, 1);        /* Размер объекта                  */

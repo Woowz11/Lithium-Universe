@@ -190,6 +190,11 @@ std::vector<GameObject>& UpdatePhysic() {
 	}
 	for (GameObject& OBJ : Scene) {
 		if (!OBJ.Deleted && OBJ.Active) {
+
+			if (OBJ.Name == "text") {
+				SetGameObjectPosition(OBJ.GetID(), glm::vec2(sin(Time), -0.5));
+			}
+
 			switch (OBJ.Type)
 			{
 			case RO_Phys:
@@ -199,6 +204,7 @@ std::vector<GameObject>& UpdatePhysic() {
 				UpdateUI(OBJ);
 				break;
 			default:
+				/* чзх бро что за кал?)))))))))) */
 				if (OBJ.Name == "CameraObject") {
 					SetGameObjectPosition(OBJ.GetID(), Camera->Position);
 				}

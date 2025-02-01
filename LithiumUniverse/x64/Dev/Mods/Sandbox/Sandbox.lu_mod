@@ -1,0 +1,8 @@
+{
+	"Name"          : "Sandbox",
+	"Version"       : "0.0",
+	"Author"        : "Woowz11",
+	"Description"   : "",
+	"Compatibility" : ["VanillaPhysic"],
+	"Incompatible"  : []
+}

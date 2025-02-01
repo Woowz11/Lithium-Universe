@@ -1,11 +1,11 @@
-### Клон PeoplePlayground на C++
-### Кодовое название: Lithium Universe
+# Lithium Universe
+## Игра 2D песочница на C++
 
 Разработчик: Woowz11
 
 Информация: [Info.md](https://github.com/Woowz11/Lithium-Universe/blob/main/Info.md)
 
-Есть лицензия
+Есть [лицензия](https://github.com/Woowz11/Lithium-Universe/blob/main/LICENSE.md)
 
 Играли в игру:
 * Wldoui
