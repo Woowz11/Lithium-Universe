@@ -3,6 +3,7 @@
 	"Version"       : "0.0",
 	"Author"        : "Woowz11",
 	"Description"   : "",
+	"MainScript"    : "VanillaPhysic:Base.lua",
 	"Compatibility" : [],
 	"Incompatible"  : []
 }

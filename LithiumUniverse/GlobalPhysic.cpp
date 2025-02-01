@@ -19,75 +19,15 @@
 
 /* ==== Тестовые объекты ==== */
 
-std::vector<int> CreatedTestGameObjects = {};
-
-void RemoveTestObject(std::vector<int>::iterator i) {
-	if (!CreatedTestGameObjects.empty()) {
-		DeleteGameObject(*i);
-		CreatedTestGameObjects.erase(i);
-	}
-}
-
-void RemoveLastTestObject() {
-	if (!CreatedTestGameObjects.empty()) {
-		RemoveTestObject(CreatedTestGameObjects.end() - 1);
-	}
-}
-
-void RemoveAllTestObject() {
-	if (!CreatedTestGameObjects.empty()) {
-		for (int i : CreatedTestGameObjects) {
-			DeleteGameObject(i);
-		}
-		CreatedTestGameObjects = {};
-	}
-}
-
-void CreateTestObject(int type) {
-	int box = CreateGameObject("box", RO_Phys);
-	SetGameObjectPosition(box, MouseWorldPosition);
-
-	switch (type)
-	{
-	case 1:
-		SetGameObjectTexture(box, GetResource("Base", "Textures/Default.png").ID);
-		break;
-	case 2:
-		SetGameObjectSize(box, glm::vec2(5, 0.25f));
-		SetGameObjectTexture(box, GetResource("Base", "Textures/Cable.png").ID);
-		break;
-	case 3:
-		SetGameObjectCollider(box, CT_Circle);
-		SetGameObjectTexture(box, GetResource("Base", "Textures/Circle.png").ID);
-		break;
-	case 4:
-		SetGameObjectSize(box, glm::vec2(3, 3));
-		SetGameObjectTexture(box, GetResource("Base", "Textures/Default.png").ID);
-		break;
-	case 5:
-		SetGameObjectSize(box, glm::vec2(5 * 3, 0.25f * 3));
-		SetGameObjectTexture(box, GetResource("Base", "Textures/Cable.png").ID);
-		break;
-	case 6:
-		SetGameObjectSize(box, glm::vec2(3, 3));
-		SetGameObjectCollider(box, CT_Circle);
-		SetGameObjectTexture(box, GetResource("Base", "Textures/Circle.png").ID);
-		break;
-	case 7:
-		MakeGameObjectText(box, "0123456789 9876543210");
-		break;
-	default:
-		SetGameObjectStatic(box, true);
-		break;
-	}
-
-	CreatedTestGameObjects.push_back(box);
-}
-
 /* Скорость симуляции */
 float SimulationSpeed = 1;
 void SetSimulationSpeed(float sp) {
-	SimulationSpeed = sp;
+	if (sp >= 0) {
+		SimulationSpeed = sp;
+	}
+	else {
+		Error("GAME","Cannot set simulation speed < 0! SetSimulationSpeed(" + std::to_string(sp) + ");");
+	}
 }
 float GetSimulationSpeed() {
 	return SimulationSpeed;
@@ -120,11 +60,6 @@ void UpdatePhysicObject(GameObject& OBJ) {
 
 	OBJ.PositionVisual = BVec2ToVec2(b2Body_GetPosition(Body));
 	OBJ.OrientationVisual = MakeOrientation(b2Body_GetRotation(Body));
-
-	auto i = std::find(CreatedTestGameObjects.begin(), CreatedTestGameObjects.end(), OBJ.GetID());
-	if (!OBJ.DontDelete && i != CreatedTestGameObjects.end() && OBJ.PositionVisual.y < -300) {
-		RemoveTestObject(i);
-	}
 }
 
 /* Выполнять после обновления физики */
@@ -149,12 +84,14 @@ void CreateScene(Scenes Scen) {
 			float yoffset = 87.5f;
 
 			int platform = CreateGameObject("platform", RO_Phys);
+			SetGameObjectTexture(platform, GetResource("Base:Textures/Blank.png").ID);
 			SetGameObjectStatic(platform, true);
 			SetGameObjectPosition(platform, glm::vec2(0, -100 + yoffset));
 			SetGameObjectSize(platform, glm::vec2(100, 10));
 			SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
 
 			platform = CreateGameObject("platform", RO_Phys);
+			SetGameObjectTexture(platform, GetResource("Base:Textures/Blank.png").ID);
 			SetGameObjectStatic(platform, true);
 			SetGameObjectPosition(platform, glm::vec2(-100, 0 + yoffset));
 			SetGameObjectSize(platform, glm::vec2(100, 10));
@@ -162,12 +99,14 @@ void CreateScene(Scenes Scen) {
 			SetGameObjectOrientation(platform, glm::radians(90.0f));
 
 			platform = CreateGameObject("platform", RO_Phys);
+			SetGameObjectTexture(platform, GetResource("Base:Textures/Blank.png").ID);
 			SetGameObjectStatic(platform, true);
 			SetGameObjectPosition(platform, glm::vec2(0, 100 + yoffset));
 			SetGameObjectSize(platform, glm::vec2(100, 10));
 			SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
 
 			platform = CreateGameObject("platform", RO_Phys);
+			SetGameObjectTexture(platform, GetResource("Base:Textures/Blank.png").ID);
 			SetGameObjectStatic(platform, true);
 			SetGameObjectPosition(platform, glm::vec2(100, 0 + yoffset));
 			SetGameObjectSize(platform, glm::vec2(100, 10));
@@ -183,18 +122,21 @@ void CreateScene(Scenes Scen) {
 }
 
 /* Обновить физику */
+int timer = 0;
 std::vector<GameObject>& UpdatePhysic() {
 	float step = GameInFocus ? GameDeltaTime : 0;
 	if (step > 0) {
 		b2World_Step(World, step, 4);
 	}
-	for (GameObject& OBJ : Scene) {
+
+	bool callLuaEvents = (timer > 10);
+
+	std::vector<int> LuaEventGameObjects = {};
+	for (size_t i = 0; i < Scene.size(); i++) {
+		GameObject& OBJ = Scene[i];
+		int ID = OBJ.GetID();
+
 		if (!OBJ.Deleted && OBJ.Active) {
-
-			if (OBJ.Name == "text") {
-				SetGameObjectPosition(OBJ.GetID(), glm::vec2(sin(Time), -0.5));
-			}
-
 			switch (OBJ.Type)
 			{
 			case RO_Phys:
@@ -204,19 +146,31 @@ std::vector<GameObject>& UpdatePhysic() {
 				UpdateUI(OBJ);
 				break;
 			default:
-				/* чзх бро что за кал?)))))))))) */
-				if (OBJ.Name == "CameraObject") {
-					SetGameObjectPosition(OBJ.GetID(), Camera->Position);
-				}
 				break;
+			}
+
+			if (callLuaEvents && OBJ.CreatedFromMods) {
+				LuaEventGameObjects.push_back(ID);
 			}
 		}
 	}
 	AfterUpdatePhysic();
 	AfterUpdateUI();
-	for (sol::function F : LUA_Events_Update) {
+
+	if (callLuaEvents) {
+		for (const sol::function& F : LUA_Events_UpdateEveryGameObject) {
+			if (F.valid()) {
+				F(LuaEventGameObjects);
+			}
+		}
+		timer = 0;
+	}
+	timer++;
+
+	for (const sol::function& F : LUA_Events_Update) {
 		F();
 	}
+
 	return Scene;
 }
 

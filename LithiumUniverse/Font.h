@@ -15,6 +15,8 @@ public:
 	std::string FullPath;
 	std::string ID;
 	std::unordered_map<int, FontChar> Chars = {};
+	int MaxX = -1;
+	int MaxY = -1;
 
 	Font(std::string FullPath_, std::string ID_) {
 		FullPath = FullPath_;

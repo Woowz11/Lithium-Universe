@@ -1,10 +1,9 @@
 #version 330 core
 
-layout (location = 0) in vec2 inUV;
-layout (location = 1) in vec2 inSize;
-layout (location = 2) in int inChar;
-layout (location = 3) in int inPosition;
-layout (location = 4) in vec2 inOffset;
+layout (location = 0) in vec2 PointPosition;
+layout (location = 1) in vec2 TextureUV;
+layout (location = 2) in int CharID;
+layout (location = 3) in int CharPosition;
 
 out vec2 UV;
 
@@ -20,8 +19,6 @@ uniform bool Interface;
 uniform bool Resize;
 uniform vec2 ScreenStartSize;
 uniform vec2 ScreenSize;
-
-uniform vec2 TextureSize;
 
 mat4 Ortho(float L, float R, float B, float T){
 	return mat4(
@@ -43,16 +40,18 @@ void main()
 
 	mat4 Projection = Ortho(-SW / (240 * Z), SW / (240 * Z), -SH / (240 * Z), SH / (240 * Z));
 
-	vec2 ScreenDifference = ScreenSize / ScreenStartSize;
-    vec2 ScaleFactor = Interface ? (Resize ? ScreenScale : ScreenScale * ScreenDifference) : vec2(1.0);
+    vec2 ScaleFactor = Interface ? ScreenScale : vec2(1.0);
 	
-	vec2 TextPosition = (Position+inOffset) * ScaleFactor;
+	vec2 ScaleFactorS = (Resize ? (Interface ? ScaleFactor : vec2(1,1) ) : vec2(1,1));
+	vec2 ScaleFactorP = (Resize ? vec2(1,1) : (Interface ? ScreenScale * (ScreenSize/ScreenStartSize) : vec2(1,1) ));
+	
+	vec2 TextPosition = (Position * ScaleFactorP + (PointPosition * (Size * (Interface ? 0.192 : 1)))) * ScaleFactorS;
 	
 	if (!Interface){
 		TextPosition += CameraPosition;
 	}
 	
-    gl_Position = Projection * vec4(TextPosition,1,1);
+    gl_Position = Projection * vec4(TextPosition,(Layer + (float(ID)/100))/100,1);
 	
-    UV = inUV/TextureSize;
+    UV = TextureUV;
 }

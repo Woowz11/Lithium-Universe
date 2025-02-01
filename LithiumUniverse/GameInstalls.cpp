@@ -22,6 +22,7 @@
 
 #include "LithiumUniverse.h";
 #include "GlobalResources.h";
+#include "GlobalSettings.h";
 #include "BaseConstants.h";
 #include "GlobalRender.h";
 #include "GlobalPhysic.h";
@@ -277,8 +278,19 @@ private:
 		}
 	}
 
-	/* Цикл всего */
-	void Loop() {
+	/* Поток на управление */
+	/*std::atomic<bool> ControlsThread_b = true;
+	void ControlsThread() {
+		while (ControlsThread_b) {
+			Controls();
+			std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		}
+	}*/
+
+	/* Главный поток */
+	void MainThread() {
+		//std::thread ControlsThread_ = std::thread(ControlsThread);
+
 		while (!glfwWindowShouldClose(Window)) {
 			auto StartTime = std::chrono::high_resolution_clock::now();
 
@@ -291,7 +303,7 @@ private:
 			Render(UpdatePhysic());
 
 			LoopGLFW();
-			
+
 			if (FPSLimit) {
 				LimitFPS();
 			}
@@ -300,6 +312,14 @@ private:
 			auto EndTime = std::chrono::high_resolution_clock::now();
 			MS = std::chrono::duration_cast<std::chrono::microseconds>(EndTime - StartTime).count() / 1000.0;
 		}
+
+		//ControlsThread_b = false;
+		//ControlsThread_.join();
+	}
+
+	/* Цикл всего */
+	void Loop() {
+		MainThread();
 	}
 
 	/* Очистить GLFW */
@@ -311,6 +331,7 @@ private:
 	void DestroyAll() {
 		if (GlobalError != GLFW_NOT_LOADED) {
 			if (GlobalError != GLFW_NOT_CREATE_WINDOW) {
+				SetScene(SCENE_NotSelected);
 				ClearRender();
 			}
 			DestroyGLFW();
@@ -330,7 +351,8 @@ public:
 	}
 
 	std::string GetGameTitle() {
-		return "LithiumUniverse (" + Version + ") MS[" + RemoveStringPart(ToStringNumber(MS), 4) + "] FPS[" + RemoveStringPart(ToStringNumber(FPS),6) + "] SP[" + RemoveStringPart(ToStringNumber(GetSimulationSpeed()),3) + "]";
+		StringFPS = RemoveStringPart(ToStringNumber(FPS), 6);
+		return "LithiumUniverse (" + Version + ") MS[" + RemoveStringPart(ToStringNumber(MS), 4) + "] FPS[" + StringFPS + "] SP[" + RemoveStringPart(ToStringNumber(GetSimulationSpeed()),3) + "]";
 	}
 
 	/* ==== Управление, другие функции ==== */
@@ -368,6 +390,7 @@ int Run() {
 		Version = GetGameVersion();
 		InstallConsole();
 		Print("LU", "Run LithiumUniverse (" + Version + ")!");
+		ReadSettings();
 
 		Game.Run();
 

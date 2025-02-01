@@ -79,12 +79,18 @@ void MouseDropGO() {
 void ProcessUIClick(const int i, const bool Left) {
 	GameObject& OBJ = GetGameObject(i, "ProcessUIClick(" + std::to_string(i) + "," + ToStringBool(Left) + ");");
 
-	Button B = Buttons[OBJ.ButtonID];
-	if (Left) {
-		B.WhenLeftClick();
-	}
-	else {
-		B.WhenRightClick();
+	auto it = std::find_if(Buttons.begin(), Buttons.end(), [&OBJ](const Button& B) {
+		return B.ID == OBJ.ButtonID;
+		});
+
+	if (it != Buttons.end()) {
+		Button B = Buttons[OBJ.ButtonID];
+		if (Left) {
+			B.WhenLeftClick();
+		}
+		else {
+			B.WhenRightClick();
+		}
 	}
 }
 
@@ -148,7 +154,6 @@ void MouseScroll(const float scroll) {
 }
 
 /* Управление клавиатурой */
-bool SpacePressed = false;
 void ControlsKeyboard(const int KEY, const int ACTION) {
 	if (KEY == GLFW_KEY_ESCAPE && ACTION == GLFW_PRESS) {
 		if (CurrentScene == SCENE_Game) {
@@ -157,64 +162,6 @@ void ControlsKeyboard(const int KEY, const int ACTION) {
 		else {
 			ExitGame();
 		}
-	}
-
-	if (KEY == GLFW_KEY_SPACE && ACTION == GLFW_PRESS) {
-		SpacePressed = !SpacePressed;
-		SetSimulationSpeed(SpacePressed ? 0 : 1);
-	}
-
-	if (KEY == GLFW_KEY_G && ACTION == GLFW_PRESS) {
-		SpacePressed = false;
-		SetSimulationSpeed(0.1f);
-	}
-
-	if (KEY == GLFW_KEY_KP_7 && ACTION == GLFW_PRESS) {
-		SetFPSLimit(15);
-	}
-
-	if (KEY == GLFW_KEY_KP_8 && ACTION == GLFW_PRESS) {
-		SetFPSLimit(60);
-	}
-
-	if (KEY == GLFW_KEY_KP_9 && ACTION == GLFW_PRESS) {
-		SetFPSLimit(0);
-	}
-
-	if (KEY == GLFW_KEY_Z && ACTION == GLFW_PRESS) {
-		RemoveLastTestObject();
-	}
-
-	if (KEY == GLFW_KEY_1 && ACTION == GLFW_PRESS) {
-		CreateTestObject(0);
-	}
-
-	if (KEY == GLFW_KEY_2 && ACTION == GLFW_PRESS) {
-		CreateTestObject(1);
-	}
-
-	if (KEY == GLFW_KEY_3 && ACTION == GLFW_PRESS) {
-		CreateTestObject(2);
-	}
-
-	if (KEY == GLFW_KEY_4 && ACTION == GLFW_PRESS) {
-		CreateTestObject(3);
-	}
-
-	if (KEY == GLFW_KEY_5 && ACTION == GLFW_PRESS) {
-		CreateTestObject(4);
-	}
-
-	if (KEY == GLFW_KEY_6 && ACTION == GLFW_PRESS) {
-		CreateTestObject(5);
-	}
-
-	if (KEY == GLFW_KEY_7 && ACTION == GLFW_PRESS) {
-		CreateTestObject(6);
-	}
-
-	if (KEY == GLFW_KEY_8 && ACTION == GLFW_PRESS) {
-		CreateTestObject(7);
 	}
 
 	if (ACTION == GLFW_PRESS) {

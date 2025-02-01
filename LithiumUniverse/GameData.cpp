@@ -30,6 +30,9 @@ float GameDeltaTime = 0;
 /* FPS */
 float FPS = -1;
 
+/* FPS в виде строки */
+std::string StringFPS = "";
+
 /* Время нужное для обработки кадра */
 float MS = -1;
 
@@ -67,10 +70,6 @@ Scenes CurrentScene = SCENE_NotSelected;
 void SetScene(Scenes Scen) {
 	if (Scen != CurrentScene) {
 		Print("SCENE", "Scene changed to (" + std::to_string(Scen) + ")!");
-		if (CurrentScene == SCENE_Game) {
-			Print("LU", "============== [$$YEND GAME$$_] ===============");
-			StopMods();
-		}
 
 		int i = 0;
 		for (GameObject& OBJ : Scene) {
@@ -81,6 +80,11 @@ void SetScene(Scenes Scen) {
 		Buttons = {};
 		Bodies = {};
 
+		if (CurrentScene == SCENE_Game) {
+			Print("LU", "============== [$$YEND GAME$$_] ===============");
+			StopMods();
+		}
+
 		CurrentScene = Scen;
 
 		if (Scen == SCENE_Game) {
@@ -88,9 +92,11 @@ void SetScene(Scenes Scen) {
 			RunMods();
 		}
 
-		Camera->ResetCamera();
-		CreateUI(Scen);
-		CreateScene(Scen);
+		if (Scen != SCENE_NotSelected) {
+			Camera->ResetCamera();
+			CreateUI(Scen);
+			CreateScene(Scen);
+		}
 	}
 }
 

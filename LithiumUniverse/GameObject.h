@@ -1,8 +1,12 @@
 ﻿#ifndef GAME_OBJECT_H
 #define GAME_OBJECT_H
 
-#include <string>
+#include "sol/sol.hpp";
+
 #include <GLM/glm.hpp>
+
+#include <string>
+#include <unordered_map>
 
 #include "GlobalResources.h";
 #include "StringActions.h";
@@ -42,12 +46,12 @@ private:
 public:
 
 	/* ==== Основные настройки ==== */
-	std::string Name;             /* Название объекта     */
-	RO_Type Type = RO_Default;    /* Тип объекта          */
-	bool Active = true;           /* Объект активен?      */
-	bool Deleted = false;	      /* Объект удалённый?    */
-	bool DontDelete = false;      /* Не удалять объект    */
-	bool CreatedFromMods = false; /* Объект создан модом? */
+	std::string Name;               /* Название объекта       */
+	RO_Type Type = RO_Default;      /* Тип объекта            */
+	bool Active = true;             /* Объект активен?        */
+	bool Deleted = false;	        /* Объект удалённый?      */
+	bool DontDelete = false;        /* Не удалять объект      */
+	bool CreatedFromMods = false;   /* Объект создан модом?   */
 
 	/* ==== Настройки рендера ==== */
 	int BaseTextureRes           = 0;                      /* Базовая текстура                */
@@ -76,6 +80,9 @@ public:
 	bool Static            = false;                  /* Объект статичный?               */
 	ColliderType Collider  = CT_Box;                 /* Тип коллизии                    */
 
+	/* ==== LUA ==== */
+	std::unordered_map<double, sol::object> Data = {}; /* Модовая информация об объекте */
+
 	GameObject(std::string Name_, int ID_) {
 		ID = ID_;
 		Name = Name_;
@@ -87,6 +94,7 @@ public:
 
 	void Delete() {
 		Deleted = true;
+		Data = {};
 		PositionVisual = glm::vec2(0, 0);
 		LinePositionVisual = glm::vec4(0, 0, 0, 0);
 		SizeVisual = glm::vec2(0, 0);

@@ -143,4 +143,8 @@ void RunMods() {
 	for (auto F : LUA_Events_GameObjectLoading) {
 		F();
 	}
+
+	for (auto F : LUA_Events_UILoading) {
+		F();
+	}
 }

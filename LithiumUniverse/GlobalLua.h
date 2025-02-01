@@ -42,7 +42,9 @@ extern const int ErrorInt;
 extern const std::string ErrorString;
 
 extern std::vector<sol::function> LUA_Events_Update;
+extern std::vector<sol::function> LUA_Events_UpdateEveryGameObject;
 extern std::vector<sol::function> LUA_Events_GameObjectLoading;
+extern std::vector<sol::function> LUA_Events_UILoading;
 extern std::vector<sol::function> LUA_Events_MouseScroll;
 extern std::vector<sol::function> LUA_Events_MousePressed;
 extern std::vector<sol::function> LUA_Events_MouseReleased;

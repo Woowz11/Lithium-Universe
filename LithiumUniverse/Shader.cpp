@@ -7,6 +7,8 @@ std::vector<Shader> Shaders = {};
 /* Информация о uniform's
 
 ID                (int      ) = Айди объекта
+Texture           (sampler2D) = Текстура
+TextureSize       (vec2     ) = Размер текстуры
 Position          (vec2     ) = Позиция объекта
 CameraPosition    (vec2     ) = Позиция камеры
 CameraOrientation (float    ) = Поворот камеры
@@ -16,8 +18,6 @@ LocalRandom       (float    ) = Случайное дробное число о�
 ScreenSize        (vec2     ) = Текущий размер экрана
 ScreenStartSize   (vec2     ) = Размер экрана при запуске игры
 MousePosition     (vec2     ) = Позиция мыши в пикселях
-Texture           (sampler2D) = Текстура
-TextureSize       (vec2     ) = Размер текстуры
 Time              (float    ) = Прошедшее время с запуска приложения
 DeltaTime         (float    ) = Размягчение зависящие от FPS
 DebugRender       (bool     ) = Включен отладочный рендер?

@@ -18,6 +18,7 @@ extern float Time;
 extern float DeltaTime;
 extern float GameDeltaTime;
 extern float FPS;
+extern std::string StringFPS;
 extern float MS;
 extern bool DeveloperVersion;
 

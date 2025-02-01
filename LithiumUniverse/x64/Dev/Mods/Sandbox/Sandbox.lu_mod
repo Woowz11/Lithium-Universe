@@ -3,6 +3,7 @@
 	"Version"       : "0.0",
 	"Author"        : "Woowz11",
 	"Description"   : "",
+	"MainScript"    : "Sandbox:Base.lua",
 	"Compatibility" : ["VanillaPhysic"],
 	"Incompatible"  : []
 }

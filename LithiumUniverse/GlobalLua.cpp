@@ -10,6 +10,7 @@
 #include "ExplorerActions.h";
 #include "GlobalResources.h";
 #include "StringActions.h";
+#include "GlobalPhysic.h";
 #include "GlobalRender.h";
 #include "GameInstalls.h";
 #include "GlobalLua.h";
@@ -39,9 +40,13 @@ const std::string ErrorShader = "Base:Shaders/Error.lu_shader";
 
 /* Ивент вызывается каждый кадр */
 std::vector<sol::function> LUA_Events_Update = {};
+/* Ивент вызывается каждый кадр для каждого модового объекта */
+std::vector<sol::function> LUA_Events_UpdateEveryGameObject = {};
 
 /* Ивент вызывается при загрузке игровых объектов */
 std::vector<sol::function> LUA_Events_GameObjectLoading = {};
+/* Ивент вызывается при загрузке интерфейса */
+std::vector<sol::function> LUA_Events_UILoading = {};
 
 /* Ивент вызывается когда двигается колёсико мыши */
 std::vector<sol::function> LUA_Events_MouseScroll = {};
@@ -268,7 +273,7 @@ void LuaErrorCompact(const std::string ErrorMessage) {
 
 /* Ошибка Lua (кастомная) */
 void LuaErrorCustom(const std::string ModID, const std::string ErrorCode, const int ErrorLine, std::string What) {
-	Error(ModID, ErrorCode + " $$R:$$_ " + std::to_string(ErrorLine) + " $$R: " + What);
+	Error(ModID, (ErrorCode.empty() ? "" : ErrorCode + " $$R:$$_ ") + std::to_string(ErrorLine) + " $$R: " + What);
 }
 
 /* Ошибка Lua */
@@ -337,15 +342,22 @@ bool LuaCheckGameObject(const sol::object& Obj, const std::string Function, cons
 	if (T == L_Int) {
 		int ObjID = ObjectToInt(Obj);
 		if (CheckOutSceneIndex(ObjID)) {
-			LuaError("$$RGameObject [$$_" + std::to_string(ObjID) + "$$R] is outside of ID's Scene!" + LuaComplexFunction(Function, Params), L);
+			LuaError("$$RGameObject [$$_" + std::to_string(ObjID) + "$$R] is outside of ID's Scene!$$_ " + LuaComplexFunction(Function, Params), L);
 			return false;
 		}
 		else {
-			if (GetGameObject(ObjID, "LuaCheckGameObject(?,\"" + Function + "\",?,?);").CreatedFromMods) {
-				return true;
+			GameObject& OBJ = GetGameObject(ObjID, "LuaCheckGameObject(?,\"" + Function + "\",?,?);");
+			if (!OBJ.Deleted) {
+				if (OBJ.CreatedFromMods) {
+					return true;
+				}
+				else {
+					LuaError("$$RGameObject[$$_" + std::to_string(ObjID) + "$$R] can't be obtained because it's not a moddable GameObject!$$_ " + LuaComplexFunction(Function, Params), L);
+					return false;
+				}
 			}
 			else {
-				LuaError("$$RGameObject[$$_" + std::to_string(ObjID) + "$$R] can't be obtained because it's not a moddable GameObject!" + LuaComplexFunction(Function, Params), L);
+				LuaError("$$RGameObject[$$_" + std::to_string(ObjID) + "$$R] can't be obtained because the GameObject has been deleted!$$_ " + LuaComplexFunction(Function, Params), L);
 				return false;
 			}
 		}
@@ -605,11 +617,19 @@ double LUA_RandomFast() {
 
 class LUA_Game {
 public:
-	/* Ивент: каждый кадр выполнять */
+	/* Ивент: выполняется каждый кадр */
 	void Update(const sol::object& Func, sol::this_state s) {
 		lua_State* L = s;
 		if (LuaCheckType(Func, L_Func, "Game:Update", { Func }, L)) {
 			LUA_Events_Update.push_back(ObjectToFunc(Func));
+		}
+	}
+
+	/* Ивент: выполняется каждый кадр для каждого объекта */
+	void UpdateEveryGameObject(const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Func, L_Func, "Game:UpdateEveryGameObject", { Func }, L)) {
+			LUA_Events_UpdateEveryGameObject.push_back(ObjectToFunc(Func));
 		}
 	}
 
@@ -618,6 +638,22 @@ public:
 		lua_State* L = s;
 		if (LuaCheckType(Func, L_Func, "Game:GameObjectLoading", { Func }, L)) {
 			LUA_Events_GameObjectLoading.push_back(ObjectToFunc(Func));
+		}
+	}
+
+	/* Ивент: вызывается при загрузке интерфейса */
+	void UILoading(const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Func, L_Func, "Game:UILoading", { Func }, L)) {
+			LUA_Events_UILoading.push_back(ObjectToFunc(Func));
+		}
+	}
+
+	/* Установить скорость времени */
+	void SetSimulationSpeed_(const sol::object& NewST, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckNumber(NewST, "Game:SetSimulationSpeed", { NewST }, L)) {
+			SetSimulationSpeed(ObjectToDouble(NewST));
 		}
 	}
 };
@@ -890,6 +926,22 @@ public:
 		}
 	}
 
+	/* Установить размер, в зависимости от текстуры */
+	void SetSizeFromTexture(const sol::object& ID, const sol::object& Path, const sol::object& Scale, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetSizeFromTexture", { ID, Path, Scale }, L)) {
+			if (LuaCheckType(Path, L_String, "GameObject:SetSizeFromTexture", { ID, Path, Scale }, L)) {
+				double S = 1;
+				if (Scale != sol::nil) {
+					if (LuaCheckNumber(Scale, "GameObject:SetSizeFromTexture", { ID, Path, Scale }, L)) {
+						S = ObjectToDouble(Scale);
+					}
+				}
+				SetGameObjectSizeFromTexture(ObjectToInt(ID), GetResourceID(ObjectToString(Path), ErrorTexture), S);
+			}
+		}
+	}
+
 	/* Изменить текстуру игровому объекту */
 	void SetTexture(const sol::object& ID, const sol::object& Path, sol::this_state s) {
 		lua_State* L = s;
@@ -907,6 +959,54 @@ public:
 			if (LuaCheckType(Path, L_String, "GameObject:SetShader", { ID, Path }, L)) {
 				SetGameObjectShader(ObjectToInt(ID), GetResourceID(ObjectToString(Path), ErrorShader));
 			}
+		}
+	}
+
+	/* Добавить кастомные данные объекту */
+	void SetData(const sol::object& ID, const sol::object& DataID, const sol::object& Data, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetData", { ID, DataID, Data }, L)) {
+			if (LuaCheckType(DataID, L_Int, "GameObject:SetData", { ID, DataID, Data }, L)) {
+				SetGameObjectLuaData(ObjectToInt(ID), ObjectToInt(DataID), Data);
+			}
+		}
+	}
+
+	/* Получить кастомные данные объекта */
+	sol::object GetData(const sol::object& ID, const sol::object& DataID, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:GetData", { ID, DataID }, L)) {
+			if (LuaCheckType(DataID, L_Int, "GameObject:GetData", { ID, DataID }, L)) {
+				return GetGameObjectLuaData(ObjectToInt(ID), ObjectToInt(DataID));
+			}
+		}
+		return sol::nil;
+	}
+
+	/* Получить имя объекта */
+	std::string GetName(const sol::object& ID, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:GetName", { ID }, L)) {
+			return GetGameObject(ObjectToInt(ID), "").Name;
+		}
+		return ErrorString;
+	}
+
+	/* Получить позицию объекта */
+	LUA_Vector2 GetPosition(const sol::object& ID, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:GetPosition", { ID }, L)) {
+			glm::vec2 V2 = GetGameObject(ObjectToInt(ID), "").PositionVisual;
+			return LUA_Vector2(V2.x,V2.y);
+		}
+		return ErrorVector2;
+	}
+
+	/* Удалить объект */
+	void Delete(const sol::object& ID, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:Delete", { ID }, L)) {
+			DeleteGameObject(ObjectToInt(ID));
 		}
 	}
 };
@@ -1053,30 +1153,14 @@ void GameLua(sol::state& LUA) {
 	});
 
 	/* Функции*/
-	LUA["Resources"] = &LUA_Resources_Instance;
-	LUA.new_usertype<LUA_Resources>(
-		"LUA_Resources",
-		"LoadScript", &LUA_Resources::LoadScript,
-		"SaveGameObject", &LUA_Resources::SaveGameObject_,
-		"CloneGameObject", &LUA_Resources::CloneGameObject_
-	);
-
 	LUA["Game"] = &LUA_Game_Instance;
 	LUA.new_usertype<LUA_Game>(
 		"LUA_Game",
 		"Update", &LUA_Game::Update,
-		"GameObjectLoading", &LUA_Game::GameObjectLoading
-	);
-
-	LUA["GameObject"] = &LUA_GameObject_Instance;
-	LUA.new_usertype<LUA_GameObject>(
-		"LUA_GameObject",
-		"Create", &LUA_GameObject::Create,
-		"SetSize", &LUA_GameObject::SetSize,
-		"SetColor", &LUA_GameObject::SetColor,
-		"SetShader", &LUA_GameObject::SetShader,
-		"SetTexture", &LUA_GameObject::SetTexture,
-		"SetPosition", &LUA_GameObject::SetPosition
+		"UILoading", &LUA_Game::UILoading,
+		"GameObjectLoading", &LUA_Game::GameObjectLoading,
+		"SetSimulationSpeed", &LUA_Game::SetSimulationSpeed_,
+		"UpdateEveryGameObject", &LUA_Game::UpdateEveryGameObject
 	);
 
 	LUA["Controls"] = &LUA_Controls_Instance;
@@ -1108,6 +1192,31 @@ void GameLua(sol::state& LUA) {
 		"Orientation", &LUA_Camera::Orientation,
 		"SetOrientation", &LUA_Camera::SetOrientation,
 		"MoveZoomCustom", &LUA_Camera::MoveZoomCustom
+	);
+
+	LUA["Resources"] = &LUA_Resources_Instance;
+	LUA.new_usertype<LUA_Resources>(
+		"LUA_Resources",
+		"LoadScript", &LUA_Resources::LoadScript,
+		"SaveGameObject", &LUA_Resources::SaveGameObject_,
+		"CloneGameObject", &LUA_Resources::CloneGameObject_
+	);
+
+	LUA["GameObject"] = &LUA_GameObject_Instance;
+	LUA.new_usertype<LUA_GameObject>(
+		"LUA_GameObject",
+		"Create", &LUA_GameObject::Create,
+		"Delete", &LUA_GameObject::Delete,
+		"SetData", &LUA_GameObject::SetData,
+		"GetData", &LUA_GameObject::GetData,
+		"SetSize", &LUA_GameObject::SetSize,
+		"GetName", &LUA_GameObject::GetName,
+		"SetColor", &LUA_GameObject::SetColor,
+		"SetShader", &LUA_GameObject::SetShader,
+		"SetTexture", &LUA_GameObject::SetTexture,
+		"SetPosition", &LUA_GameObject::SetPosition,
+		"GetPosition", &LUA_GameObject::GetPosition,
+		"SetSizeFromTexture", &LUA_GameObject::SetSizeFromTexture
 	);
 
 	/* Локальные функции */
@@ -1153,16 +1262,18 @@ void LoadLua(GameMod Mod) {
 
 void UnloadLua() {
 	/* Очистка ивентов */
-	LUA_Events_Update        = {};
-	LUA_Events_MouseScroll   = {};
-	LUA_Events_MousePressed  = {};
-	LUA_Events_MouseReleased = {};
-    LUA_Events_KeyPress      = {};
-    LUA_Events_KeyPressed    = {};
-    LUA_Events_KeyReleased   = {};
-    LUA_Events_KeysPressed   = {};
-    LUA_Events_KeysReleased  = {};
-	
+	LUA_Events_Update                = {};
+	LUA_Events_UpdateEveryGameObject = {};
+	LUA_Events_MouseScroll           = {};
+	LUA_Events_MousePressed          = {};
+	LUA_Events_MouseReleased         = {};
+    LUA_Events_KeyPress              = {};
+    LUA_Events_KeyPressed            = {};
+    LUA_Events_KeyReleased           = {};
+    LUA_Events_KeysPressed           = {};
+    LUA_Events_KeysReleased          = {};
+	LUA_Events_GameObjectLoading     = {};
+	LUA_Events_UILoading             = {};
 	ModsLUA.clear();
 }
 

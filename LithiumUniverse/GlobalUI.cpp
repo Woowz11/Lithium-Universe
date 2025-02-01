@@ -64,7 +64,6 @@ void MakeGameObjectText(int i, std::string Text) {
 	SetGameObjectShader(i, GetResource("Base", "Shaders/Text.lu_shader").ID);
 	SetGameObjectFont(i, GetResource("Base", "Fonts/Default.lu_font").ID);
 	SetGameObjectTexture(i, GetResource("Base", "Fonts/DefaultFont.png").ID);
-	SetGameObjectSize(i, glm::vec2(0.125f, 0.125f));
 }
 
 /* Точка пересекает прямоугольник? */
@@ -115,12 +114,12 @@ void UpdateUI(GameObject& OBJ) {
 		}
 	}
 
-	/*t++;
-	if (OBJ.Name == "fps" && t>1000) {
-		t = 0;
-		std::string fps = std::to_string(1 / DeltaTime);
-		SetGameObjectText(OBJ.GetID(), std::u32string(fps.begin(), fps.end()));
-	}*/
+	if (OBJ.Name == "fps") {
+		SetGameObjectText(OBJ.GetID(), "FPS: " + StringFPS);
+	}
+	if (OBJ.Name == "count") {
+		SetGameObjectText(OBJ.GetID(), "COUNT: " + std::to_string(Scene.size()));
+	}
 }
 
 /* Создать интерфейс */
@@ -130,10 +129,18 @@ void CreateUI(Scenes Scen) {
 		case SCENE_MainMenu: {
 
 			int ui2 = CreateGameObject("ui", RO_UI);
-			SetGameObjectSize(ui2, glm::vec2(2.0f, 2.0f));
+			SetGameObjectSize(ui2, glm::vec2(1.0f, 1.0f));
+			SetGameObjectPosition(ui2, glm::vec2(0, -0.5f));
+			SetGameObjectResize(ui2, false);
 			MakeGameObjectButton(ui2, []() {
 				SetScene(SCENE_Game);
 			}, []() {});
+
+			ui2 = CreateGameObject("title", RO_UI);
+			MakeGameObjectText(ui2, "LITHIUM UNIVERSE");
+			SetGameObjectResize(ui2, false);
+			SetGameObjectPosition(ui2, glm::vec2(-0.5f, 0.5f));
+			SetGameObjectSize(ui2, glm::vec2(2, 2));
 
 			break;
 		}
@@ -144,7 +151,7 @@ void CreateUI(Scenes Scen) {
 			SetGameObjectPosition(ui, glm::vec2(-0.9f, -0.9f));
 
 			MakeGameObjectButton(ui, []() {
-				RemoveAllTestObject();
+				//RemoveAllTestObject();
 				}, []() {});
 
 			ui_test = ui;
@@ -158,16 +165,16 @@ void CreateUI(Scenes Scen) {
 				}, []() {});
 
 			ui_test2 = ui;
-
-			ui = CreateGameObject("CameraObject", RO_Default);
-			SetGameObjectActive(ui, false);
-
-			ui = CreateGameObject("text", RO_Default);
-			MakeGameObjectText(ui, "0123456789 !@#$%^&*()");
 				
-			/*ui = CreateGameObject("fps", RO_UI);
-			MakeGameObjectText(ui, U"");
-			SetGameObjectPosition(ui, glm::vec2(-0.95f,0.95f));*/
+			ui = CreateGameObject("fps", RO_UI);
+			MakeGameObjectText(ui, "");
+			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.9f));
+			SetGameObjectResize(ui, false);
+
+			ui = CreateGameObject("count", RO_UI);
+			MakeGameObjectText(ui, "");
+			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.8f));
+			SetGameObjectResize(ui, false);
 
 			break;
 		}

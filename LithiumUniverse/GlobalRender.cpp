@@ -138,11 +138,10 @@ void CreateBuffers_Default() {
 }
 
 struct TextVertex {
+    glm::vec2 Vertex;
     glm::vec2 UV;
-    glm::vec2 Size;
     int Char;
     int PositionInString;
-    glm::vec2 Offset;
 };
 
 void CreateBuffers_Text() {
@@ -152,22 +151,17 @@ void CreateBuffers_Text() {
     glBindVertexArray(TextVAO);
     glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
 
-    GLsizei stride = sizeof(TextVertex);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, Vertex));
 
-    glEnableVertexAttribArray(0); // UV
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(TextVertex, UV));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, UV));
 
-    glEnableVertexAttribArray(1); // Size
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(TextVertex, Size));
+    glEnableVertexAttribArray(2);
+    glVertexAttribIPointer(2, 1, GL_INT, sizeof(TextVertex), (void*)offsetof(TextVertex, Char));
 
-    glEnableVertexAttribArray(2); // Char
-    glVertexAttribIPointer(2, 1, GL_INT, stride, (void*)offsetof(TextVertex, Char));
-
-    glEnableVertexAttribArray(3); // PositionInString
-    glVertexAttribIPointer(3, 1, GL_INT, stride, (void*)offsetof(TextVertex, PositionInString));
-
-    glEnableVertexAttribArray(4); // Offset (новый атрибут!)
-    glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, Offset));
+    glEnableVertexAttribArray(3);
+    glVertexAttribIPointer(3, 1, GL_INT, sizeof(TextVertex), (void*)offsetof(TextVertex, PositionInString));
 
     CheckGLError("CreateBuffers_Text();");
     glBindVertexArray(0);
@@ -198,7 +192,8 @@ void ClearRender() {
 
 /* ==== Рендер объектов ==== */
 
-Shader CSS;
+Shader* CSS = nullptr;
+Texture* T = nullptr;
 
 /* Рендер квадрата */
 void RenderSquare(const GameObject& OBJ) {
@@ -210,17 +205,17 @@ void RenderSquare(const GameObject& OBJ) {
         return;
     }*/
 
-    CSS.setInt(CSS.UNIFORM_ID, OBJ.GetID());
+    CSS->setInt(CSS->UNIFORM_ID, OBJ.GetID());
 
-    CSS.setVec2(CSS.UNIFORM_POSITION, Position);
-    CSS.setFloat(CSS.UNIFORM_ORIENTATION, -OBJ.OrientationVisual);
-    CSS.setVec2(CSS.UNIFORM_SIZE, Size);
-    CSS.setFloat(CSS.UNIFORM_LAYER, OBJ.Layer);
+    CSS->setVec2(CSS->UNIFORM_POSITION, Position);
+    CSS->setFloat(CSS->UNIFORM_ORIENTATION, -OBJ.OrientationVisual);
+    CSS->setVec2(CSS->UNIFORM_SIZE, Size);
+    CSS->setFloat(CSS->UNIFORM_LAYER, OBJ.Layer);
 
-    CSS.setBool(CSS.UNIFORM_STATIC, OBJ.Static);
-    CSS.setBool(CSS.UNIFORM_PHYSICAL, OBJ.Type == RO_Phys);
-    CSS.setBool(CSS.UNIFORM_INTERFACE, OBJ.Type == RO_UI);
-    CSS.setBool(CSS.UNIFORM_RESIZE, OBJ.Resize);
+    CSS->setBool(CSS->UNIFORM_STATIC, OBJ.Static);
+    CSS->setBool(CSS->UNIFORM_PHYSICAL, OBJ.Type == RO_Phys);
+    CSS->setBool(CSS->UNIFORM_INTERFACE, OBJ.Type == RO_UI);
+    CSS->setBool(CSS->UNIFORM_RESIZE, OBJ.Resize);
     /*if (OBJ.Type == RO_Phys) {
         CSS.setBool("Sleeping", OBJ.Static ? false : !b2Body_IsAwake(GetBody(OBJ.BodyID)));
     }
@@ -243,30 +238,19 @@ void RenderText(const GameObject& OBJ) {
     std::string Text = OBJ.Text;
     Font F = Fonts[OBJ.FontID];
 
-    CSS.setInt(CSS.UNIFORM_ID, OBJ.GetID());
-    CSS.setVec2(CSS.UNIFORM_POSITION, OBJ.PositionVisual);
-    CSS.setBool(CSS.UNIFORM_INTERFACE, OBJ.Type == RO_UI);
-    CSS.setBool(CSS.UNIFORM_RESIZE, OBJ.Resize);
-    CSS.setFloat(CSS.UNIFORM_ORIENTATION, -OBJ.OrientationVisual);
-    CSS.setVec2(CSS.UNIFORM_SIZE, OBJ.SizeVisual);
-    CSS.setFloat(CSS.UNIFORM_LAYER, OBJ.Layer);
+    CSS->setInt(CSS->UNIFORM_ID, OBJ.GetID());
+    CSS->setVec2(CSS->UNIFORM_POSITION, OBJ.PositionVisual);
+    CSS->setBool(CSS->UNIFORM_INTERFACE, OBJ.Type == RO_UI);
+    CSS->setBool(CSS->UNIFORM_RESIZE, OBJ.Resize);
+    CSS->setFloat(CSS->UNIFORM_ORIENTATION, -OBJ.OrientationVisual);
+    CSS->setVec2(CSS->UNIFORM_SIZE, OBJ.SizeVisual);
+    CSS->setFloat(CSS->UNIFORM_LAYER, OBJ.Layer);
 
-    CSS.setBool(CSS.UNIFORM_STATIC, OBJ.Static);
-    CSS.setBool(CSS.UNIFORM_PHYSICAL, OBJ.Type == RO_Phys);
-    /*if (OBJ.Type == RO_Phys) {
-        CSS.setBool(CSS., OBJ.Static ? false : !b2Body_IsAwake(GetBody(OBJ.BodyID)));
-    }
-    else {
-        CSS.setBool("Sleeping", false);
-    }*/
-
-    //CSS.setInt("TextLength", Text.size());
-
-    FontChar& CinfoError = F.Chars[-1];
-    //CSS.setVec2("ErrorCharSize", glm::vec2(CinfoError.W, CinfoError.H));
+    CSS->setBool(CSS->UNIFORM_STATIC, OBJ.Static);
+    CSS->setBool(CSS->UNIFORM_PHYSICAL, OBJ.Type == RO_Phys);
 
     std::vector<TextVertex> TextVertices;
-    float x = 0;
+    float Indent = 0;
     float Spacing = (1.0f/8);
     for (size_t i = 0; i < Text.size(); i++) {
         int CharID = Text[i];
@@ -275,58 +259,32 @@ void RenderText(const GameObject& OBJ) {
             CharID = -1;
         }
         FontChar& Cinfo = F.Chars[CharID];
-        Cinfo.W = 8;
-        Cinfo.H = 8;
+        int MaxX = (F.MaxX + 1);
+        int MaxY = (F.MaxY + 1);
 
-        /*
-        
-        float Square[] = {
-            -1.0f, -1.0f, -1.0f,    0.0f, 0.0f,    0,
-             1.0f, -1.0f, -1.0f,    1.0f, 0.0f,    1,
-             1.0f,  1.0f, -1.0f,    1.0f, 1.0f,    2,
-            -1.0f,  1.0f, -1.0f,    0.0f, 1.0f,    3
-        };
-        
-        */
-
-        /*glm::vec2 pos[4] = {
-            {x, 0}, {x + Cinfo.W, 0}, {x + Cinfo.W, Cinfo.H}, {x, Cinfo.H}
-        };
-
-        glm::vec2 uv[4] = {
-            {Cinfo.X, Cinfo.Y},
-            {Cinfo.X + Cinfo.W, Cinfo.Y},
-            {Cinfo.X + Cinfo.W, Cinfo.Y + Cinfo.H},
-            {Cinfo.X, Cinfo.Y + Cinfo.H}
-        };
-
-        for (int j = 0; j < 4; j++) {
-            TextVertices.push_back(TextVertex( uv[j], glm::vec2(Cinfo.W, Cinfo.H), CharID, i, pos[j] ));
-        }*/
+        double W = Cinfo.W/MaxX;
+        double X = (double)Cinfo.X/MaxX;
+        double Y = (double)Cinfo.Y/MaxY;
 
         glm::vec2 pos[4] = {
-            {x       , 0.0f},
-            {x + 1.0f, 0.0f},
-            {x + 1.0f, 1.0f},
-            {x       , 1.0f}
+            {Indent          , 0.0f},
+            {Indent + Cinfo.W, 0.0f},
+            {Indent + Cinfo.W, 1.0f},
+            {Indent          , 1.0f}
         };
 
         glm::vec2 uv[4] = {
-            {Cinfo.X,           Cinfo.Y + Cinfo.H},
-            {Cinfo.X + Cinfo.W, Cinfo.Y + Cinfo.H},
-            {Cinfo.X + Cinfo.W, Cinfo.Y},
-            {Cinfo.X,           Cinfo.Y}
+            {X,     Y + (1.0/MaxY)},
+            {X + W, Y + (1.0/MaxY)},
+            {X + W, Y             },
+            {X,     Y             }
         };
 
         for (int j = 0; j < 4; j++) {
-            TextVertices.push_back(TextVertex(uv[j], glm::vec2(Cinfo.W, Cinfo.H), CharID, i, pos[j]));
+            TextVertices.push_back(TextVertex(pos[j], uv[j], CharID, i));
         }
 
-        x += 1.0f + Spacing;//Cinfo.W + Spacing;
-        //CSS.setInt("TextCharSize", TotalW);
-
-        //i++;
-        //TotalW += 8;
+        Indent += Cinfo.W + Spacing;
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
@@ -359,33 +317,34 @@ void Render(const std::vector<GameObject>& Scene) {
 
     for (const GameObject& OBJ : Scene) {
         if (!OBJ.Deleted && OBJ.Active && OBJ.Render) {
-            Texture OBJ_Texture = Texturies[OBJ.BaseTextureID];//GetResourceAssetID(OBJ.BaseTextureRes)];
+            Texture OBJ_Texture = Texturies[OBJ.BaseTextureID];
             if (OBJ_Texture.ID != lastTexID) {
                 lastTexID = OBJ_Texture.ID;
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, lastTexID);
             }
 
-            Shader OBJ_Shader = Shaders[OBJ.BaseShaderID];//GetResourceAssetID(OBJ.BaseShaderRes)];
+            Shader OBJ_Shader = Shaders[OBJ.BaseShaderID];
             if (OBJ_Shader.ID != lastShaderID) {
                 lastShaderID = OBJ_Shader.ID;
                 glUseProgram(lastShaderID);
             }
 
-            CSS = OBJ_Shader;
+            CSS = &OBJ_Shader;
+            T = &OBJ_Texture;
 
-            CSS.setVec2(CSS.UNIFORM_TEXTURESIZE, glm::vec2(OBJ_Texture.Width, OBJ_Texture.Height));
-            CSS.setVec2(CSS.UNIFORM_SCREENSTARTSIZE, ScreenStartSize);
-            CSS.setVec2(CSS.UNIFORM_SCREENSIZE, ScreenSize);
-            CSS.setVec2(CSS.UNIFORM_MOUSEPOSITION, MousePositionScreen);
-            CSS.setVec2(CSS.UNIFORM_CAMERAPOSITION, -Camera->Position);
-            CSS.setFloat(CSS.UNIFORM_CAMERAORIENTATION, Camera->Orientation);
-            CSS.setFloat(CSS.UNIFORM_CAMERAZOOM, Camera->Zoom);
-            CSS.setFloat(CSS.UNIFORM_RANDOM, Rand);
-            CSS.setFloat(CSS.UNIFORM_LOCALRANDOM, (static_cast<double>(rand()) / RAND_MAX));
-            CSS.setFloat(CSS.UNIFORM_TIME, ShaderTime);
-            CSS.setVec4(CSS.UNIFORM_COLOR, OBJ.Color);
-            CSS.setBool(CSS.UNIFORM_DEBUGRENDER, DebugRender);
+            CSS->setVec2(CSS->UNIFORM_TEXTURESIZE, glm::vec2(OBJ_Texture.Width, OBJ_Texture.Height));
+            CSS->setVec2(CSS->UNIFORM_SCREENSTARTSIZE, ScreenStartSize);
+            CSS->setVec2(CSS->UNIFORM_SCREENSIZE, ScreenSize);
+            CSS->setVec2(CSS->UNIFORM_MOUSEPOSITION, MousePositionScreen);
+            CSS->setVec2(CSS->UNIFORM_CAMERAPOSITION, -Camera->Position);
+            CSS->setFloat(CSS->UNIFORM_CAMERAORIENTATION, Camera->Orientation);
+            CSS->setFloat(CSS->UNIFORM_CAMERAZOOM, Camera->Zoom);
+            CSS->setFloat(CSS->UNIFORM_RANDOM, Rand);
+            CSS->setFloat(CSS->UNIFORM_LOCALRANDOM, (static_cast<double>(rand()) / RAND_MAX));
+            CSS->setFloat(CSS->UNIFORM_TIME, ShaderTime);
+            CSS->setVec4(CSS->UNIFORM_COLOR, OBJ.Color);
+            CSS->setBool(CSS->UNIFORM_DEBUGRENDER, DebugRender);
 
             if (OBJ.RenderType != CurrentRenderType) {
                 CurrentRenderType = OBJ.RenderType;

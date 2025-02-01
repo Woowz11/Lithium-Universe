@@ -98,6 +98,9 @@
     <ClCompile Include="Font.cpp">
       <Filter>Scripts\Render</Filter>
     </ClCompile>
+    <ClCompile Include="GlobalSettings.cpp">
+      <Filter>Scripts\Global</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -162,6 +165,9 @@
     </ClInclude>
     <ClInclude Include="FontChar.h">
       <Filter>Scripts\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalSettings.h">
+      <Filter>Scripts\Global</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

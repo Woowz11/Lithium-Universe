@@ -2,6 +2,8 @@
 #define GLM_FORCE_RADIANS
 #include <GLM/glm.hpp>
 
+#include "sol/sol.hpp";
+
 #include <string>
 #include <vector>
 #include <box2d/box2d.h>
@@ -94,20 +96,19 @@ void RefreshGameObjectCollider__(GameObject& OBJ) {
 /* Клонировать данные одного игрового объекта в другой (private) */
 void CloneGameObjectValuesFromOther__(GameObject& A, GameObject& B) {
 	if (!A.Deleted && !B.Deleted) {
-		A.Name = B.Name;
+		int i = A.GetID();
+
+		A.Name = B.Name + " (clone)";
 		A.Type = B.Type;
 		A.Active = B.Active;
 		A.DontDelete = B.DontDelete;
-		A.BaseTextureRes = B.BaseTextureRes;
-		A.BaseTextureID = B.BaseTextureID;
-		A.BaseShaderRes = B.BaseShaderRes;
-		A.BaseShaderID = B.BaseShaderID;
-		A.FontRes = B.FontRes;
-		A.FontID = B.FontID;
-		A.PositionVisual = B.PositionVisual;
+		SetGameObjectTexture(i, B.BaseTextureRes);
+		SetGameObjectShader(i, B.BaseShaderRes);
+		SetGameObjectFont(i, B.FontRes);
+		SetGameObjectPosition(i, B.PositionVisual);
+		SetGameObjectSize(i, B.SizeVisual);
+		SetGameObjectOrientation(i, B.OrientationVisual);
 		A.LinePositionVisual = B.LinePositionVisual;
-		A.SizeVisual = B.SizeVisual;
-		A.OrientationVisual = B.OrientationVisual;
 		A.Color = B.Color;
 		A.Layer = B.Layer;
 		A.Render = B.Render;
@@ -117,8 +118,7 @@ void CloneGameObjectValuesFromOther__(GameObject& A, GameObject& B) {
 		A.Text = B.Text;
 		A.Static = B.Static;
 		A.Collider = B.Collider;
-
-		int i = A.GetID();
+		A.CreatedFromMods = B.CreatedFromMods;
 
 		if (B.Type == RO_Phys) {
 			SetGameObjectTransform(i,B.PositionVisual, B.OrientationVisual);
@@ -307,6 +307,31 @@ void SetGameObjectFont(const int i, const int f) {
 	}
 }
 
+/* Установить данные LUA объекту */
+void SetGameObjectLuaData(const int i, const int DataID, const sol::object& Data) {
+	GameObject& OBJ = GetGameObject(i, "SetGameObjectLuaData(" + std::to_string(i) + "," + std::to_string(DataID) + ",?);");
+	if (!OBJ.Deleted) {
+		OBJ.Data[DataID] = Data;
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectLuaData(" + std::to_string(i) + "," + std::to_string(DataID) + ",?);");
+	}
+}
+
+/* Получить данные LUA объекту */
+sol::object GetGameObjectLuaData(const int i, const int DataID) {
+	GameObject& OBJ = GetGameObject(i, "GetGameObjectLuaData(" + std::to_string(i) + "," + std::to_string(DataID) + ");");
+	if (!OBJ.Deleted) {
+		if (OBJ.Data.contains(DataID)) {
+			return OBJ.Data[DataID];
+		}
+	}
+	else {
+		GameObjectDeleted__(OBJ, "GetGameObjectLuaData(" + std::to_string(i) + "," + std::to_string(DataID) + ");");
+	}
+	return sol::nil;
+}
+
 /* Установить шейдер объекту */
 void SetGameObjectShader(const int i, const int s) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectShader(" + std::to_string(i) + "," + std::to_string(s) + ");");
@@ -381,12 +406,12 @@ glm::vec4 GetGameObjectColor(const int i) {
 
 /* Установить цвет объекту */
 void SetGameObjectColor(const int i, const glm::vec4 c) {
-	GameObject& OBJ = GetGameObject(i, "SetGameObjectSize(" + std::to_string(i) + "," + ToStringVec4(c) + ");");
+	GameObject& OBJ = GetGameObject(i, "SetGameObjectColor(" + std::to_string(i) + "," + ToStringVec4(c) + ");");
 	if (!OBJ.Deleted) {
 		OBJ.Color = c;
 	}
 	else {
-		GameObjectDeleted__(OBJ, "SetGameObjectSize(" + std::to_string(i) + "," + ToStringVec4(c) + ");");
+		GameObjectDeleted__(OBJ, "SetGameObjectColor(" + std::to_string(i) + "," + ToStringVec4(c) + ");");
 	}
 }
 
@@ -399,13 +424,38 @@ glm::vec2 GetGameObjectSize(const int i) {
 void SetGameObjectSize(const int i, const glm::vec2 s) {
 	GameObject& OBJ = GetGameObject(i, "SetGameObjectSize(" + std::to_string(i) + "," + ToStringVec2(s) + ");");
 	if (!OBJ.Deleted) {
-		OBJ.SizeVisual = s;
-		if (OBJ.Type == RO_Phys) {
-			RefreshGameObjectCollider__(OBJ);
+		if (s.x > 0 && s.y > 0) {
+			OBJ.SizeVisual = s;
+			if (OBJ.Type == RO_Phys) {
+				RefreshGameObjectCollider__(OBJ);
+			}
+		}
+		else {
+			Error("GAMEOBJ", "Unable to apply size to object because size is negative! SetGameObjectSize(" + std::to_string(i) + "," + ToStringVec2(s) + ");");
 		}
 	}
 	else {
 		GameObjectDeleted__(OBJ, "SetGameObjectSize(" + std::to_string(i) + "," + ToStringVec2(s) + ");");
+	}
+}
+
+/* Установить размер объекту ориентируясь по текстуре */
+void SetGameObjectSizeFromTexture(const int i, const int t, const double s) {
+	GameObject& OBJ = GetGameObject(i, "SetGameObjectSizeFromTexture(" + std::to_string(i) + "," + std::to_string(t) + "," + std::to_string(s) + ");");
+	if (!OBJ.Deleted) {
+		if (s > 0) {
+			Texture T = Texturies[GetResourceAssetID(t)];
+			OBJ.SizeVisual = glm::vec2((double)T.Width / 32 * s, (double)T.Height / 32 * s);
+			if (OBJ.Type == RO_Phys) {
+				RefreshGameObjectCollider__(OBJ);
+			}
+		}
+		else {
+			Error("GAMEOBJ", "Cannot apply GameObject size from texture because size <= 0! SetGameObjectSizeFromTexture(" + std::to_string(i) + "," + std::to_string(t) + "," + std::to_string(s) + ");");
+		}
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectSizeFromTexture(" + std::to_string(i) + "," + std::to_string(t) + "," + std::to_string(s) + ");");
 	}
 }
 
@@ -537,8 +587,8 @@ int CreateGameObject(const std::string Name = "[New GameObject]", const RO_Type 
 	OBJ.CreatedFromMods = Modded;
 	Scene.push_back(OBJ);
 
-	SetGameObjectShader (OBJ.GetID(), GetResource("Base", "Shaders/Default.lu_shader"        ).ID);
-	SetGameObjectTexture(OBJ.GetID(), GetResource("Base", "Textures/Error/NotSelected.png").ID);
+	SetGameObjectTexture(OBJ.GetID(), GetResource("Base:Textures/Error/NotSelected.png").ID);
+	SetGameObjectShader (OBJ.GetID(), GetResource("Base:Shaders/Default.lu_shader"     ).ID);
 
 	switch (ObjectType)
 	{

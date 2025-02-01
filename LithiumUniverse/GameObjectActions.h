@@ -2,6 +2,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_RADIANS
 #include <GLM/glm.hpp>
+#include "sol/sol.hpp";
 
 #include <vector>
 #include <box2d/box2d.h>
@@ -40,11 +41,14 @@ void SetGameObjectCollider(const int i, const ColliderType CT);
 void SetGameObjectSelectable(const int i, const bool b);
 void SetGameObjectStatic(const int i, const bool b);
 void SetGameObjectSize(const int i, const glm::vec2 s);
+void SetGameObjectSizeFromTexture(const int i, const int t, const double s);
 void SetGameObjectRenderable(const int i, const bool b);
 void SetGameObjectColor(const int i, const glm::vec4 c);
 void SetGameObjectPosition(const int i, const glm::vec2 p);
 void SetGameObjectOrientation(const int i, const float r);
 void SetGameObjectTransform(const int i, glm::vec2 p, const float r);
+void SetGameObjectLuaData(const int i, const int DataID, const sol::object& Data);
+sol::object GetGameObjectLuaData(const int i, const int DataID);
 
 glm::vec2 GetGameObjectPosition(const int i);
 float GetGameObjectOrientation(const int i);
