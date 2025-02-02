@@ -27,6 +27,9 @@ extern glm::vec2 MousePosition;
 extern glm::vec2 MousePositionNonResize;
 extern glm::vec2 MouseWorldPosition;
 
+extern int TotalSceneGameObjects;
+extern int TotalDeletedGameObjects;
+
 extern uint32_t START_WINDOW_WIDTH;
 extern uint32_t START_WINDOW_HEIGHT;
 extern uint32_t CURRENT_WINDOW_WIDTH;

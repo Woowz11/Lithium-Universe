@@ -188,8 +188,15 @@
     <ClInclude Include="GlobalSettings.h" />
     <ClInclude Include="GlobalUI.h" />
     <ClInclude Include="LithiumUniverse.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="StringActions.h" />
     <ClInclude Include="Texture.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -119,6 +119,7 @@ void CloneGameObjectValuesFromOther__(GameObject& A, GameObject& B) {
 		A.Static = B.Static;
 		A.Collider = B.Collider;
 		A.CreatedFromMods = B.CreatedFromMods;
+		A.CreatedFromPlayer = B.CreatedFromPlayer;
 
 		if (B.Type == RO_Phys) {
 			SetGameObjectTransform(i,B.PositionVisual, B.OrientationVisual);
@@ -552,6 +553,7 @@ void DeleteGameObject(const int i, bool IgnoreError) {
 		}
 
 		OBJ.Delete();
+		TotalDeletedGameObjects++;
 	}
 	else {
 		if (!IgnoreError) {
@@ -586,6 +588,7 @@ int CreateGameObject(const std::string Name = "[New GameObject]", const RO_Type 
 	if (OBJ.GetID() < 0) { Error("GAMEOBJ", "Invalid GameObject ID [" + std::to_string(OBJ.GetID()) + "]! CreateGameObject(\"" + Name + "\"," + std::to_string(ObjectType) + ");"); }
 	OBJ.CreatedFromMods = Modded;
 	Scene.push_back(OBJ);
+	TotalSceneGameObjects++;
 
 	SetGameObjectTexture(OBJ.GetID(), GetResource("Base:Textures/Error/NotSelected.png").ID);
 	SetGameObjectShader (OBJ.GetID(), GetResource("Base:Shaders/Default.lu_shader"     ).ID);

@@ -39,6 +39,10 @@ float MS = -1;
 /* Игра скомпилирована в Dev режиме? */
 bool DeveloperVersion = false;
 
+/* Кол-во объектов на сцене */
+int TotalSceneGameObjects = 0;
+int TotalDeletedGameObjects = 0;
+
 /* Игровая камера */
 GameCamera* Camera = new GameCamera();
 
@@ -71,13 +75,16 @@ void SetScene(Scenes Scen) {
 	if (Scen != CurrentScene) {
 		Print("SCENE", "Scene changed to (" + std::to_string(Scen) + ")!");
 
+		Buttons = {};
+
 		int i = 0;
 		for (GameObject& OBJ : Scene) {
 			DeleteGameObject(i, true);
 			i++;
 		}
 		Scene = {};
-		Buttons = {};
+		TotalSceneGameObjects = 0;
+		TotalDeletedGameObjects = 0;
 		Bodies = {};
 
 		if (CurrentScene == SCENE_Game) {

@@ -7,11 +7,13 @@
 class Button {
 public:
 	int ID;
+	int ButtonID;
 	std::function<void()> WhenLeftClick;
 	std::function<void()> WhenRightClick;
 
-	Button(int i, std::function<void()> lc, std::function<void()> rc) {
+	Button(int i, int j, std::function<void()> lc, std::function<void()> rc) {
 		ID = i;
+		ButtonID = j;
 		WhenLeftClick = lc;
 		WhenRightClick = rc;
 	}

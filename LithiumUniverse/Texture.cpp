@@ -40,6 +40,7 @@ Texture CreateTexture(std::string Path, std::string Atlas) {
             info.HasAlpha = (channels == 4);
             info.Width = width;
             info.Height = height;
+            info.Colors = data;
             GLenum Format = info.HasAlpha ? GL_RGBA : GL_RGB;
 
             glTexImage2D(GL_TEXTURE_2D, 0, Format, width, height, 0, Format, GL_UNSIGNED_BYTE, data);

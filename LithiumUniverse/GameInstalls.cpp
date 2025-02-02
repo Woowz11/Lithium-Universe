@@ -92,6 +92,7 @@ private:
 		CURRENT_WINDOW_WIDTH = width;
 		CURRENT_WINDOW_HEIGHT = height;
 		glViewport(0, 0, width, height);
+		RenderWindowSizeChanged();
 	}
 
 	/* Загрузка GLFW */
@@ -278,19 +279,8 @@ private:
 		}
 	}
 
-	/* Поток на управление */
-	/*std::atomic<bool> ControlsThread_b = true;
-	void ControlsThread() {
-		while (ControlsThread_b) {
-			Controls();
-			std::this_thread::sleep_for(std::chrono::milliseconds(5));
-		}
-	}*/
-
-	/* Главный поток */
-	void MainThread() {
-		//std::thread ControlsThread_ = std::thread(ControlsThread);
-
+	/* Цикл всего */
+	void Loop() {
 		while (!glfwWindowShouldClose(Window)) {
 			auto StartTime = std::chrono::high_resolution_clock::now();
 
@@ -312,18 +302,11 @@ private:
 			auto EndTime = std::chrono::high_resolution_clock::now();
 			MS = std::chrono::duration_cast<std::chrono::microseconds>(EndTime - StartTime).count() / 1000.0;
 		}
-
-		//ControlsThread_b = false;
-		//ControlsThread_.join();
-	}
-
-	/* Цикл всего */
-	void Loop() {
-		MainThread();
 	}
 
 	/* Очистить GLFW */
 	void DestroyGLFW() {
+		glfwDestroyWindow(Window);
 		glfwTerminate();
 	}
 
@@ -344,6 +327,7 @@ public:
 	/* Запуск игры */
 	void Run() {
 		RunAll();
+		SetIcon(GetResource("Base:Other/Icon.png").FullPath);
 		if (GlobalError == SUCCESS) {
 			Loop();
 		}
@@ -357,7 +341,19 @@ public:
 
 	/* ==== Управление, другие функции ==== */
 
-	int KeyPressed(int Key) {
+	void SetIcon(const std::string Path) {
+		int w, h, c;
+		unsigned char* p = stbi_load(Path.c_str(), &w, &h, &c, 4);
+		
+		GLFWimage icon[1];
+		icon[0].width = w;
+		icon[0].height = h;
+		icon[0].pixels = p;
+
+		glfwSetWindowIcon(Window, 1, icon);
+	}
+
+	int KeyPressed(const int Key) {
 		return glfwGetKey(Window, Key);
 	}
 
@@ -365,7 +361,7 @@ public:
 		glfwSetWindowShouldClose(Window, true);
 	}
 
-	void SetFPSLimit(int newFpsLimit) {
+	void SetFPSLimit(const int newFpsLimit) {
 		if (newFpsLimit <= 0) {
 			FPSLimit = false;
 			Print("LU", "FPS limit removed!");

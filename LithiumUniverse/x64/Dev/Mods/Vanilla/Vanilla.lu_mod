@@ -1,9 +1,9 @@
 {
-	"Name"          : "Vanilla",
-	"Version"       : "0.0",
-	"Author"        : "Woowz11",
-	"Description"   : "Regular Lithium Universe game objects",
-	"MainScript"    : "Vanilla:Base.lua",
-	"Compatibility" : ["VanillaPhysic"],
-	"Incompatible"  : []
+	"Name"        : "Vanilla",
+	"Version"     : "0.0",
+	"Author"      : "Woowz11",
+	"Description" : "Regular Lithium Universe game objects",
+	"MainScript"  : "Vanilla:Base.lua",
+	"Requires"    : ["VanillaPhysic"],
+	"Conflict"    : []
 }

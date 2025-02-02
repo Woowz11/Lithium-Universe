@@ -6,6 +6,8 @@ GameSlowing = false
 GamePaused = false
 
 Controls:KeyPressed(function(Key)
+	if (UIOpened) then return end
+
 	if (Key == KEY_E) then
 		SpawnGameObject(SelectedSpawningGameObject,true,MouseWorldPosition())
 	end
@@ -44,6 +46,6 @@ function SpawnGameObject(Path, Right, Position)
 	if (Path~="") then
 		local OBJ = Resources:CloneGameObject(Path)
 		GameObject:SetPosition(OBJ,Position)
-		GameObject:SetData(OBJ,88612412,true)
+		GameObject:SetCreatedFromPlayer(OBJ,true)
 	end
 end

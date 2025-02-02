@@ -52,6 +52,7 @@ public:
 	bool Deleted = false;	        /* Объект удалённый?      */
 	bool DontDelete = false;        /* Не удалять объект      */
 	bool CreatedFromMods = false;   /* Объект создан модом?   */
+	bool CreatedFromPlayer = false; /* Объект создан игроком? */
 
 	/* ==== Настройки рендера ==== */
 	int BaseTextureRes           = 0;                      /* Базовая текстура                */

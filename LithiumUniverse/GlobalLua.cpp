@@ -893,6 +893,14 @@ public:
 		return OBJ;
 	}
 
+	/* Удалить объект */
+	void Delete(const sol::object& ID, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:Delete", { ID }, L)) {
+			DeleteGameObject(ObjectToInt(ID));
+		}
+	}
+
 	/* Изменить позицию игровому объекту */
 	void SetPosition(const sol::object& ID, const sol::object& NewPosition, sol::this_state s) {
 		lua_State* L = s;
@@ -902,6 +910,16 @@ public:
 				SetGameObjectPosition(ObjectToInt(ID), glm::vec2(V2.x, V2.y));
 			}
 		}
+	}
+
+	/* Получить позицию объекта */
+	LUA_Vector2 GetPosition(const sol::object& ID, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:GetPosition", { ID }, L)) {
+			glm::vec2 V2 = GetGameObject(ObjectToInt(ID), "").PositionVisual;
+			return LUA_Vector2(V2.x, V2.y);
+		}
+		return ErrorVector2;
 	}
 
 	/* Изменить цвет игровому объекту */
@@ -992,22 +1010,23 @@ public:
 		return ErrorString;
 	}
 
-	/* Получить позицию объекта */
-	LUA_Vector2 GetPosition(const sol::object& ID, sol::this_state s) {
+	/* Изменить, объект создан игроком? */
+	void SetCreatedFromPlayer(const sol::object& ID, const sol::object& B, sol::this_state s) {
 		lua_State* L = s;
-		if (LuaCheckGameObject(ID, "GameObject:GetPosition", { ID }, L)) {
-			glm::vec2 V2 = GetGameObject(ObjectToInt(ID), "").PositionVisual;
-			return LUA_Vector2(V2.x,V2.y);
+		if (LuaCheckGameObject(ID, "GameObject:SetCreatedFromPlayer", { ID, B }, L)) {
+			if (LuaCheckType(B, L_Bool, "GameObject:SetCreatedFromPlayer", { ID, B }, L)) {
+				GetGameObject(ObjectToInt(ID), "").CreatedFromPlayer = ObjectToBool(B);
+			}
 		}
-		return ErrorVector2;
 	}
 
-	/* Удалить объект */
-	void Delete(const sol::object& ID, sol::this_state s) {
+	/* объект создан игроком? */
+	bool GetCreatedFromPlayer(const sol::object& ID, sol::this_state s) {
 		lua_State* L = s;
-		if (LuaCheckGameObject(ID, "GameObject:Delete", { ID }, L)) {
-			DeleteGameObject(ObjectToInt(ID));
+		if (LuaCheckGameObject(ID, "GameObject:GetCreatedFromPlayer", { ID }, L)) {;
+			return GetGameObject(ObjectToInt(ID), "").CreatedFromPlayer;
 		}
+		return false;
 	}
 };
 
@@ -1216,7 +1235,9 @@ void GameLua(sol::state& LUA) {
 		"SetTexture", &LUA_GameObject::SetTexture,
 		"SetPosition", &LUA_GameObject::SetPosition,
 		"GetPosition", &LUA_GameObject::GetPosition,
-		"SetSizeFromTexture", &LUA_GameObject::SetSizeFromTexture
+		"SetSizeFromTexture", &LUA_GameObject::SetSizeFromTexture,
+		"SetCreatedFromPlayer", &LUA_GameObject::SetCreatedFromPlayer,
+		"GetCreatedFromPlayer", &LUA_GameObject::GetCreatedFromPlayer
 	);
 
 	/* Локальные функции */

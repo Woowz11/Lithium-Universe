@@ -169,5 +169,18 @@
     <ClInclude Include="GlobalSettings.h">
       <Filter>Scripts\Global</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Scripts</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Icon.ico">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
 </Project>

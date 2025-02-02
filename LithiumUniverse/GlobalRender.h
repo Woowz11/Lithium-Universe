@@ -8,6 +8,7 @@
 
 void Render(const std::vector<GameObject>& Scene);
 void InstallRender();
+void RenderWindowSizeChanged();
 void InstallRenderAfterResources();
 void ClearRender();
 bool PointInsideCamera(const glm::vec2 Pos, const float PointSize);

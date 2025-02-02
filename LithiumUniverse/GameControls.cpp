@@ -80,8 +80,8 @@ void ProcessUIClick(const int i, const bool Left) {
 	GameObject& OBJ = GetGameObject(i, "ProcessUIClick(" + std::to_string(i) + "," + ToStringBool(Left) + ");");
 
 	auto it = std::find_if(Buttons.begin(), Buttons.end(), [&OBJ](const Button& B) {
-		return B.ID == OBJ.ButtonID;
-		});
+		return B.ButtonID == OBJ.ButtonID;
+	});
 
 	if (it != Buttons.end()) {
 		Button B = Buttons[OBJ.ButtonID];
@@ -165,6 +165,19 @@ void ControlsKeyboard(const int KEY, const int ACTION) {
 	}
 
 	if (ACTION == GLFW_PRESS) {
+
+		if (KEY == GLFW_KEY_KP_7 && ACTION == GLFW_PRESS) {
+			SetFPSLimit(15);
+		}
+
+		if (KEY == GLFW_KEY_KP_8 && ACTION == GLFW_PRESS) {
+			SetFPSLimit(60);
+		}
+
+		if (KEY == GLFW_KEY_KP_9 && ACTION == GLFW_PRESS) {
+			SetFPSLimit(0);
+		}
+
 		for (auto Event : LUA_Events_KeyPressed) {
 			if (Event.Key == KEY) {
 				Event.Event();

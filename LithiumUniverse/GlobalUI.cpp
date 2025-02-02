@@ -33,7 +33,7 @@ void MakeGameObjectUI__(int i) {
 
 /* Обновление кнопки при наведении курсора на неё (private) */
 void ButtonHover__(int i, bool Hover) {
-	if (i >= 0) {
+	if (!CheckOutSceneIndex(i)) {
 		GameObject& OBJ = GetGameObject(i, "ButtonHover__(" + std::to_string(i) + "," + ToStringBool(Hover) + ");");
 		if (OBJ.ButtonID != -1) {
 			if (Hover) {
@@ -52,7 +52,7 @@ void MakeGameObjectButton(int i, std::function<void()> WhenLeftClick, std::funct
 	SetGameObjectTexture(i, GetResource("Base", "Textures/Button.png").ID);
 	int Bi = Buttons.size();
 	OBJ.ButtonID = Bi;
-	Button B = Button(i,WhenLeftClick,WhenRightClick);
+	Button B = Button(i,Bi,WhenLeftClick,WhenRightClick);
 	Buttons.push_back(B);
 }
 
@@ -117,8 +117,17 @@ void UpdateUI(GameObject& OBJ) {
 	if (OBJ.Name == "fps") {
 		SetGameObjectText(OBJ.GetID(), "FPS: " + StringFPS);
 	}
+	t++;
+	if (t > 50) {
+		if (OBJ.Name == "fps-real") {
+			glm::vec4 C = glm::vec4(1, FPS / 300, FPS / 1000, 1);
+			SetGameObjectText(OBJ.GetID(), "FPS-R: " + std::to_string(FPS));
+			SetGameObjectColor(OBJ.GetID(), C);
+			t = 0;
+		}
+	}
 	if (OBJ.Name == "count") {
-		SetGameObjectText(OBJ.GetID(), "COUNT: " + std::to_string(Scene.size()));
+		SetGameObjectText(OBJ.GetID(), "COUNT: " + std::to_string(TotalSceneGameObjects-TotalDeletedGameObjects));
 	}
 }
 
@@ -171,9 +180,14 @@ void CreateUI(Scenes Scen) {
 			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.9f));
 			SetGameObjectResize(ui, false);
 
-			ui = CreateGameObject("count", RO_UI);
+			ui = CreateGameObject("fps-real", RO_UI);
 			MakeGameObjectText(ui, "");
 			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.8f));
+			SetGameObjectResize(ui, false);
+
+			ui = CreateGameObject("count", RO_UI);
+			MakeGameObjectText(ui, "");
+			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.7f));
 			SetGameObjectResize(ui, false);
 
 			break;

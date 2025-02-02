@@ -1,9 +1,14 @@
+UIOpened = false
+
 function CreateOther()
 
 end
 
 function CreateInventory()
-
+	local Inventory = GameObject:Create("Inventory", GO_UI)
+	GameObject:SetSize(Inventory, ScreenScale-Vector2(0.1))
+	--GameObject:
+	UIOpened = true
 end
 
 function CreateHotBar()
@@ -14,7 +19,7 @@ function CreateHotBar()
 end
 
 function CreateGUI()
-	CreateInventory()
 	CreateHotBar()
+	--CreateInventory()
 	CreateOther()
 end

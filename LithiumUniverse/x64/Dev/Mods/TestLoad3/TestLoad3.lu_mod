@@ -1,0 +1,8 @@
+{
+	"Name"        : "TESTLOAD3",
+	"Version"     : "0.0",
+	"Author"      : "",
+	"Description" : "",
+	"Requires"    : ["TestLoad1","TestLoad2"],
+	"Conflict"    : ["Sandbox"]
+}
