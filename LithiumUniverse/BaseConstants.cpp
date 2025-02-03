@@ -9,8 +9,8 @@
  * y - Номер отладочной сборки (точнее отправки коммита на гит)
  */
 
-const int GameVersionMajor = 0;
-const int GameVersionMinor = 45;
+const int GameVersionMajor = 1;
+const int GameVersionMinor = 46;
 
 std::string GetGameVersionMinor() {
     const std::string alphabet = "aAbBcCdDxXyYzZwW";

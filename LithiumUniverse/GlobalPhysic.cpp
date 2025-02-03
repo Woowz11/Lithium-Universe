@@ -112,7 +112,7 @@ void CreateScene(Scenes Scen) {
 			SetGameObjectSize(platform, glm::vec2(100, 10));
 			SetGameObjectColor(platform, glm::vec4(0.125f, 0.125f, 0.125f, 1));
 			SetGameObjectOrientation(platform, glm::radians(90.0f));
-
+			
 			break;
 		}
 		default: {

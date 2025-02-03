@@ -283,6 +283,7 @@ void RenderSquare(const GameObject& OBJ) {
     CSS->setVec2(CSS->UNIFORM_POSITION, Position);
     CSS->setFloat(CSS->UNIFORM_ORIENTATION, -OBJ.OrientationVisual);
     CSS->setVec2(CSS->UNIFORM_SIZE, Size);
+    CSS->setVec2(CSS->UNIFORM_CENTER, glm::vec2(OBJ.Center.x, -OBJ.Center.y));
     CSS->setFloat(CSS->UNIFORM_LAYER, OBJ.Layer);
 
     CSS->setBool(CSS->UNIFORM_STATIC, OBJ.Static);
@@ -319,11 +320,14 @@ void RenderText(const GameObject& OBJ) {
     CSS->setBool(CSS->UNIFORM_RESIZE, OBJ.Resize);
     CSS->setFloat(CSS->UNIFORM_ORIENTATION, -OBJ.OrientationVisual);
     CSS->setVec2(CSS->UNIFORM_SIZE, OBJ.SizeVisual);
+    CSS->setVec2(CSS->UNIFORM_CENTER, glm::vec2(OBJ.Center.x, -OBJ.Center.y));
     CSS->setFloat(CSS->UNIFORM_LAYER, OBJ.Layer);
     CSS->setVec4(CSS->UNIFORM_COLOR, OBJ.Color);
 
     CSS->setBool(CSS->UNIFORM_STATIC, OBJ.Static);
     CSS->setBool(CSS->UNIFORM_PHYSICAL, OBJ.Type == RO_Phys);
+
+    CSS->setInt(CSS->UNIFORM_TEXTLENGTH, Text.size());
 
     std::vector<TextVertex> TextVertices;
     float Indent = 0;
@@ -362,6 +366,8 @@ void RenderText(const GameObject& OBJ) {
 
         Indent += Cinfo.W + Spacing;
     }
+
+    CSS->setFloat(CSS->UNIFORM_TEXTWIDTH, Indent);
 
     glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
     glBufferData(GL_ARRAY_BUFFER, TextVertices.size() * sizeof(TextVertex), TextVertices.data(), GL_DYNAMIC_DRAW);

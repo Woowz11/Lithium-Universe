@@ -146,10 +146,27 @@ void CreateUI(Scenes Scen) {
 			}, []() {});
 
 			ui2 = CreateGameObject("title", RO_UI);
-			MakeGameObjectText(ui2, "LITHIUM UNIVERSE");
+			MakeGameObjectText(ui2, "Lithium Universe");
 			SetGameObjectResize(ui2, false);
-			SetGameObjectPosition(ui2, glm::vec2(-0.5f, 0.5f));
+			SetGameObjectCenter(ui2, glm::vec2(0, 0));
+			SetGameObjectPosition(ui2, glm::vec2(0, 0.5f));
 			SetGameObjectSize(ui2, glm::vec2(2, 2));
+
+			ui2 = CreateGameObject("title2", RO_UI);
+			MakeGameObjectText(ui2, Version);
+			SetGameObjectResize(ui2, false);
+			SetGameObjectPosition(ui2, glm::vec2(0, 0.4f));
+
+			ui2 = CreateGameObject("title3", RO_UI);
+			MakeGameObjectText(ui2, "by Woowz11");
+			SetGameObjectResize(ui2, false);
+			SetGameObjectPosition(ui2, glm::vec2(0, 0.3f));
+			
+			ui2 = CreateGameObject("title4", RO_UI);
+			MakeGameObjectText(ui2, "https://woowz11.github.io/woowzsite/lithiumuniverse");
+			SetGameObjectResize(ui2, false);
+			SetGameObjectPosition(ui2, glm::vec2(0, 0.2f));
+			SetGameObjectSize(ui2, glm::vec2(0.75, 0.75));
 
 			break;
 		}
@@ -178,16 +195,19 @@ void CreateUI(Scenes Scen) {
 			ui = CreateGameObject("fps", RO_UI);
 			MakeGameObjectText(ui, "");
 			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.9f));
+			SetGameObjectCenter(ui, glm::vec2(-1, 0));
 			SetGameObjectResize(ui, false);
 
 			ui = CreateGameObject("fps-real", RO_UI);
 			MakeGameObjectText(ui, "");
 			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.8f));
+			SetGameObjectCenter(ui, glm::vec2(-1, 0));
 			SetGameObjectResize(ui, false);
 
 			ui = CreateGameObject("count", RO_UI);
 			MakeGameObjectText(ui, "");
 			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.7f));
+			SetGameObjectCenter(ui, glm::vec2(-1, 0));
 			SetGameObjectResize(ui, false);
 
 			break;

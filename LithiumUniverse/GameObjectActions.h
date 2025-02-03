@@ -45,6 +45,7 @@ void SetGameObjectSizeFromTexture(const int i, const int t, const double s);
 void SetGameObjectRenderable(const int i, const bool b);
 void SetGameObjectColor(const int i, const glm::vec4 c);
 void SetGameObjectPosition(const int i, const glm::vec2 p);
+void SetGameObjectCenter(const int i, const glm::vec2 c);
 void SetGameObjectOrientation(const int i, const float r);
 void SetGameObjectTransform(const int i, glm::vec2 p, const float r);
 void SetGameObjectLuaData(const int i, const int DataID, const sol::object& Data);

@@ -72,11 +72,15 @@ public:
     GLint UNIFORM_ID;
     GLint UNIFORM_ORIENTATION;
     GLint UNIFORM_SIZE;
+    GLint UNIFORM_CENTER;
     GLint UNIFORM_LAYER;
     GLint UNIFORM_STATIC;
     GLint UNIFORM_PHYSICAL;
     GLint UNIFORM_INTERFACE;
     GLint UNIFORM_RESIZE;
+
+    GLint UNIFORM_TEXTLENGTH;
+    GLint UNIFORM_TEXTWIDTH;
 
     GLint UNIFORM_TEXTURESIZE;
     GLint UNIFORM_SCREENSTARTSIZE;
@@ -96,11 +100,15 @@ public:
         UNIFORM_ID          = glGetUniformLocation(ID, "ID");
         UNIFORM_ORIENTATION = glGetUniformLocation(ID, "Orientation");
         UNIFORM_SIZE        = glGetUniformLocation(ID, "Size");
+        UNIFORM_CENTER      = glGetUniformLocation(ID, "Center");
         UNIFORM_LAYER       = glGetUniformLocation(ID, "Layer");
         UNIFORM_STATIC      = glGetUniformLocation(ID, "Static");
         UNIFORM_PHYSICAL    = glGetUniformLocation(ID, "Physical");
         UNIFORM_INTERFACE   = glGetUniformLocation(ID, "Interface");
         UNIFORM_RESIZE      = glGetUniformLocation(ID, "Resize");
+
+        UNIFORM_TEXTLENGTH = glGetUniformLocation(ID, "TextLength");
+        UNIFORM_TEXTWIDTH = glGetUniformLocation(ID, "TextWidth");
 
         UNIFORM_TEXTURESIZE       = glGetUniformLocation(ID, "TextureSize");
         UNIFORM_SCREENSTARTSIZE   = glGetUniformLocation(ID, "ScreenStartSize");

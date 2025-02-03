@@ -10,6 +10,7 @@ out vec2 UV;
 uniform vec2 Position;
 uniform float Orientation;
 uniform vec2 Size;
+uniform vec2 Center;
 uniform float Layer;
 uniform int ID;
 uniform vec2 CameraPosition;
@@ -19,6 +20,8 @@ uniform bool Interface;
 uniform bool Resize;
 uniform vec2 ScreenStartSize;
 uniform vec2 ScreenSize;
+uniform float TextWidth;
+uniform int TextLength;
 
 mat4 Ortho(float L, float R, float B, float T){
 	return mat4(
@@ -44,8 +47,11 @@ void main()
 	
 	vec2 ScaleFactorS = (Resize ? (Interface ? ScaleFactor : vec2(1,1) ) : vec2(1,1));
 	vec2 ScaleFactorP = (Resize ? vec2(1,1) : (Interface ? ScreenScale * (ScreenSize/ScreenStartSize) : vec2(1,1) ));
+	vec2 NewSize = (Size * (Interface ? 0.192 : 1));
+	float Length = TextWidth * NewSize.x;
+	vec2 Offset = ((vec2(Center.x * -Length/2, Center.y))) - vec2(Length/2,0);
 	
-	vec2 TextPosition = (Position * ScaleFactorP + (PointPosition * (Size * (Interface ? 0.192 : 1)))) * ScaleFactorS;
+	vec2 TextPosition = (Position * ScaleFactorP + Offset + (PointPosition * NewSize)) * ScaleFactorS;
 	
 	if (!Interface){
 		TextPosition += CameraPosition;

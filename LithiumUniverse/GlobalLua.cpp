@@ -14,6 +14,7 @@
 #include "GlobalRender.h";
 #include "GameInstalls.h";
 #include "GlobalLua.h";
+#include "GlobalUI.h";
 #include "GameData.h";
 #include "GameMod.h";
 #include "Console.h";
@@ -656,6 +657,11 @@ public:
 			SetSimulationSpeed(ObjectToDouble(NewST));
 		}
 	}
+
+	/* Получить полную версию игры */
+	std::string GetFullVersion() {
+		return Version;
+	}
 };
 
 LUA_Game LUA_Game_Instance;
@@ -901,6 +907,20 @@ public:
 		}
 	}
 
+	/* Превратить игровой объект в текст */
+	void MakeItText(const sol::object& ID, const sol::object& StartText, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:MakeItText", { ID, StartText }, L)) {
+			std::string StartText_ = "New Text!";
+			if (StartText != sol::nil){
+				if (LuaCheckType(StartText, L_String, "GameObject:MakeItText", { ID, StartText }, L)) {
+					StartText_ = ObjectToString(StartText);
+				}
+			}
+			MakeGameObjectText(ObjectToInt(ID), StartText_);
+		}
+	}
+
 	/* Изменить позицию игровому объекту */
 	void SetPosition(const sol::object& ID, const sol::object& NewPosition, sol::this_state s) {
 		lua_State* L = s;
@@ -920,6 +940,27 @@ public:
 			return LUA_Vector2(V2.x, V2.y);
 		}
 		return ErrorVector2;
+	}
+
+	/* Изменить поворот игровому объекту */
+	void SetOrientation(const sol::object& ID, const sol::object& NewOrientation, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetOrientation", { ID, NewOrientation }, L)) {
+			if (LuaCheckNumber(NewOrientation, "GameObject:SetOrientation", { ID, NewOrientation }, L)) {
+				SetGameObjectOrientation(ObjectToInt(ID), ObjectToDouble(NewOrientation));
+			}
+		}
+	}
+
+	/* Изменить центр игровому объекту */
+	void SetCenter(const sol::object& ID, const sol::object& NewCenter, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetCenter", { ID, NewCenter }, L)) {
+			if (LuaCheckType(NewCenter, L_Vec2, "GameObject:SetCenter", { ID, NewCenter }, L)) {
+				LUA_Vector2 V2 = ObjectToVector2(NewCenter);
+				SetGameObjectCenter(ObjectToInt(ID), glm::vec2(V2.x, V2.y));
+			}
+		}
 	}
 
 	/* Изменить цвет игровому объекту */
@@ -956,6 +997,16 @@ public:
 					}
 				}
 				SetGameObjectSizeFromTexture(ObjectToInt(ID), GetResourceID(ObjectToString(Path), ErrorTexture), S);
+			}
+		}
+	}
+
+	/* Изменить, объект меняет размер в зависимости от размера экрана? */
+	void SetResize(const sol::object& ID, const sol::object& B, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetResize", { ID, B }, L)) {
+			if (LuaCheckType(B, L_Bool, "GameObject:SetResize", { ID, B }, L)) {
+				SetGameObjectResize(ObjectToInt(ID), ObjectToBool(B));
 			}
 		}
 	}
@@ -1177,6 +1228,7 @@ void GameLua(sol::state& LUA) {
 		"LUA_Game",
 		"Update", &LUA_Game::Update,
 		"UILoading", &LUA_Game::UILoading,
+		"GetFullVersion", &LUA_Game::GetFullVersion,
 		"GameObjectLoading", &LUA_Game::GameObjectLoading,
 		"SetSimulationSpeed", &LUA_Game::SetSimulationSpeed_,
 		"UpdateEveryGameObject", &LUA_Game::UpdateEveryGameObject
@@ -1232,9 +1284,13 @@ void GameLua(sol::state& LUA) {
 		"GetName", &LUA_GameObject::GetName,
 		"SetColor", &LUA_GameObject::SetColor,
 		"SetShader", &LUA_GameObject::SetShader,
+		"SetCenter", &LUA_GameObject::SetCenter,
+		"SetResize", &LUA_GameObject::SetResize,
 		"SetTexture", &LUA_GameObject::SetTexture,
+		"MakeItText", &LUA_GameObject::MakeItText,
 		"SetPosition", &LUA_GameObject::SetPosition,
 		"GetPosition", &LUA_GameObject::GetPosition,
+		"SetOrientation", &LUA_GameObject::SetOrientation,
 		"SetSizeFromTexture", &LUA_GameObject::SetSizeFromTexture,
 		"SetCreatedFromPlayer", &LUA_GameObject::SetCreatedFromPlayer,
 		"GetCreatedFromPlayer", &LUA_GameObject::GetCreatedFromPlayer

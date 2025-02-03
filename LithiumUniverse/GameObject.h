@@ -70,6 +70,7 @@ public:
 	bool Render                  = true;                   /* Рендерить объект?               */
 	RenderTypeEnum RenderType    = RT_Square;              /* Какие вертиксы рендерить?       */
 	bool Selectable              = false;                  /* Мышка реагирует на этот объект? */
+	glm::vec2 Center             = glm::vec2(0, 0);        /* Центр объекта                   */
 
 	/* ==== Настройки интерфейса ==== */
 	bool Resize  = false;                  /* Менять размер вместе с экраном? */

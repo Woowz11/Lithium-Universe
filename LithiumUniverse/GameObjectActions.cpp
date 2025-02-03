@@ -70,7 +70,7 @@ void RefreshGameObjectCollider__(GameObject& OBJ) {
 	switch (CT)
 	{
 	case CT_Box:
-		b2Polygon ColBox = b2MakeBox(OBJ.SizeVisual.x, OBJ.SizeVisual.y);
+		b2Polygon ColBox = b2MakeOffsetBox(OBJ.SizeVisual.x, OBJ.SizeVisual.y, b2Vec2(OBJ.Center.x * OBJ.SizeVisual.x, OBJ.Center.y * OBJ.SizeVisual.y), b2Rot_identity);
 		b2CreatePolygonShape(Bodies[OBJ.BodyID],
 			&ShapeInfo,
 			&ColBox
@@ -486,6 +486,20 @@ void SetGameObjectPosition(const int i, const glm::vec2 p) {
 	}
 	else {
 		GameObjectDeleted__(OBJ, "SetGameObjectPosition(" + std::to_string(i) + "," + ToStringVec2(p) + ");");
+	}
+}
+
+/* Установить центр объекту */
+void SetGameObjectCenter(const int i, const glm::vec2 c) {
+	GameObject& OBJ = GetGameObject(i, "SetGameObjectCenter(" + std::to_string(i) + "," + ToStringVec2(c) + ");");
+	if (!OBJ.Deleted) {
+		OBJ.Center = c;
+		if (OBJ.Type == RO_Phys) {
+			RefreshGameObjectCollider__(OBJ);
+		}
+	}
+	else {
+		GameObjectDeleted__(OBJ, "SetGameObjectCenter(" + std::to_string(i) + "," + ToStringVec2(c) + ");");
 	}
 }
 

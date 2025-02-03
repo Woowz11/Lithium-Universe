@@ -9,6 +9,7 @@ out vec2 UV;
 uniform vec2 Position;
 uniform float Orientation;
 uniform vec2 Size;
+uniform vec2 Center;
 uniform float Layer;
 uniform int ID;
 uniform vec2 CameraPosition;
@@ -105,6 +106,8 @@ void main()
 	}
 	
 	RPosition = Rotate(RPosition, Orientation);
+	
+	RPosition = Translate(RPosition, Center * Size);
 	
 	RPosition = Scale(RPosition, Size);
 	
