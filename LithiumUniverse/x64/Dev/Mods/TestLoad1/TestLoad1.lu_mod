@@ -1,8 +1,0 @@
-{
-	"Name"        : "TESTLOAD1",
-	"Version"     : "0.0",
-	"Author"      : "",
-	"Description" : "",
-	"Requires"    : ["TestLoad2"],
-	"Conflict"    : []
-}

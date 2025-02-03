@@ -21,19 +21,25 @@ function CreateHelp()
 		"K7,K8,K9 - Set FPS limits",
 	}
 	
+	local HelpResult = ""
 	for i = 1, #Help do
 		local String = Help[i]
-		local text = GameObject:Create(String, GO_UI)
-		GameObject:MakeItText(text, String)
-		GameObject:SetResize(text, false)
-		GameObject:SetSize(text, Vector2(0.6,0.6))
-		GameObject:SetCenter(text, Vector2(-1,1))
-		GameObject:SetPosition(text, Vector2(-0.975, 0.8-(i/#Help)))
+		HelpResult = HelpResult .. String .. "\n"
 	end
+	local text = GameObject:Create("Help Text", GO_UI)
+	GameObject:MakeItText(text, HelpResult)
+	GameObject:SetSize(text, Vector2(1.25)/ScreenScale)
+	GameObject:SetCenter(text, Vector2(-1,0))
+	GameObject:SetPosition(text, Vector2(-0.99, 0.5))
 end
 
+Text_SelectedGameObject = -1
 function CreateOther()
-
+	Text_SelectedGameObject = GameObject:Create("Selected GameObject to Spawn", GO_UI)
+	GameObject:MakeItText(Text_SelectedGameObject, "")
+	GameObject:SetResize(Text_SelectedGameObject, false)
+	GameObject:SetSize(Text_SelectedGameObject, Vector2(0.7,0.7))
+	GameObject:SetPosition(Text_SelectedGameObject, Vector2(0, -0.99))
 end
 
 function CreateInventory()

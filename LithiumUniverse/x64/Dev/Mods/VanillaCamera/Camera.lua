@@ -33,7 +33,7 @@ Controls:MouseReleased(function(Key)
 	end
 end)
 
-function UpdateCamera()
+Game:Update(function()
 	local Speed = GetSpeed()
 
 	-- Движение камеры
@@ -88,4 +88,4 @@ function UpdateCamera()
 	if (Left and not Right) then
 		Camera:Rotate(-Speed)
 	end
-end
+end)

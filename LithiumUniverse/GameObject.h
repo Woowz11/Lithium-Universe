@@ -5,8 +5,9 @@
 
 #include <GLM/glm.hpp>
 
-#include <string>
 #include <unordered_map>
+#include <string>
+#include <vector>
 
 #include "GlobalResources.h";
 #include "StringActions.h";

@@ -13,6 +13,7 @@
 #include "StringActions.h";
 #include "GlobalPhysic.h";
 #include "GameObject.h";
+#include "GlobalLua.h";
 #include "GameData.h";
 #include "GlobalUI.h";
 #include "Console.h";
@@ -432,7 +433,7 @@ void SetGameObjectSize(const int i, const glm::vec2 s) {
 			}
 		}
 		else {
-			Error("GAMEOBJ", "Unable to apply size to object because size is negative! SetGameObjectSize(" + std::to_string(i) + "," + ToStringVec2(s) + ");");
+			Error("GAMEOBJ", "Unable to apply size to object because size is negative or zero! SetGameObjectSize(" + std::to_string(i) + "," + ToStringVec2(s) + ");");
 		}
 	}
 	else {
@@ -559,6 +560,12 @@ void DeleteGameObject(const int i, bool IgnoreError) {
 	if (IgnoreError && Out) { return; }
 	GameObject& OBJ = GetGameObject(i, "DeleteGameObject(" + std::to_string(i) + ");");
 	if (!OBJ.Deleted) {
+		if (OBJ.CreatedFromMods) {
+			for (const sol::function& F : LUA_Events_GameObjectDeleted) {
+				F(i);
+			}
+		}
+
 		if (OBJ.Type == RO_Phys) {
 			int BodyID = OBJ.BodyID;
 			b2BodyId Body = GetBody(BodyID);

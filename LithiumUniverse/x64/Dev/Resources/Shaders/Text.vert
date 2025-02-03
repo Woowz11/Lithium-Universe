@@ -42,16 +42,14 @@ void main()
 	float Z = Interface ? 1 : 1 / CameraZoom;
 
 	mat4 Projection = Ortho(-SW / (240 * Z), SW / (240 * Z), -SH / (240 * Z), SH / (240 * Z));
-
-    vec2 ScaleFactor = Interface ? ScreenScale : vec2(1.0);
 	
-	vec2 ScaleFactorS = (Resize ? (Interface ? ScaleFactor : vec2(1,1) ) : vec2(1,1));
-	vec2 ScaleFactorP = (Resize ? vec2(1,1) : (Interface ? ScreenScale * (ScreenSize/ScreenStartSize) : vec2(1,1) ));
+	vec2 ScaleFactor = (Resize ? (Interface ? ScreenScale : vec2(1,1) ) : (Interface ? ScreenScale * (ScreenSize/ScreenStartSize) : vec2(1,1) ) );
+	
 	vec2 NewSize = (Size * (Interface ? 0.192 : 1));
 	float Length = TextWidth * NewSize.x;
 	vec2 Offset = ((vec2(Center.x * -Length/2, Center.y))) - vec2(Length/2,0);
 	
-	vec2 TextPosition = (Position * ScaleFactorP + Offset + (PointPosition * NewSize)) * ScaleFactorS;
+	vec2 TextPosition = (Position * ScaleFactor + Offset + (PointPosition * NewSize));
 	
 	if (!Interface){
 		TextPosition += CameraPosition;

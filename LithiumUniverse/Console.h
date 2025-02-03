@@ -26,7 +26,6 @@ void PrintBase(std::string Base, MessageType MT, SendLogType SLT, std::string Me
 void Print(std::string Base, std::string Message);
 void PrintFast(std::string Base, std::string Message);
 void PrintVeryFast(std::string Message);
-void PrintVeryFastU32(std::u32string Message);
 void PrintImportant(std::string Base, std::string Message);
 void Warn(std::string Base, std::string Message);
 void WarnSerious(std::string Base, std::string Message);

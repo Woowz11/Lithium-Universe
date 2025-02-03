@@ -2,7 +2,6 @@ Resources:LoadScript("Vanilla:LoadGameObjects.lua")
 
 --Game:GameObjectLoading(LoadVanillaGameObject)
 
-
 local HumanSize = GameObject:Create("HumanSize", GO_Physical)
 GameObject:SetTexture(HumanSize, "Vanilla:HumanSize.png")
 GameObject:SetSizeFromTexture(HumanSize, "Vanilla:HumanSize.png")

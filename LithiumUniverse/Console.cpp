@@ -1,6 +1,7 @@
 ﻿#include <Windows.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <chrono>
 #include <vector>
@@ -89,7 +90,7 @@ std::string RemoveTextCodes(std::string Message) {
 }
 
 /* Разделить строку на коды и текст */
-std::vector<std::string> ExtractCodesAndText(const std::string& input) {
+std::vector<std::string> ExtractCodesAndText(const std::string& input, bool OnlyColors = false) {
 	std::vector<std::string> result;
 	std::string currentText;
 	bool inCode = false;
@@ -100,7 +101,9 @@ std::vector<std::string> ExtractCodesAndText(const std::string& input) {
 
 		if (ch == '$' && i + 1 < input.size() && input[i + 1] == '$') {
 			if (!currentText.empty()) {
-				result.push_back(currentText);
+				if (!OnlyColors) {
+					result.push_back(currentText);
+				}
 				currentText.clear();
 			}
 
@@ -119,7 +122,9 @@ std::vector<std::string> ExtractCodesAndText(const std::string& input) {
 	}
 
 	if (!currentText.empty()) {
-		result.push_back(currentText);
+		if (!OnlyColors) {
+			result.push_back(currentText);
+		}
 	}
 
 	return result;
@@ -157,8 +162,8 @@ std::string GenerateLogFileName() {
 	int minutes = l.tm_min;
 	int hours   = l.tm_hour;
 	int days    = l.tm_mday;
-	int month   = l.tm_mon+1;
-	int year    = l.tm_year+1900;
+	int month   = l.tm_mon + 1;
+	int year    = l.tm_year + 1900;
 
 	Result = 
 		std::to_string(year)                              + "-" +
@@ -227,8 +232,25 @@ void PrintLogBase(std::string Base, SendLogType SLT, std::string Message) {
 
 /* Отправить сообщение в консоль (основа) */
 void PrintConsoleBase(std::string Base, SendLogType SLT, std::string Message) {
+	std::string Result;
+
 	std::string Decor = GetPrintMessageBaseDecorations(Base, SLT, false);
-	std::string Result = Decor + ReplaceCharsToString(Message,'\n',Decor);
+	if (std::count(Message.begin(), Message.end(), '\n') > 0) {
+		std::istringstream stream(Message);
+		std::string line;
+
+		std::string oldcode = CodePrefix + "_";
+		while (std::getline(stream, line)) {
+			std::vector<std::string> Extracted = ExtractCodesAndText(line, true);
+			Result += Decor + oldcode + line;
+			if (Extracted.size() > 0) {
+				oldcode = Extracted[Extracted.size() - 1];
+			}
+		}
+	}
+	else {
+		Result = Decor + Message;
+	}
 	CoutWithCodes(Result);
 }
 
@@ -265,11 +287,6 @@ void PrintFast(std::string Base, std::string Message) {
 /* Отправить очень успрощённое сообщение (очень быстрое) */
 void PrintVeryFast(std::string Message) {
 	std::cout << std::endl << Message;
-}
-
-/* Отправить очень успрощённое сообщение (U32) (очень быстрое) */
-void PrintVeryFastU32(std::u32string Message) {
-	std::cout << std::endl << u32stringToString(Message);
 }
 
 /* Отправить важное сообщение */

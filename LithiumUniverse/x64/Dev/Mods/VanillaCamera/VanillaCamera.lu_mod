@@ -1,0 +1,9 @@
+{
+	"Name"        : "Vanilla Camera",
+	"Version"     : "0.0",
+	"Author"      : "Woowz11",
+	"Description" : "Regular Lithium Universe Camera",
+	"MainScript"  : "VanillaCamera:Camera.lua",
+	"Requires"    : [],
+	"Conflict"    : []
+}

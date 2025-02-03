@@ -1,5 +1,6 @@
 #pragma once
 #include <GLM/glm.hpp>
+#include <vector>
 #include <string>
 
 std::string ReplaceStringToString(const std::string Target, const std::string This, const std::string ToThat);
@@ -15,7 +16,7 @@ char GetLastSymbol(const std::string& Target);
 std::string RepeatString(const std::string& Target, const int CoutRepeat);
 std::string RemoveLastSymbol(const std::string& Target);
 std::string RemoveFirstSymbol(const std::string& Target);
-std::string u32stringToString(const std::u32string& u32str);
+std::vector<int> StringToNumbers(const std::string Target);
 
 std::string ToStringBool(const bool target);
 std::string ToStringVec2(const glm::vec2 target);

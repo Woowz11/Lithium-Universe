@@ -43,6 +43,8 @@ const std::string ErrorShader = "Base:Shaders/Error.lu_shader";
 std::vector<sol::function> LUA_Events_Update = {};
 /* Ивент вызывается каждый кадр для каждого модового объекта */
 std::vector<sol::function> LUA_Events_UpdateEveryGameObject = {};
+/* Ивент вызывается когда игровой объект удалён */
+std::vector<sol::function> LUA_Events_GameObjectDeleted = {};
 
 /* Ивент вызывается при загрузке игровых объектов */
 std::vector<sol::function> LUA_Events_GameObjectLoading = {};
@@ -398,16 +400,6 @@ void LUA_Print(const sol::object& Message, sol::this_state s) {
 	Print(GetBaseFromLuaState(L), ObjectToString(Message));
 }
 
-/* Превратить таблицу в строку */
-std::string LUA_TableToString(const sol::object& Table, sol::this_state s) {
-	lua_State* L = s;
-	if (LuaCheckType(Table, L_Table, "TalbeToString", { Table }, s)) {
-		sol::table T = ObjectToTable(Table);
-		return TableToString(T,0);
-	}
-	return ErrorString;
-}
-
 /* Отправить простое сообщение в консоль (очень быстро, без логов и т.д) */
 void LUA_PrintFast(const sol::object& Message, sol::this_state s) {
 	lua_State* L = s;
@@ -634,6 +626,14 @@ public:
 		}
 	}
 
+	/* Ивент: выполняется каждый раз, когда игровой объект удалён */
+	void GameObjectDeleted(const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Func, L_Func, "Game:GameObjectDeleted", { Func }, L)) {
+			LUA_Events_GameObjectDeleted.push_back(ObjectToFunc(Func));
+		}
+	}
+
 	/* Ивент: вызывается при загрузке игровых объектов */
 	void GameObjectLoading(const sol::object& Func, sol::this_state s) {
 		lua_State* L = s;
@@ -665,6 +665,74 @@ public:
 };
 
 LUA_Game LUA_Game_Instance;
+
+class LUA_Table {
+public:
+	/* Удаление элемента из массива */
+	void Remove(sol::object Table, const sol::object& Key, const sol::object& RemoveFromKeys, sol::this_state s) {
+		lua_State* L = s;
+		bool RFK = false;
+		if (RemoveFromKeys != sol::nil) {
+			if (LuaCheckType(RemoveFromKeys, L_Bool, "Table:Remove", { Table, Key, RemoveFromKeys }, L)) {
+				RFK = ObjectToBool(RemoveFromKeys);
+			}
+		}
+		if (LuaCheckType(Table, L_Table, "Table:Remove", { Table, Key, RemoveFromKeys }, L)) {
+			sol::table T = ObjectToTable(Table);
+			if (RFK) {
+				if (T[Key] != sol::nil) {
+					T[Key] = sol::nil;
+				}
+				else {
+					LuaError("It is not possible to delete an element from the table by key [" + ObjectToString(Key) + " (" + LUA_TypeOf(Key) + ")] because it was not found!" + LuaComplexFunction("Table:Remove", { Table, Key, RemoveFromKeys }), L);
+				}
+			}
+			else {
+				if (LuaCheckType(Key, L_Int, "Table:Remove", { Table, Key, RemoveFromKeys }, L)) {
+					int K = ObjectToInt(Key);
+					if (K < 1 || K > T.size()) {
+						LuaError("Unable to delete element from table because index [" + std::to_string(K) + "] is outside table bounds [1," + std::to_string(T.size()) + "]! " + LuaComplexFunction("Table:Remove", { Table, Key, RemoveFromKeys }), L);
+					}
+					else {
+						for (size_t i = K; i < T.size(); i++) {
+							T[i] = T[i + 1];
+						}
+						T[T.size()] = sol::nil;
+					}
+				}
+			}
+		}
+	}
+
+	/* Превратить таблицу в строку */
+	std::string ToString(const sol::object& Table, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Table, L_Table, "Talbe:ToString", { Table }, s)) {
+			sol::table T = ObjectToTable(Table);
+			return TableToString(T, 0);
+		}
+		return ErrorString;
+	}
+
+	std::tuple<int ,sol::object, sol::object> Pairs(sol::object Table, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Table, L_Table, "Talbe:Pairs", { Table }, s)) {
+			sol::table T = ObjectToTable(Table);
+
+			for (const auto& p : T) {
+				sol::object key = p.first;
+				sol::object value = p.second;
+
+				// inspect key/value, manipulate as you please
+			}
+			
+			
+		}
+		return std::make_tuple(-1, sol::nil, sol::nil);
+	}
+};
+
+LUA_Table LUA_Table_Instance;
 
 class LUA_Controls {
 public:
@@ -921,6 +989,16 @@ public:
 		}
 	}
 
+	/* Изменить текст игровому объекту */
+	void SetText(const sol::object& ID, const sol::object& NewText, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetText", { ID, NewText }, L)) {
+			if (LuaCheckType(NewText, L_String, "GameObject:SetText", { ID, NewText }, L)) {
+				SetGameObjectText(ObjectToInt(ID), ObjectToString(NewText));
+			}
+		}
+	}
+
 	/* Изменить позицию игровому объекту */
 	void SetPosition(const sol::object& ID, const sol::object& NewPosition, sol::this_state s) {
 		lua_State* L = s;
@@ -1085,7 +1163,7 @@ LUA_GameObject LUA_GameObject_Instance;
 
 /* ==== Константы ==== */
 
-std::unordered_map<std::string, int> Keys_Constants = { {"SPACE",32},{"APOSTROPHE",39},{"COMMA",44},{"MINUS",45},{"PERIOD",46},{"SLASH",47},{"0",48},{"1",49},{"2",50},{"3",51},{"4",52},{"5",53},{"6",54},{"7",55},{"8",56},{"9",57},{"SEMICOLON",59},{"EQUAL",61},{"A",65},{"B",66},{"C",67},{"D",68},{"E",69},{"F",70},{"G",71},{"H",72},{"I",73},{"J",74},{"K",75},{"L",76},{"M",77},{"N",78},{"O",79},{"P",80},{"Q",81},{"R",82},{"S",83},{"T",84},{"U",85},{"V",86},{"W",87},{"X",88},{"Y",89},{"Z",90},{"LEFT_BRACKET",91},{"BACKSLASH",92},{"RIGHT_BRACKET",93},{"GRAVE_ACCENT",96},{"WORLD_1",161},{"WORLD_2",162},{"ESCAPE",256},{"ENTER",257},{"TAB",258},{"BACKSPACE",259},{"INSERT",260},{"DELETE",261},{"RIGHT",262},{"LEFT",263},{"DOWN",264},{"UP",265},{"PAGE_UP",266},{"PAGE_DOWN",267},{"HOME",268},{"END",269},{"CAPS_LOCK",280},{"SCROLL_LOCK",281},{"NUM_LOCK",282},{"PRINT_SCREEN",283},{"PAUSE",284},{"F1",290},{"F2",291},{"F3",292},{"F4",293},{"F5",294},{"F6",295},{"F7",296},{"F8",297},{"F9",298},{"F10",299},{"F11",300},{"F12",301},{"F13",302},{"F14",303},{"F15",304},{"F16",305},{"F17",306},{"F18",307},{"F19",308},{"F20",309},{"F21",310},{"F22",311},{"F23",312},{"F24",313},{"F25",314},{"KP_0",320},{"KP_1",321},{"KP_2",322},{"KP_3",323},{"KP_4",324},{"KP_5",325},{"KP_6",326},{"KP_7",327},{"KP_8",328},{"KP_9",329},{"KP_DECIMAL",330},{"KP_DIVIDE",331},{"KP_MULTIPLY",332},{"KP_SUBTRACT",333},{"KP_ADD",334},{"KP_ENTER",335},{"KP_EQUAL",336},{"LEFT_SHIFT",340},{"LEFT_CONTROL",341},{"LEFT_ALT",342},{"LEFT_SUPER",343},{"RIGHT_SHIFT",344},{"RIGHT_CONTROL",345},{"RIGHT_ALT",346},{"RIGHT_SUPER",347},{"MENU",348} };
+std::unordered_map<std::string, int> Keys_Constants = { {"SPACE",32},{"APOSTROPHE",39},{"COMMA",44},{"MINUS",45},{"PERIOD",46},{"SLASH",47},{"0",48},{"1",49},{"2",50},{"3",51},{"4",52},{"5",53},{"6",54},{"7",55},{"8",56},{"9",57},{"SEMICOLON",59},{"EQUAL",61},{"A",65},{"B",66},{"C",67},{"D",68},{"E",69},{"F",70},{"G",71},{"H",72},{"I",73},{"J",74},{"K",75},{"L",76},{"M",77},{"N",78},{"O",79},{"P",80},{"Q",81},{"R",82},{"S",83},{"T",84},{"U",85},{"V",86},{"W",87},{"X",88},{"Y",89},{"Z",90},{"LEFT_BRACKET",91},{"BACKSLASH",92},{"RIGHT_BRACKET",93},{"GRAVE_ACCENT",96},{"WORLD_1",161},{"WORLD_2",162},{"ESCAPE",256},{"ENTER",257},{"TAB",258},{"BACKSPACE",259},{"INSERT",260},{"DELETE",261},{"RIGHT",262},{"LEFT",263},{"DOWN",264},{"UP",265},{"PAGE_UP",266},{"PAGE_DOWN",267},{"HOME",268},{"END",269},{"CAPS_LOCK",280},{"SCROLL_LOCK",281},{"NUM_LOCK",282},{"PRINT_SCREEN",283},{"PAUSE",284},{"F1",290},{"F2",291},{"F3",292},{"F4",293},{"F5",294},{"F6",295},{"F7",296},{"F8",297},{"F9",298},{"F10",299},{"F11",300},{"F12",301},{"F13",302},{"F14",303},{"F15",304},{"F16",305},{"F17",306},{"F18",307},{"F19",308},{"F20",309},{"F21",310},{"F22",311},{"F23",312},{"F24",313},{"F25",314},{"K0",320},{"K1",321},{"K2",322},{"K3",323},{"K4",324},{"K5",325},{"K6",326},{"K7",327},{"K8",328},{"K9",329},{"K_DECIMAL",330},{"K_DIVIDE",331},{"K_MULTIPLY",332},{"K_SUBTRACT",333},{"K_ADD",334},{"K_ENTER",335},{"K_EQUAL",336},{"LEFT_SHIFT",340},{"LEFT_CONTROL",341},{"LEFT_ALT",342},{"LEFT_SUPER",343},{"RIGHT_SHIFT",344},{"RIGHT_CONTROL",345},{"RIGHT_ALT",346},{"RIGHT_SUPER",347},{"MENU",348} };
 
 /* ==== Инициализация ==== */
 
@@ -1229,6 +1307,7 @@ void GameLua(sol::state& LUA) {
 		"Update", &LUA_Game::Update,
 		"UILoading", &LUA_Game::UILoading,
 		"GetFullVersion", &LUA_Game::GetFullVersion,
+		"GameObjectDeleted", &LUA_Game::GameObjectDeleted,
 		"GameObjectLoading", &LUA_Game::GameObjectLoading,
 		"SetSimulationSpeed", &LUA_Game::SetSimulationSpeed_,
 		"UpdateEveryGameObject", &LUA_Game::UpdateEveryGameObject
@@ -1265,6 +1344,14 @@ void GameLua(sol::state& LUA) {
 		"MoveZoomCustom", &LUA_Camera::MoveZoomCustom
 	);
 
+	LUA["Table"] = &LUA_Table_Instance;
+	LUA.new_usertype<LUA_Table>(
+		"LUA_Table",
+		"Pairs", &LUA_Table::Pairs,
+		"Remove", &LUA_Table::Remove,
+		"ToString", &LUA_Table::ToString
+	);
+
 	LUA["Resources"] = &LUA_Resources_Instance;
 	LUA.new_usertype<LUA_Resources>(
 		"LUA_Resources",
@@ -1278,6 +1365,7 @@ void GameLua(sol::state& LUA) {
 		"LUA_GameObject",
 		"Create", &LUA_GameObject::Create,
 		"Delete", &LUA_GameObject::Delete,
+		"SetText", &LUA_GameObject::SetText,
 		"SetData", &LUA_GameObject::SetData,
 		"GetData", &LUA_GameObject::GetData,
 		"SetSize", &LUA_GameObject::SetSize,
@@ -1320,7 +1408,6 @@ void GameLua(sol::state& LUA) {
 	LUA.set_function("RandomFast", &LUA_RandomFast);
 	LUA.set_function("RoundLower", &LUA_RoundLower);
 	LUA.set_function("MousePosition", &LUA_MousePosition);
-	LUA.set_function("TableToString", &LUA_TableToString);
 	LUA.set_function("MouseLocalPosition", &LUA_MouseLocalPosition);
 	LUA.set_function("MouseWorldPosition", &LUA_MouseWorldPosition);
 	LUA.set_function("ScreenToWorldPosition", &LUA_ScreenToWorldPosition);
@@ -1341,6 +1428,7 @@ void UnloadLua() {
 	/* Очистка ивентов */
 	LUA_Events_Update                = {};
 	LUA_Events_UpdateEveryGameObject = {};
+	LUA_Events_GameObjectDeleted     = {};
 	LUA_Events_MouseScroll           = {};
 	LUA_Events_MousePressed          = {};
 	LUA_Events_MouseReleased         = {};

@@ -291,6 +291,7 @@ void RenderSquare(const GameObject& OBJ) {
     CSS->setBool(CSS->UNIFORM_INTERFACE, OBJ.Type == RO_UI);
     CSS->setBool(CSS->UNIFORM_RESIZE, OBJ.Resize);
     CSS->setVec4(CSS->UNIFORM_COLOR, OBJ.Color);
+    CSS->setFloat(CSS->UNIFORM_LOCALRANDOM, (static_cast<double>(rand()) / RAND_MAX));
 
     /*if (OBJ.Type == RO_Phys) {
         CSS.setBool("Sleeping", OBJ.Static ? false : !b2Body_IsAwake(GetBody(OBJ.BodyID)));
@@ -309,10 +310,8 @@ void RenderLine(const GameObject& OBJ) {
 
 /* Рендер текста */
 void RenderText(const GameObject& OBJ) {
-    glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
-
-    std::string Text = OBJ.Text;
-    Font F = Fonts[OBJ.FontID];
+    const std::string Text = OBJ.Text;
+    Font& F = Fonts[OBJ.FontID];
 
     CSS->setInt(CSS->UNIFORM_ID, OBJ.GetID());
     CSS->setVec2(CSS->UNIFORM_POSITION, OBJ.PositionVisual);
@@ -323,6 +322,7 @@ void RenderText(const GameObject& OBJ) {
     CSS->setVec2(CSS->UNIFORM_CENTER, glm::vec2(OBJ.Center.x, -OBJ.Center.y));
     CSS->setFloat(CSS->UNIFORM_LAYER, OBJ.Layer);
     CSS->setVec4(CSS->UNIFORM_COLOR, OBJ.Color);
+    CSS->setFloat(CSS->UNIFORM_LOCALRANDOM, (static_cast<double>(rand()) / RAND_MAX));
 
     CSS->setBool(CSS->UNIFORM_STATIC, OBJ.Static);
     CSS->setBool(CSS->UNIFORM_PHYSICAL, OBJ.Type == RO_Phys);
@@ -330,51 +330,63 @@ void RenderText(const GameObject& OBJ) {
     CSS->setInt(CSS->UNIFORM_TEXTLENGTH, Text.size());
 
     std::vector<TextVertex> TextVertices;
+    float MaxIndent = 0;
     float Indent = 0;
-    float Spacing = (1.0f/8);
+    float NewLine = 0;
+    float SpacingX = (1.0f / 8);
+    float SpacingY = (1.0f / 8);
     for (size_t i = 0; i < Text.size(); i++) {
         int CharID = Text[i];
-        auto it = F.Chars.find(CharID);
-        if (it == F.Chars.end()) {
-            CharID = -1;
+
+        switch (CharID)
+        {
+            case 10: {
+                NewLine -= (1 + SpacingY);
+                MaxIndent = max(Indent, MaxIndent);
+                Indent = 0;
+                break;
+            }
+            default: {
+                auto it = F.Chars.find(CharID);
+                if (it == F.Chars.end()) {
+                    CharID = -1;
+                }
+                FontChar& Cinfo = F.Chars[CharID];
+                int MaxX = (F.MaxX + 1);
+                int MaxY = (F.MaxY + 1);
+
+                double W =         Cinfo.W / MaxX;
+                double X = (double)Cinfo.X / MaxX;
+                double Y = (double)Cinfo.Y / MaxY;
+
+                glm::vec2 pos[4] = {
+                    {Indent          , NewLine       },
+                    {Indent + Cinfo.W, NewLine       },
+                    {Indent + Cinfo.W, NewLine + 1.0f},
+                    {Indent          , NewLine + 1.0f}
+                };
+
+                glm::vec2 uv[4] = {
+                    {X    , Y + (1.0 / MaxY)},
+                    {X + W, Y + (1.0 / MaxY)},
+                    {X + W, Y               },
+                    {X    , Y               }
+                };
+
+                for (int j = 0; j < 4; j++) {
+                    TextVertices.push_back(TextVertex(pos[j], uv[j], CharID, i));
+                }
+
+                Indent += Cinfo.W + SpacingX;
+                break;
+            }
         }
-        FontChar& Cinfo = F.Chars[CharID];
-        int MaxX = (F.MaxX + 1);
-        int MaxY = (F.MaxY + 1);
-
-        double W = Cinfo.W/MaxX;
-        double X = (double)Cinfo.X/MaxX;
-        double Y = (double)Cinfo.Y/MaxY;
-
-        glm::vec2 pos[4] = {
-            {Indent          , 0.0f},
-            {Indent + Cinfo.W, 0.0f},
-            {Indent + Cinfo.W, 1.0f},
-            {Indent          , 1.0f}
-        };
-
-        glm::vec2 uv[4] = {
-            {X,     Y + (1.0/MaxY)},
-            {X + W, Y + (1.0/MaxY)},
-            {X + W, Y             },
-            {X,     Y             }
-        };
-
-        for (int j = 0; j < 4; j++) {
-            TextVertices.push_back(TextVertex(pos[j], uv[j], CharID, i));
-        }
-
-        Indent += Cinfo.W + Spacing;
     }
 
-    CSS->setFloat(CSS->UNIFORM_TEXTWIDTH, Indent);
+    CSS->setFloat(CSS->UNIFORM_TEXTWIDTH, max(Indent, MaxIndent));
 
-    glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
     glBufferData(GL_ARRAY_BUFFER, TextVertices.size() * sizeof(TextVertex), TextVertices.data(), GL_DYNAMIC_DRAW);
-
-    glBindVertexArray(TextVAO);
     glDrawArrays(GL_QUADS, 0, TextVertices.size());
-    glBindVertexArray(0);
 }
 
 /* Пост процессинг */
@@ -395,6 +407,70 @@ void PostProcessing() {
     glDrawArrays(GL_QUADS, 0, Square_l);
 }
 
+GLuint lastTexID = 0;
+GLuint lastShaderID = 0;
+RenderTypeEnum CurrentRenderType = RT_NotSelected;
+
+float Rand;
+
+glm::vec2 ScreenSize;
+glm::vec2 ScreenStartSize;
+
+void RenderObjects(const GameObject& OBJ) {
+    Texture OBJ_Texture = Texturies[OBJ.BaseTextureID];
+    if (OBJ_Texture.ID != lastTexID) {
+        lastTexID = OBJ_Texture.ID;
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, lastTexID);
+        T = &OBJ_Texture;
+    }
+
+    Shader OBJ_Shader = Shaders[OBJ.BaseShaderID];
+    if (OBJ_Shader.ID != lastShaderID) {
+        lastShaderID = OBJ_Shader.ID;
+        glUseProgram(lastShaderID);
+        CSS = &OBJ_Shader;
+
+        CSS->setVec2(CSS->UNIFORM_TEXTURESIZE, glm::vec2(OBJ_Texture.Width, OBJ_Texture.Height));
+        CSS->setVec2(CSS->UNIFORM_SCREENSTARTSIZE, ScreenStartSize);
+        CSS->setVec2(CSS->UNIFORM_SCREENSIZE, ScreenSize);
+        CSS->setVec2(CSS->UNIFORM_MOUSEPOSITION, MousePositionScreen);
+        CSS->setVec2(CSS->UNIFORM_CAMERAPOSITION, -Camera->Position);
+        CSS->setFloat(CSS->UNIFORM_CAMERAORIENTATION, Camera->Orientation);
+        CSS->setFloat(CSS->UNIFORM_CAMERAZOOM, Camera->Zoom);
+        CSS->setFloat(CSS->UNIFORM_RANDOM, Rand);
+        CSS->setFloat(CSS->UNIFORM_TIME, ShaderTime);
+        CSS->setBool(CSS->UNIFORM_DEBUGRENDER, DebugRender);
+    }
+
+    if (OBJ.RenderType != CurrentRenderType) {
+        CurrentRenderType = OBJ.RenderType;
+        switch (CurrentRenderType)
+        {
+        case RT_Text:
+            glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
+            glBindVertexArray(TextVAO);
+            break;
+        default:
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBindVertexArray(VAO);
+            break;
+        }
+    }
+
+    switch (CurrentRenderType) {
+    case RT_Line:
+        RenderLine(OBJ);
+        break;
+    case RT_Text:
+        RenderText(OBJ);
+        break;
+    default:
+        RenderSquare(OBJ);
+        break;
+    }
+}
+
 /* Рендер картинки каждый кадр */
 void Render(const std::vector<GameObject>& Scene) {
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
@@ -407,17 +483,12 @@ void Render(const std::vector<GameObject>& Scene) {
     Time = static_cast<double>(AppTimeEnd.QuadPart - AppTimeStart.QuadPart) / AppTimeFrequency.QuadPart;
     ShaderTime = Time - ShaderTimeOffset;
 
-    float Rand = (static_cast<double>(rand()) / RAND_MAX);
+    Rand = (static_cast<double>(rand()) / RAND_MAX);
 
-    glm::vec2 ScreenSize = glm::vec2(CURRENT_WINDOW_WIDTH, CURRENT_WINDOW_HEIGHT);
-    glm::vec2 ScreenStartSize = glm::vec2(START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
+    ScreenSize = glm::vec2(CURRENT_WINDOW_WIDTH, CURRENT_WINDOW_HEIGHT);
+    ScreenStartSize = glm::vec2(START_WINDOW_WIDTH, START_WINDOW_HEIGHT);
 
     /* ==== Рендер объектов ==== */
-
-    GLuint lastTexID = 0;
-    GLuint lastShaderID = 0;
-
-    RenderTypeEnum CurrentRenderType = RT_NotSelected;
 
     std::vector<GameObject> UI = {};
 
@@ -427,55 +498,7 @@ void Render(const std::vector<GameObject>& Scene) {
                 UI.push_back(OBJ);
             }
             else {
-                Texture OBJ_Texture = Texturies[OBJ.BaseTextureID];
-                if (OBJ_Texture.ID != lastTexID) {
-                    lastTexID = OBJ_Texture.ID;
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, lastTexID);
-                    T = &OBJ_Texture;
-                }
-
-                Shader OBJ_Shader = Shaders[OBJ.BaseShaderID];
-                if (OBJ_Shader.ID != lastShaderID) {
-                    lastShaderID = OBJ_Shader.ID;
-                    glUseProgram(lastShaderID);
-                    CSS = &OBJ_Shader;
-
-                    CSS->setVec2(CSS->UNIFORM_TEXTURESIZE, glm::vec2(OBJ_Texture.Width, OBJ_Texture.Height));
-                    CSS->setVec2(CSS->UNIFORM_SCREENSTARTSIZE, ScreenStartSize);
-                    CSS->setVec2(CSS->UNIFORM_SCREENSIZE, ScreenSize);
-                    CSS->setVec2(CSS->UNIFORM_MOUSEPOSITION, MousePositionScreen);
-                    CSS->setVec2(CSS->UNIFORM_CAMERAPOSITION, -Camera->Position);
-                    CSS->setFloat(CSS->UNIFORM_CAMERAORIENTATION, Camera->Orientation);
-                    CSS->setFloat(CSS->UNIFORM_CAMERAZOOM, Camera->Zoom);
-                    CSS->setFloat(CSS->UNIFORM_RANDOM, Rand);
-                    CSS->setFloat(CSS->UNIFORM_LOCALRANDOM, (static_cast<double>(rand()) / RAND_MAX));
-                    CSS->setFloat(CSS->UNIFORM_TIME, ShaderTime);
-                    CSS->setBool(CSS->UNIFORM_DEBUGRENDER, DebugRender);
-                }
-
-                if (OBJ.RenderType != CurrentRenderType) {
-                    CurrentRenderType = OBJ.RenderType;
-                    switch (CurrentRenderType)
-                    {
-                    default:
-                        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                        glBindVertexArray(VAO);
-                        break;
-                    }
-                }
-
-                switch (CurrentRenderType) {
-                    case RT_Line:
-                        RenderLine(OBJ);
-                        break;
-                    case RT_Text:
-                        RenderText(OBJ);
-                        break;
-                    default:
-                        RenderSquare(OBJ);
-                        break;
-                }
+                RenderObjects(OBJ);
             }
         }
     }
@@ -495,55 +518,7 @@ void Render(const std::vector<GameObject>& Scene) {
     CurrentRenderType = RT_NotSelected;
 
     for (const GameObject& OBJ : UI) {
-        Texture OBJ_Texture = Texturies[OBJ.BaseTextureID];
-        if (OBJ_Texture.ID != lastTexID) {
-            lastTexID = OBJ_Texture.ID;
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, lastTexID);
-            T = &OBJ_Texture;
-        }
-
-        Shader OBJ_Shader = Shaders[OBJ.BaseShaderID];
-        if (OBJ_Shader.ID != lastShaderID) {
-            lastShaderID = OBJ_Shader.ID;
-            glUseProgram(lastShaderID);
-            CSS = &OBJ_Shader;
-
-            CSS->setVec2(CSS->UNIFORM_TEXTURESIZE, glm::vec2(OBJ_Texture.Width, OBJ_Texture.Height));
-            CSS->setVec2(CSS->UNIFORM_SCREENSTARTSIZE, ScreenStartSize);
-            CSS->setVec2(CSS->UNIFORM_SCREENSIZE, ScreenSize);
-            CSS->setVec2(CSS->UNIFORM_MOUSEPOSITION, MousePositionScreen);
-            CSS->setVec2(CSS->UNIFORM_CAMERAPOSITION, -Camera->Position);
-            CSS->setFloat(CSS->UNIFORM_CAMERAORIENTATION, Camera->Orientation);
-            CSS->setFloat(CSS->UNIFORM_CAMERAZOOM, Camera->Zoom);
-            CSS->setFloat(CSS->UNIFORM_RANDOM, Rand);
-            CSS->setFloat(CSS->UNIFORM_LOCALRANDOM, (static_cast<double>(rand()) / RAND_MAX));
-            CSS->setFloat(CSS->UNIFORM_TIME, ShaderTime);
-            CSS->setBool(CSS->UNIFORM_DEBUGRENDER, DebugRender);
-        }
-
-        if (OBJ.RenderType != CurrentRenderType) {
-            CurrentRenderType = OBJ.RenderType;
-            switch (CurrentRenderType)
-            {
-            default:
-                glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                glBindVertexArray(VAO);
-                break;
-            }
-        }
-
-        switch (CurrentRenderType) {
-        case RT_Line:
-            RenderLine(OBJ);
-            break;
-        case RT_Text:
-            RenderText(OBJ);
-            break;
-        default:
-            RenderSquare(OBJ);
-            break;
-        }
+        RenderObjects(OBJ);
     }
 
     CheckGLError("Render();");

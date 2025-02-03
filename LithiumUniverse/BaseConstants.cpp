@@ -9,16 +9,17 @@
  * y - Номер отладочной сборки (точнее отправки коммита на гит)
  */
 
-const int GameVersionMajor = 1;
-const int GameVersionMinor = 46;
+const int GameVersionMajor = 0;
+const int GameVersionMinor = 1;
+const int GameVersionPatch = 46;
 
-std::string GetGameVersionMinor() {
+std::string GetGameVersionPatch() {
     const std::string alphabet = "aAbBcCdDxXyYzZwW";
     std::string result;
 
     int base = static_cast<int>(alphabet.size());
-    int prefix = GameVersionMinor / base;
-    int suffixIndex = GameVersionMinor % base;
+    int prefix = GameVersionPatch / base;
+    int suffixIndex = GameVersionPatch % base;
 
     result += std::to_string(prefix);
 
@@ -29,5 +30,5 @@ std::string GetGameVersionMinor() {
 }
 
 std::string GetGameVersion() {
-    return std::to_string(GameVersionMajor) + "." + GetGameVersionMinor() + (DeveloperVersion ? " DEV" : "");
+    return std::to_string(GameVersionMinor) + "." + GetGameVersionPatch() + (DeveloperVersion ? " DEV" : "");
 }

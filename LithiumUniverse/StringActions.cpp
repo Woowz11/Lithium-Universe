@@ -155,38 +155,13 @@ std::string RemoveFirstSymbol(const std::string& Target) {
 	}
 }
 
-/* Конвертировать строку u32string в string */
-std::string u32stringToString(const std::u32string& u32str) {
-	std::string str;
-	for (char32_t ch : u32str) {
-		if (ch <= 0x7F) {
-			// 1 байт (ASCII)
-			str.push_back(static_cast<char>(ch));
-		}
-		else if (ch <= 0x7FF) {
-			// 2 байта
-			str.push_back(static_cast<char>(0xC0 | (ch >> 6)));
-			str.push_back(static_cast<char>(0x80 | (ch & 0x3F)));
-		}
-		else if (ch <= 0xFFFF) {
-			// 3 байта
-			str.push_back(static_cast<char>(0xE0 | (ch >> 12)));
-			str.push_back(static_cast<char>(0x80 | ((ch >> 6) & 0x3F)));
-			str.push_back(static_cast<char>(0x80 | (ch & 0x3F)));
-		}
-		else if (ch <= 0x10FFFF) {
-			// 4 байта
-			str.push_back(static_cast<char>(0xF0 | (ch >> 18)));
-			str.push_back(static_cast<char>(0x80 | ((ch >> 12) & 0x3F)));
-			str.push_back(static_cast<char>(0x80 | ((ch >> 6) & 0x3F)));
-			str.push_back(static_cast<char>(0x80 | (ch & 0x3F)));
-		}
-		else {
-			Warn(Base_SA,"Failed to convert std::u32string to std::string! u32stringToString(?);");
-			return "ERROR";
-		}
+/* Конвертировать строку в массив чисел */
+std::vector<int> StringToNumbers(const std::string Target) {
+	std::vector<int> result = {};
+	for (size_t i = 0; i < Target.size(); i++) {
+		result.push_back(Target[i]);
 	}
-	return str;
+	return result;
 }
 
 /* ==== Конвертация в строки ==== */
