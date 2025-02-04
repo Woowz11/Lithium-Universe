@@ -16,4 +16,25 @@ local Box = Resources:CloneGameObject("Vanilla:1Mx1M")
 GameObject:SetTexture(Box, "Vanilla:1.png")
 Resources:SaveGameObject(Box, "Box")
 
+local Salt = Resources:CloneGameObject("Vanilla:1Mx1M")
+GameObject:SetTexture(Salt, "Vanilla:salt.png")
+GameObject:SetSize(Salt, Vector2(0.01))
+Resources:SaveGameObject(Salt, "Salt")
+
+local Static = Resources:CloneGameObject("Vanilla:1Mx1M")
+GameObject:SetTexture(Static, "Base:Textures/Blank.png")
+GameObject:SetStatic(Static, true)
+GameObject:SetColor(Static, Color(0.2,0.2,0.2))
+Resources:SaveGameObject(Static, "Static")
+
+local Circle = Resources:CloneGameObject("Vanilla:1Mx1M")
+GameObject:SetTexture(Circle, "Vanilla:Circle.png")
+GameObject:SetCollider(Circle, COL_Circle)
+Resources:SaveGameObject(Circle, "Circle")
+
+local Planet = Resources:CloneGameObject("Vanilla:Circle")
+GameObject:SetTexture(Planet, "Vanilla:Planet.png")
+GameObject:SetSizeFromTexture(Planet, "Vanilla:Planet.png", 50)
+Resources:SaveGameObject(Planet, "Planet")
+
 Print("Vanilla loaded!")

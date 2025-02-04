@@ -295,7 +295,6 @@ void UpdateR_Textures() {
 
 	for (const std::string r : F_Textures) {
 		Texture T = CreateTexture(r, "Test");
-		T.Path = FullPathToComplex(r);
 		Texturies.push_back(T);
 		CreateNewGameResourceOrSkip(r, GR_Texture, Resources.size(), Texturies.size()-1);
 	}

@@ -283,7 +283,7 @@ void RenderSquare(const GameObject& OBJ) {
     CSS->setVec2(CSS->UNIFORM_POSITION, Position);
     CSS->setFloat(CSS->UNIFORM_ORIENTATION, -OBJ.OrientationVisual);
     CSS->setVec2(CSS->UNIFORM_SIZE, Size);
-    CSS->setVec2(CSS->UNIFORM_CENTER, glm::vec2(OBJ.Center.x, -OBJ.Center.y));
+    CSS->setVec2(CSS->UNIFORM_CENTER, OBJ.Center);
     CSS->setFloat(CSS->UNIFORM_LAYER, OBJ.Layer);
 
     CSS->setBool(CSS->UNIFORM_STATIC, OBJ.Static);
@@ -310,7 +310,10 @@ void RenderLine(const GameObject& OBJ) {
 
 /* Рендер текста */
 void RenderText(const GameObject& OBJ) {
+
     const std::string Text = OBJ.Text;
+    std::vector<uint32_t> UnicodeText = DecodeUTF8(Text);
+
     Font& F = Fonts[OBJ.FontID];
 
     CSS->setInt(CSS->UNIFORM_ID, OBJ.GetID());
@@ -319,7 +322,7 @@ void RenderText(const GameObject& OBJ) {
     CSS->setBool(CSS->UNIFORM_RESIZE, OBJ.Resize);
     CSS->setFloat(CSS->UNIFORM_ORIENTATION, -OBJ.OrientationVisual);
     CSS->setVec2(CSS->UNIFORM_SIZE, OBJ.SizeVisual);
-    CSS->setVec2(CSS->UNIFORM_CENTER, glm::vec2(OBJ.Center.x, -OBJ.Center.y));
+    CSS->setVec2(CSS->UNIFORM_CENTER, OBJ.Center);
     CSS->setFloat(CSS->UNIFORM_LAYER, OBJ.Layer);
     CSS->setVec4(CSS->UNIFORM_COLOR, OBJ.Color);
     CSS->setFloat(CSS->UNIFORM_LOCALRANDOM, (static_cast<double>(rand()) / RAND_MAX));
@@ -330,13 +333,15 @@ void RenderText(const GameObject& OBJ) {
     CSS->setInt(CSS->UNIFORM_TEXTLENGTH, Text.size());
 
     std::vector<TextVertex> TextVertices;
+
     float MaxIndent = 0;
     float Indent = 0;
     float NewLine = 0;
     float SpacingX = (1.0f / 8);
     float SpacingY = (1.0f / 8);
-    for (size_t i = 0; i < Text.size(); i++) {
-        int CharID = Text[i];
+
+    for (size_t i = 0; i < UnicodeText.size(); i++) {
+        uint32_t CharID = UnicodeText[i];
 
         switch (CharID)
         {

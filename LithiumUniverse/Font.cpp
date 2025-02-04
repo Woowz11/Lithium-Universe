@@ -54,6 +54,7 @@ Font CreateFont(std::string r ,json FontInfo) {
 
 	std::string ID = GetBaseFromPath(r);
 	Font F = Font(r, ID);
+	F.Path = FullPathToComplex(r);
 
 	std::vector<double> ErrorChar = {0,0,1};
 	std::unordered_map<int, std::vector<double>> CharsIDs = {};
@@ -64,12 +65,12 @@ Font CreateFont(std::string r ,json FontInfo) {
 		else {
 			if (!CharString.empty()) {
 				try {
-					std::u32string utf32 = std::u32string(CharString.begin(), CharString.end());
-					if (utf32.size() == 1) {
-						CharsIDs[utf32[0]] = CharPosition;
+					int s = ConvertStringSymbolToNumber(CharString);
+					if (s != -1) {
+						CharsIDs[s] = CharPosition;
 					}
 					else {
-						Warn("FONT", "Failed to convert character '" + CharString + "' to position, because the string must consist of one character! CreateFont(\"" + r + "\",?);");
+						Warn("FONT", "Failed to convert character '" + CharString + "' to position, because an error occurred while converting the string to a number! CreateFont(\"" + r + "\",?);");
 					}
 				}
 				catch (...) {
@@ -104,7 +105,7 @@ Font CreateFont(std::string r ,json FontInfo) {
 	F.MaxX = MaxX;
 	F.MaxY = MaxY;
 
-	Print("FONT", "Font ($$Y" + r + "$$_) $$Gcreated$$_!");
+	Print("FONT", "Font ($$Y" + F.Path + "$$_) $$Gcreated$$_!");
 
 	return F;
 }

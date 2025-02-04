@@ -164,6 +164,92 @@ std::vector<int> StringToNumbers(const std::string Target) {
 	return result;
 }
 
+/* Конвертировать строку символ в число */
+int ConvertStringSymbolToNumber(const std::string Symbol) {
+	if (Symbol.empty()) {
+		Error(Base_SA, "Cannot convert string-symbol '" + Symbol + "' to number because symbol empty! ConvertStringSymbolToNumber(\"" + Symbol + "\");");
+		return -1;
+	}
+
+	unsigned char byte1 = static_cast<unsigned char>(Symbol[0]);
+
+	if ((byte1 & 0b10000000) == 0b00000000) {
+		return byte1;
+	}
+	else if ((byte1 & 0b11100000) == 0b11000000) {
+		if (Symbol.size() < 2) {
+			Error(Base_SA, "Cannot convert string-symbol '" + Symbol + "' to number because the symbol expected 2 bytes, got " + std::to_string(Symbol.size()) + "! ConvertStringSymbolToNumber(\"" + Symbol + "\");");
+		}
+		unsigned char byte2 = static_cast<unsigned char>(Symbol[1]);
+		return ((byte1 & 0b00011111) << 6) | (byte2 & 0b00111111);
+	}
+	else if ((byte1 & 0b11110000) == 0b11100000) {
+		if (Symbol.size() < 3) {
+			Error(Base_SA, "Cannot convert string-symbol '" + Symbol + "' to number because the symbol expected 3 bytes, got " + std::to_string(Symbol.size()) + "! ConvertStringSymbolToNumber(\"" + Symbol + "\");");
+		}
+		unsigned char byte2 = static_cast<unsigned char>(Symbol[1]);
+		unsigned char byte3 = static_cast<unsigned char>(Symbol[2]);
+		return ((byte1 & 0b00001111) << 12) | ((byte2 & 0b00111111) << 6) | (byte3 & 0b00111111);
+	}
+	else if ((byte1 & 0b11111000) == 0b11110000) {
+		if (Symbol.size() < 4) {
+			Error(Base_SA, "Cannot convert string-symbol '" + Symbol + "' to number because the symbol expected 4 bytes, got " + std::to_string(Symbol.size()) + "! ConvertStringSymbolToNumber(\"" + Symbol + "\");");
+		}
+		unsigned char byte2 = static_cast<unsigned char>(Symbol[1]);
+		unsigned char byte3 = static_cast<unsigned char>(Symbol[2]);
+		unsigned char byte4 = static_cast<unsigned char>(Symbol[3]);
+		return ((byte1 & 0b00000111) << 18) | ((byte2 & 0b00111111) << 12) | ((byte3 & 0b00111111) << 6) | (byte4 & 0b00111111);
+	}
+	else {
+		Error(Base_SA, "Cannot convert string-symbol '" + Symbol + "' to number because the symbol consists of two characters! ConvertStringSymbolToNumber(\"" + Symbol + "\");");
+	}
+	return -1;
+}
+
+/* Декодировать строку в Unicode */
+std::vector<uint32_t> DecodeUTF8(const std::string& str) {
+	std::vector<uint32_t> codePoints;
+	size_t i = 0;
+
+	while (i < str.size()) {
+		uint32_t codePoint = 0;
+		unsigned char byte = str[i];
+
+		if ((byte & 0b10000000) == 0b00000000) {
+			codePoint = byte;
+			i += 1;
+		}
+		else if ((byte & 0b11100000) == 0b11000000) {
+			if (i + 1 >= str.size()) {
+				Error(Base_SA, "It is impossible to decode the string [" + std::to_string(str[i]) + "] because incomplete 2-byte sequence! DecodeUTF8(\"" + str + "\");");
+			}
+			codePoint = ((byte & 0b00011111) << 6) | (str[i + 1] & 0b00111111);
+			i += 2;
+		}
+		else if ((byte & 0b11110000) == 0b11100000) {
+			if (i + 2 >= str.size()) {
+				Error(Base_SA, "It is impossible to decode the string [" + std::to_string(str[i]) + "] because incomplete 3-byte sequence! DecodeUTF8(\"" + str + "\");");
+			}
+			codePoint = ((byte & 0b00001111) << 12) | ((str[i + 1] & 0b00111111) << 6) | (str[i + 2] & 0b00111111);
+			i += 3;
+		}
+		else if ((byte & 0b11111000) == 0b11110000) {
+			if (i + 3 >= str.size()) {
+				Error(Base_SA, "It is impossible to decode the string [" + std::to_string(str[i]) + "] because incomplete 4-byte sequence! DecodeUTF8(\"" + str + "\");");
+			}
+			codePoint = ((byte & 0b00000111) << 18) | ((str[i + 1] & 0b00111111) << 12) | ((str[i + 2] & 0b00111111) << 6) | (str[i + 3] & 0b00111111);
+			i += 4;
+		}
+		else {
+			Error(Base_SA, "It is impossible to decode the string [" + std::to_string(str[i]) + "] because it is of unknown byte pattern! DecodeUTF8(\"" + str + "\");");
+		}
+
+		codePoints.push_back(codePoint);
+	}
+
+	return codePoints;
+}
+
 /* ==== Конвертация в строки ==== */
 
 std::string ToStringVec2(const glm::vec2 target) {

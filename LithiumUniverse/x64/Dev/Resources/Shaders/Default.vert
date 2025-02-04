@@ -107,7 +107,7 @@ void main()
 	
 	RPosition = Rotate(RPosition, Orientation);
 	
-	RPosition = Translate(RPosition, Center * Size);
+	RPosition = Translate(RPosition, -Center * Size);
 	
 	RPosition = Scale(RPosition, Size);
 	

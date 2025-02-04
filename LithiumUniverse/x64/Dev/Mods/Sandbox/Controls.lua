@@ -12,13 +12,9 @@ Game:GameObjectDeleted(function(OBJ)
 end)
 
 function ClearAllSpawnedGameObjects()
-	PrintFast("go")
-	PrintFast(Table:Pairs({})) -- Калово доделай!!!!
-	local x,y,z = Table:Pairs({})
-	PrintFast(x.." "..y.." "..z)
-	for i, Key, Value in Table:Pairs(SpawnedGameObjects) do
-		PrintFast("["..i.."] "..Key.." = "..Value)
-	end
+	Table:Pairs(SpawnedGameObjects, function(i, Key, Value)
+		GameObject:Delete(Key)
+	end)
 end
 
 function SelectSpawnGameObject(Path)
@@ -33,13 +29,13 @@ Controls:KeyPressed(function(Key)
 		SpawnGameObject(SelectedSpawningGameObject,true,MouseWorldPosition())
 	end
 	if (Key == KEY_Q) then
-		for a = 0, 100 do
+		local count = 100
+		if (SelectedSpawningGameObject == "Vanilla:Static") then
+			count = 0
+		end
+		for a = 0, count do
 			SpawnGameObject(SelectedSpawningGameObject,false,MouseWorldPosition())
 		end
-	end
-	
-	if (Key == KEY_C) then
-		ClearAllSpawnedGameObjects()
 	end
 	
 	if (Key == KEY_1) then
@@ -52,7 +48,16 @@ Controls:KeyPressed(function(Key)
 		SelectSpawnGameObject("Vanilla:Box")
 	end
 	if (Key == KEY_4) then
-		
+		SelectSpawnGameObject("Vanilla:Salt")
+	end
+	if (Key == KEY_5) then
+		SelectSpawnGameObject("Vanilla:Static")
+	end
+	if (Key == KEY_6) then
+		SelectSpawnGameObject("Vanilla:Circle")
+	end
+	if (Key == KEY_7) then
+		SelectSpawnGameObject("Vanilla:Planet")
 	end
 	
 	if (Key == KEY_G) then

@@ -9,8 +9,9 @@
 #include <sstream>
 #include <iostream>
 
-#include "StringActions.h";
 #include "Console.h";
+#include "StringActions.h";
+#include "GlobalResources.h";
 
 class Shader
 {
@@ -18,6 +19,7 @@ public:
     unsigned int ID;
     unsigned int RealID;
     std::string FullPath;
+    std::string Path = "";
     bool Success = true;
 
     Shader() { RealID = -1; ID = -1; FullPath = ""; }
@@ -25,6 +27,7 @@ public:
     Shader(std::string FullPath_, std::string VertexCode, std::string FragmentCode, int ErrorShaderID)
     {
         FullPath = FullPath_;
+        Path = FullPathToComplex(FullPath_);
 
         const char* vShaderCode = VertexCode.c_str();
         const char* fShaderCode = FragmentCode.c_str();
@@ -50,13 +53,14 @@ public:
         glDeleteShader(vertex);
         glDeleteShader(fragment);
 
-        Print("SHADER", "Shader ($$Y" + FullPath + "$$_ ($$B" + std::to_string(RealID) + "$$_)) " + (Success ? "$$Gcreated" : "has $$Rerrors") + "$$_!");
         if (Success) {
             ID = RealID;
         }
         else {
             ID = ErrorShaderID;
         }
+
+        Print("SHADER", "Shader ($$Y" + Path + "$$_ ($$B" + std::to_string(RealID) + "$$_)) " + (Success ? "$$Gcreated" : "has $$Rerrors") + "$$_!");
 
         glUseProgram(ID);
         UpdateUniforms();

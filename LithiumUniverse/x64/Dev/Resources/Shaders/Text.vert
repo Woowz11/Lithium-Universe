@@ -47,9 +47,9 @@ void main()
 	
 	vec2 NewSize = (Size * (Interface ? 0.192 : 1));
 	float Length = TextWidth * NewSize.x;
-	vec2 Offset = ((vec2(Center.x * -Length/2, Center.y))) - vec2(Length/2,0);
+	vec2 Offset = ((vec2(Center.x * Length/2, Center.y))) + vec2(Length/2,0);
 	
-	vec2 TextPosition = (Position * ScaleFactor + Offset + (PointPosition * NewSize));
+	vec2 TextPosition = (Position * ScaleFactor - Offset + (PointPosition * NewSize));
 	
 	if (!Interface){
 		TextPosition += CameraPosition;

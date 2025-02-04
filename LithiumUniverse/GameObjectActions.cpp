@@ -110,7 +110,7 @@ void CloneGameObjectValuesFromOther__(GameObject& A, GameObject& B) {
 		SetGameObjectSize(i, B.SizeVisual);
 		SetGameObjectOrientation(i, B.OrientationVisual);
 		A.LinePositionVisual = B.LinePositionVisual;
-		A.Color = B.Color;
+		SetGameObjectColor(i, B.Color);
 		A.Layer = B.Layer;
 		A.Render = B.Render;
 		A.RenderType = B.RenderType;
@@ -121,6 +121,8 @@ void CloneGameObjectValuesFromOther__(GameObject& A, GameObject& B) {
 		A.Collider = B.Collider;
 		A.CreatedFromMods = B.CreatedFromMods;
 		A.CreatedFromPlayer = B.CreatedFromPlayer;
+
+		//A.Data = B.Data;
 
 		if (B.Type == RO_Phys) {
 			SetGameObjectTransform(i,B.PositionVisual, B.OrientationVisual);

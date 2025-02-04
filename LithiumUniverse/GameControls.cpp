@@ -112,8 +112,8 @@ void MouseMove() {
 
 /* Кнопка на мыши нажата */
 void MouseClick(const int KEY, const int ACTION) {
-	if (KEY == GLFW_MOUSE_BUTTON_LEFT) {
-		if (ACTION == GLFW_PRESS) {
+	if (ACTION == GLFW_PRESS) {
+		if (KEY == GLFW_MOUSE_BUTTON_LEFT) {
 			if (MouseOnInterface) {
 				ProcessUIClick(MouseUIObject, true);
 			}
@@ -121,16 +121,22 @@ void MouseClick(const int KEY, const int ACTION) {
 				MousePickupGO(MouseObject);
 			}
 		}
-		if (ACTION == GLFW_RELEASE) {
-			MouseDropGO();
-		}
-	}
-
-	if (KEY == GLFW_MOUSE_BUTTON_RIGHT) {
-		if (ACTION == GLFW_PRESS) {
+		if (KEY == GLFW_MOUSE_BUTTON_RIGHT) {
 			if (MouseOnInterface) {
 				ProcessUIClick(MouseUIObject, false);
 			}
+		}
+
+		if (MouseOnInterface) {
+			GameObject& OBJ = GetGameObject(MouseUIObject, "MouseClick(" + std::to_string(KEY) + "," + std::to_string(ACTION) + ");");
+			for (const sol::function& F : OBJ.ClickMouseEvent) {
+				F(KEY, OBJ.GetID());
+			}
+		}
+	}
+	if (ACTION == GLFW_RELEASE) {
+		if (KEY == GLFW_MOUSE_BUTTON_LEFT) {
+			MouseDropGO();
 		}
 	}
 
@@ -166,15 +172,19 @@ void ControlsKeyboard(const int KEY, const int ACTION) {
 
 	if (ACTION == GLFW_PRESS) {
 
-		if (KEY == GLFW_KEY_KP_7 && ACTION == GLFW_PRESS) {
+		if (KEY == GLFW_KEY_F4) {
+			UpdateResources();
+		}
+
+		if (KEY == GLFW_KEY_KP_7) {
 			SetFPSLimit(15);
 		}
 
-		if (KEY == GLFW_KEY_KP_8 && ACTION == GLFW_PRESS) {
+		if (KEY == GLFW_KEY_KP_8) {
 			SetFPSLimit(60);
 		}
 
-		if (KEY == GLFW_KEY_KP_9 && ACTION == GLFW_PRESS) {
+		if (KEY == GLFW_KEY_KP_9) {
 			SetFPSLimit(0);
 		}
 

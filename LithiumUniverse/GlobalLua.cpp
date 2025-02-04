@@ -413,7 +413,7 @@ std::string LUA_TypeOf(const sol::object& Obj) {
 
 /* Конвертировать объект в строку */
 std::string LUA_ToString(const sol::object& Obj) {
-	return ObjectToString(Obj);
+	return ObjectToString(Obj,true);
 }
 
 /* Типо условия x ? y : z */
@@ -714,21 +714,20 @@ public:
 		return ErrorString;
 	}
 
-	std::tuple<int ,sol::object, sol::object> Pairs(sol::object Table, sol::this_state s) {
+	/* Разобрать массив */
+	void Pairs(const sol::object& Table, const sol::object& Func, sol::this_state s) {
 		lua_State* L = s;
-		if (LuaCheckType(Table, L_Table, "Talbe:Pairs", { Table }, s)) {
-			sol::table T = ObjectToTable(Table);
-
-			for (const auto& p : T) {
-				sol::object key = p.first;
-				sol::object value = p.second;
-
-				// inspect key/value, manipulate as you please
-			}
-			
-			
+		if (LuaCheckType(Table, L_Table, "Talbe:Pairs", { Table, Func }, s)) {
+			if (LuaCheckType(Func, L_Func, "Table:Pairs", { Table, Func }, s)) {
+				sol::table T = ObjectToTable(Table);
+				sol::function F = ObjectToFunc(Func);
+				int i = 1;
+				for (auto p : T) {
+					F(i, p.first, p.second);
+					i++;
+				}
+			}		
 		}
-		return std::make_tuple(-1, sol::nil, sol::nil);
 	}
 };
 
@@ -1089,6 +1088,16 @@ public:
 		}
 	}
 
+	/* Сделать объект статичным */
+	void SetStatic(const sol::object& ID, const sol::object& B, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetStatic", { ID, B }, L)) {
+			if (LuaCheckType(B, L_Bool, "GameObject:SetStatic", { ID, B }, L)) {
+				SetGameObjectStatic(ObjectToInt(ID), ObjectToBool(B));
+			}
+		}
+	}
+
 	/* Изменить текстуру игровому объекту */
 	void SetTexture(const sol::object& ID, const sol::object& Path, sol::this_state s) {
 		lua_State* L = s;
@@ -1157,6 +1166,36 @@ public:
 		}
 		return false;
 	}
+
+	/* Ивент: мышка нажала на объект */
+	void MousePressed(const sol::object& ID, const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:MousePressed", { ID,Func }, L)) {
+			if (LuaCheckType(Func, L_Func, "GameObject:MousePressed", { ID,Func }, L)) {
+				GetGameObject(ObjectToInt(ID), "").ClickMouseEvent.push_back(ObjectToFunc(Func));
+			}
+		}
+	}
+
+	/* Ивент: мышка навела на объект */
+	void MouseHover(const sol::object& ID, const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:MouseHover", { ID,Func }, L)) {
+			if (LuaCheckType(Func, L_Func, "GameObject:MouseHover", { ID,Func }, L)) {
+				GetGameObject(ObjectToInt(ID), "").MouseHoverEvent.push_back(ObjectToFunc(Func));
+			}
+		}
+	}
+
+	/* Установить коллайдер объекту */
+	void SetCollider(const sol::object& ID, const sol::object& NewCollider, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetCollider", { ID, NewCollider }, L)) {
+			if (LuaCheckType(NewCollider, L_Int, "GameObject:SetCollider", { ID, NewCollider }, L)) {
+				SetGameObjectCollider(ObjectToInt(ID), ColliderType(ObjectToInt(NewCollider)));
+			}
+		}
+	}
 };
 
 LUA_GameObject LUA_GameObject_Instance;
@@ -1191,6 +1230,9 @@ void GameLua(sol::state& LUA) {
 	LUA["GO_Default"] = sol::as_table(RO_Default);
 	LUA["GO_Physical"] = sol::as_table(RO_Phys);
 	LUA["GO_UI"] = sol::as_table(RO_UI);
+
+	LUA["COL_Square"] = sol::as_table(CT_Box);
+	LUA["COL_Circle"] = sol::as_table(CT_Circle);
 
 	/* Классы */
 	LUA.new_usertype<LUA_Vector2>("Vector2",
@@ -1374,10 +1416,14 @@ void GameLua(sol::state& LUA) {
 		"SetShader", &LUA_GameObject::SetShader,
 		"SetCenter", &LUA_GameObject::SetCenter,
 		"SetResize", &LUA_GameObject::SetResize,
+		"SetStatic", &LUA_GameObject::SetStatic,
 		"SetTexture", &LUA_GameObject::SetTexture,
 		"MakeItText", &LUA_GameObject::MakeItText,
+		"MouseHover", &LUA_GameObject::MouseHover,
 		"SetPosition", &LUA_GameObject::SetPosition,
 		"GetPosition", &LUA_GameObject::GetPosition,
+		"SetCollider", &LUA_GameObject::SetCollider,
+		"MousePressed", &LUA_GameObject::MousePressed,
 		"SetOrientation", &LUA_GameObject::SetOrientation,
 		"SetSizeFromTexture", &LUA_GameObject::SetSizeFromTexture,
 		"SetCreatedFromPlayer", &LUA_GameObject::SetCreatedFromPlayer,

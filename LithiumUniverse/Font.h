@@ -13,6 +13,7 @@ using json = nlohmann::json;
 class Font {
 public:
 	std::string FullPath;
+	std::string Path;
 	std::string ID;
 	std::unordered_map<int, FontChar> Chars = {};
 	int MaxX = -1;

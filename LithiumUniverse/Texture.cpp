@@ -4,10 +4,11 @@
 #include <string>
 #include <vector>
 
-#include "DebugGetter.h";
 #include "Texture.h";
-#include "ExplorerActions.h";
 #include "Console.h";
+#include "DebugGetter.h";
+#include "ExplorerActions.h";
+#include "GlobalResources.h";
 
 /* Все текстуры */
 std::vector<Texture> Texturies = {};
@@ -23,6 +24,7 @@ void DeleteTexture(Texture& T) {
 Texture CreateTexture(std::string Path, std::string Atlas) {
     if (HasFile(Path)) {
         Texture info = Texture(Path, Atlas);
+        info.Path = FullPathToComplex(Path);
 
         glGenTextures(1, &info.ID);
         glBindTexture(GL_TEXTURE_2D, info.ID);
@@ -45,8 +47,6 @@ Texture CreateTexture(std::string Path, std::string Atlas) {
 
             glTexImage2D(GL_TEXTURE_2D, 0, Format, width, height, 0, Format, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
-
-            Print("TEXTURE", "Texture ($$Y" + info.FullPath + "$$_ ($$B" + std::to_string(info.ID) + "$$_)) $$Gcreated$$_!");
         }
         else
         {
@@ -54,6 +54,8 @@ Texture CreateTexture(std::string Path, std::string Atlas) {
             info.Error = true;
         }
         stbi_image_free(data);
+
+        Print("TEXTURE", "Texture ($$Y" + info.Path + "$$_ ($$B" + std::to_string(info.ID) + "$$_))" + (info.Error ? "has $$Rerrors" : "$$Gcreated") + "$$_!");
 
         return info;
     }

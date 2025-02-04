@@ -1,4 +1,4 @@
-# Lithium Universe 1.2w DEV
+# Lithium Universe 1.1V DEV
 ## Texture files loading list!
 | |ID |Atlas     |Texture Path                                                                                        |
 |-|:-:|:--------:|:---------------------------------------------------------------------------------------------------|
@@ -12,7 +12,10 @@
 |C|8  |Test      |**Sandbox**:GUI/Hotbar.png                                                                          |
 |C|9  |Test      |**Vanilla**:1.png                                                                                   |
 |C|10 |Test      |**Vanilla**:1Mx1M.png                                                                               |
-|C|11 |Test      |**Vanilla**:HumanSize.png                                                                           |
+|C|11 |Test      |**Vanilla**:Circle.png                                                                              |
+|C|12 |Test      |**Vanilla**:HumanSize.png                                                                           |
+|C|13 |Test      |**Vanilla**:Planet.png                                                                              |
+|C|14 |Test      |**Vanilla**:salt.png                                                                                |
 
 ## Texture files showing
 |ID |Texture                                                                                                          |
@@ -27,4 +30,7 @@
 |8  |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Sandbox/GUI/Hotbar.png)                                     |
 |9  |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Vanilla/1.png)                                              |
 |10 |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Vanilla/1Mx1M.png)                                          |
-|11 |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Vanilla/HumanSize.png)                                      |
+|11 |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Vanilla/Circle.png)                                         |
+|12 |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Vanilla/HumanSize.png)                                      |
+|13 |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Vanilla/Planet.png)                                         |
+|14 |![](F:/Lithium-Universe/LithiumUniverse/x64/Dev/Mods/Vanilla/salt.png)                                           |

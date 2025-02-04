@@ -84,7 +84,9 @@ public:
 	ColliderType Collider  = CT_Box;                 /* Тип коллизии                    */
 
 	/* ==== LUA ==== */
-	std::unordered_map<double, sol::object> Data = {}; /* Модовая информация об объекте */
+	std::unordered_map<double, sol::object> Data = {}; /* Модовая информация об объекте       */
+	std::vector<sol::function> ClickMouseEvent   = {}; /* Вызывается при нажатии на объект    */
+	std::vector<sol::function> MouseHoverEvent   = {}; /* Вызывается при наведении на объект  */
 
 	GameObject(std::string Name_, int ID_) {
 		ID = ID_;
@@ -98,6 +100,7 @@ public:
 	void Delete() {
 		Deleted = true;
 		Data = {};
+		ClickMouseEvent = {};
 		PositionVisual = glm::vec2(0, 0);
 		LinePositionVisual = glm::vec4(0, 0, 0, 0);
 		SizeVisual = glm::vec2(0, 0);

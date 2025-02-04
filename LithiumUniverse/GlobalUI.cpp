@@ -35,6 +35,11 @@ void MakeGameObjectUI__(int i) {
 void ButtonHover__(int i, bool Hover) {
 	if (!CheckOutSceneIndex(i)) {
 		GameObject& OBJ = GetGameObject(i, "ButtonHover__(" + std::to_string(i) + "," + ToStringBool(Hover) + ");");
+
+		for (const sol::function& F : OBJ.MouseHoverEvent) {
+			F(Hover, i);
+		}
+
 		if (OBJ.ButtonID != -1) {
 			if (Hover) {
 				SetGameObjectTexture(i, GetResource("Base", "Textures/ButtonHover.png").ID);
@@ -67,8 +72,8 @@ void MakeGameObjectText(int i, std::string Text) {
 }
 
 /* Точка пересекает прямоугольник? */
-bool PointOverBox(glm::vec2 Point, glm::vec2 Pos, glm::vec2 Size) {
-	glm::vec2 p = Pos - Size;
+bool PointOverBox(const glm::vec2 Point, const glm::vec2 Pos, const glm::vec2 Size, const glm::vec2 Center) {
+	glm::vec2 p = (Pos - (Center * Size)) - Size;
 	return (
 		Point.x >= p.x &&
 		Point.x <= p.x + Size.x * 2 &&
@@ -78,8 +83,8 @@ bool PointOverBox(glm::vec2 Point, glm::vec2 Pos, glm::vec2 Size) {
 }
 
 /* Точка пересекает прямоугольник? (Интерфейс) */
-bool PointOverUIBox(glm::vec2 Point, bool Resize, glm::vec2 Pos, glm::vec2 Size) {
-	return PointOverBox(ScreenPositionToWorld(Point, true, Resize), ScreenPositionToWorld(Pos, true, Resize), Size);
+bool PointOverUIBox(const glm::vec2 Point, const bool Resize, const glm::vec2 Pos, const glm::vec2 Size, const glm::vec2 Center) {
+	return PointOverBox(ScreenPositionToWorld(Point, true, Resize), ScreenPositionToWorld(Pos, true, Resize), Size, Center);
 }
 
 /* После обновления интерфейса */
@@ -105,7 +110,7 @@ int ui_test2 = -1;
 int t = 0;
 void UpdateUI(GameObject& OBJ) {
 	if (!FindAnythingUI) {
-		bool Over = PointOverUIBox(MousePosition, OBJ.Resize, OBJ.PositionVisual, OBJ.SizeVisual);
+		bool Over = PointOverUIBox(MousePosition, OBJ.Resize, OBJ.PositionVisual, OBJ.SizeVisual, OBJ.Center);
 		if (Over) {
 			MouseOnInterface = true;
 			MouseUIObject = OBJ.GetID();
@@ -172,27 +177,7 @@ void CreateUI(Scenes Scen) {
 		}
 		default: {
 
-			int ui = CreateGameObject("ui", RO_UI);
-			SetGameObjectSize(ui, glm::vec2(0.25f, 0.25f));
-			SetGameObjectPosition(ui, glm::vec2(-0.9f, -0.9f));
-
-			MakeGameObjectButton(ui, []() {
-				//RemoveAllTestObject();
-				}, []() {});
-
-			ui_test = ui;
-
-			ui = CreateGameObject("ui", RO_UI);
-			SetGameObjectSize(ui, glm::vec2(0.25f, 0.25f));
-			SetGameObjectPosition(ui, glm::vec2(-0.75f, -0.9f));
-
-			MakeGameObjectButton(ui, []() {
-				UpdateResources();
-				}, []() {});
-
-			ui_test2 = ui;
-				
-			ui = CreateGameObject("fps", RO_UI);
+			int ui = CreateGameObject("fps", RO_UI);
 			MakeGameObjectText(ui, "");
 			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.9f));
 			SetGameObjectCenter(ui, glm::vec2(-1, 0));

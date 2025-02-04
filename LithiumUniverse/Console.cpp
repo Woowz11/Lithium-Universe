@@ -289,6 +289,11 @@ void PrintVeryFast(std::string Message) {
 	std::cout << std::endl << Message;
 }
 
+/* Отправить очень успрощённое сообщение (очень быстрое) (Unicode сообщение) */
+void PrintVeryFastU(std::wstring Message) {
+	std::wcout << std::endl << Message;
+}
+
 /* Отправить важное сообщение */
 void PrintImportant(std::string Base, std::string Message) {
 	PrintBase(Base, Both, SLT_Important, Message);
@@ -369,6 +374,11 @@ void CloseConsole() {
 /* Регистрация консоли */
 void InstallConsole() {
 	Console = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	/* Поддержка юникода в консоли */
+	std::locale::global(std::locale("en_US.UTF-8"));
+	std::wcout.imbue(std::locale());
+	SetConsoleOutputCP(CP_UTF8);
 
 	LogsPath = AddFileToPath(GamePath, "Logs");
 

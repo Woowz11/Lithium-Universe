@@ -8,19 +8,24 @@ function CreateHelp()
 		"1 - Select '1M x 1M box'",
 		"2 - Select 'Human Size'",
 		"3 - Select 'Omg, what is at?'",
+		"4 - Select 'Salt'",
+		"5 - Select 'Static box'",
+		"6 - Select 'Circle'",
+		"7 - Select 'Planet'",
 		"E - Spawn selected",
 		"Q - Spawn 100 selected",
 		"W,S,A,D - Camera movement",
 		"L. Shift - Faster movement",
 		"L. Contr. - Slower movement",
+		"Home - Reset camera",
 		"Esc - Exit to menu",
 		"Left, Right - Rotate camera",
 		"+,- - Camera zoom",
 		"Space - Stop time",
 		"G - Slow time",
 		"K7,K8,K9 - Set FPS limits",
+		"F4 - Reload resources"
 	}
-	
 	local HelpResult = ""
 	for i = 1, #Help do
 		local String = Help[i]
@@ -28,9 +33,25 @@ function CreateHelp()
 	end
 	local text = GameObject:Create("Help Text", GO_UI)
 	GameObject:MakeItText(text, HelpResult)
-	GameObject:SetSize(text, Vector2(1.25)/ScreenScale)
+	GameObject:SetSize(text, Vector2(1)/ScreenScale)
 	GameObject:SetCenter(text, Vector2(-1,0))
 	GameObject:SetPosition(text, Vector2(-0.99, 0.5))
+end
+
+function MakeItButton(OBJ,Event)
+	GameObject:MousePressed(OBJ,function(Key)
+		if (Key == KEY_MOUSE_LEFT) then
+			Event()
+		end
+	end)
+	GameObject:SetTexture(OBJ,"Base:Textures/Button.png")
+	GameObject:MouseHover(OBJ,function(Hover,Orig)
+		if (Hover) then
+			GameObject:SetTexture(Orig,"Base:Textures/ButtonHover.png")
+		else
+			GameObject:SetTexture(Orig,"Base:Textures/Button.png")
+		end
+	end)
 end
 
 Text_SelectedGameObject = -1
@@ -40,6 +61,12 @@ function CreateOther()
 	GameObject:SetResize(Text_SelectedGameObject, false)
 	GameObject:SetSize(Text_SelectedGameObject, Vector2(0.7,0.7))
 	GameObject:SetPosition(Text_SelectedGameObject, Vector2(0, -0.99))
+	
+	local ClearButton = GameObject:Create("Clear Button", GO_UI)
+	MakeItButton(ClearButton,function() ClearAllSpawnedGameObjects() end)
+	GameObject:SetSize(ClearButton,Vector2(0.25,0.25))
+	GameObject:SetCenter(ClearButton,Vector2(-1,-1))
+	GameObject:SetPosition(ClearButton,Vector2(-0.99,-0.99))
 end
 
 function CreateInventory()
