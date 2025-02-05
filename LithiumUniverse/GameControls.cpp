@@ -172,6 +172,14 @@ void ControlsKeyboard(const int KEY, const int ACTION) {
 
 	if (ACTION == GLFW_PRESS) {
 
+		if (KEY == GLFW_KEY_F3) {
+			for (GameObject& OBJ : Scene) {
+				if (OBJ.Name == "[LU] DebugUI") {
+					SetGameObjectActive(OBJ.GetID(), !OBJ.Active);
+				}
+			}
+		}
+
 		if (KEY == GLFW_KEY_F4) {
 			UpdateResources();
 		}

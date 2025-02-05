@@ -105,8 +105,11 @@ void AfterUpdateUI() {
 }
 
 /* Обновление интерфейса */
-int ui_test = -1;
-int ui_test2 = -1;
+
+int DUI_FPS = -1;
+int DUI_FPSR = -1;
+int DUI_COUNT = -1;
+
 int t = 0;
 void UpdateUI(GameObject& OBJ) {
 	if (!FindAnythingUI) {
@@ -119,21 +122,39 @@ void UpdateUI(GameObject& OBJ) {
 		}
 	}
 
-	if (OBJ.Name == "fps") {
-		SetGameObjectText(OBJ.GetID(), "FPS: " + StringFPS);
+	int ID = OBJ.GetID();
+
+	if (ID = DUI_FPS) {
+		SetGameObjectText(ID, "FPS: " + StringFPS);
 	}
-	t++;
-	if (t > 50) {
-		if (OBJ.Name == "fps-real") {
+	if (ID = DUI_FPSR) {
+		t++;
+		if (t > 30) {
 			glm::vec4 C = glm::vec4(1, FPS / 300, FPS / 1000, 1);
-			SetGameObjectText(OBJ.GetID(), "FPS-R: " + std::to_string(FPS));
-			SetGameObjectColor(OBJ.GetID(), C);
+			SetGameObjectText(ID, "FPS-R: " + std::to_string(FPS));
+			SetGameObjectColor(ID, C);
 			t = 0;
 		}
 	}
-	if (OBJ.Name == "count") {
-		SetGameObjectText(OBJ.GetID(), "COUNT: " + std::to_string(TotalSceneGameObjects-TotalDeletedGameObjects));
+	if (ID = DUI_COUNT) {
+		SetGameObjectText(ID, "COUNT: " + std::to_string(TotalSceneGameObjects - TotalDeletedGameObjects));
 	}
+}
+
+int CreateDebugUILine(int x) {
+	int ui = CreateGameObject("[LU] DebugUI", RO_UI);
+	MakeGameObjectText(ui, "");
+	SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.9f - ((float)x*0.1f)));
+	SetGameObjectCenter(ui, glm::vec2(-1, 0));
+	SetGameObjectResize(ui, false);
+	return ui;
+}
+
+/* Создать отладочный интерфейс */
+void CreateDebugUI() {
+	DUI_FPS   = CreateDebugUILine(0);
+	DUI_FPSR  = CreateDebugUILine(1);
+	DUI_COUNT = CreateDebugUILine(2);
 }
 
 /* Создать интерфейс */
@@ -173,27 +194,13 @@ void CreateUI(Scenes Scen) {
 			SetGameObjectPosition(ui2, glm::vec2(0, 0.2f));
 			SetGameObjectSize(ui2, glm::vec2(0.75, 0.75));
 
+			CreateDebugUI();
+
 			break;
 		}
 		default: {
 
-			int ui = CreateGameObject("fps", RO_UI);
-			MakeGameObjectText(ui, "");
-			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.9f));
-			SetGameObjectCenter(ui, glm::vec2(-1, 0));
-			SetGameObjectResize(ui, false);
-
-			ui = CreateGameObject("fps-real", RO_UI);
-			MakeGameObjectText(ui, "");
-			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.8f));
-			SetGameObjectCenter(ui, glm::vec2(-1, 0));
-			SetGameObjectResize(ui, false);
-
-			ui = CreateGameObject("count", RO_UI);
-			MakeGameObjectText(ui, "");
-			SetGameObjectPosition(ui, glm::vec2(-0.975f, 0.7f));
-			SetGameObjectCenter(ui, glm::vec2(-1, 0));
-			SetGameObjectResize(ui, false);
+			CreateDebugUI();
 
 			break;
 		}

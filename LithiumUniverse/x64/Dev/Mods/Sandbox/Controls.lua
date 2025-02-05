@@ -7,13 +7,21 @@ GamePaused = false
 
 SpawnedGameObjects = {}
 
+ShiftPressed = false
+
 Game:GameObjectDeleted(function(OBJ)
-	SpawnedGameObjects[OBJ] = nil
+	Table:Remove(SpawnedGameObjects, OBJ)
 end)
 
 function ClearAllSpawnedGameObjects()
-	Table:Pairs(SpawnedGameObjects, function(i, Key, Value)
-		GameObject:Delete(Key)
+	Table:PairsInvert(SpawnedGameObjects, function(i, Key, Value)
+		GameObject:Delete(Value)
+	end)
+end
+
+function DeleteLastSpawnedGameObject()
+	Table:GetLast(SpawnedGameObjects, function(i, Key, Value)
+		GameObject:Delete(Value)
 	end)
 end
 
@@ -22,15 +30,42 @@ function SelectSpawnGameObject(Path)
 	GameObject:SetText(Text_SelectedGameObject, Path)
 end
 
+Game:Update(function()
+	if (ShiftPressed) then
+		if (Controls:KeyIsPressed(KEY_E)) then
+			SpawnGameObject(SelectedSpawningGameObject,true,MouseWorldPosition())
+		end
+		
+		if (Controls:KeyIsPressed(KEY_Z)) then
+			DeleteLastSpawnedGameObject()
+		end
+	end
+end)
+
+Controls:KeyReleased(function(Key)
+	if (Key == KEY_LEFT_SHIFT) then
+		ShiftPressed = false
+	end
+end)
+
 Controls:KeyPressed(function(Key)
+	if (Key == KEY_LEFT_SHIFT) then
+		ShiftPressed = true
+	end
+
 	if (UIOpened) then return end
 
-	if (Key == KEY_E) then
-		SpawnGameObject(SelectedSpawningGameObject,true,MouseWorldPosition())
+	if (not ShiftPressed) then
+		if (Key == KEY_E) then
+			SpawnGameObject(SelectedSpawningGameObject,true,MouseWorldPosition())
+		end
+			if (Key == KEY_Z) then
+			DeleteLastSpawnedGameObject()
+		end
 	end
 	if (Key == KEY_Q) then
 		local count = 100
-		if (SelectedSpawningGameObject == "Vanilla:Static") then
+		if (SelectedSpawningGameObject == "Vanilla:Static" or SelectedSpawningGameObject == "Vanilla:Planet") then
 			count = 0
 		end
 		for a = 0, count do
@@ -77,6 +112,6 @@ function SpawnGameObject(Path, Right, Position)
 		local OBJ = Resources:CloneGameObject(Path)
 		GameObject:SetPosition(OBJ,Position)
 		GameObject:SetCreatedFromPlayer(OBJ,true)
-		SpawnedGameObjects[OBJ] = Path
+		Table:Add(SpawnedGameObjects,OBJ)
 	end
 end

@@ -111,7 +111,7 @@ void CloneGameObjectValuesFromOther__(GameObject& A, GameObject& B) {
 		SetGameObjectOrientation(i, B.OrientationVisual);
 		A.LinePositionVisual = B.LinePositionVisual;
 		SetGameObjectColor(i, B.Color);
-		A.Layer = B.Layer;
+		SetGameObjectLayer(i, B.Layer);
 		A.Render = B.Render;
 		A.RenderType = B.RenderType;
 		A.Selectable = B.Selectable;

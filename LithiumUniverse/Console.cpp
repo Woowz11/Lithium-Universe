@@ -24,7 +24,6 @@ const bool DebugCodePrefixs = false;
 /* Массив текстовых кодов */
 const std::map<std::string, WORD> TextCodes = {
 	{CodePrefix + "_", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE                       }, /* Дефолтный       */
-
 	{CodePrefix + "W", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY}, /* Белый           */
 	{CodePrefix + "R", FOREGROUND_RED | FOREGROUND_INTENSITY                                     }, /* Красный         */
 	{CodePrefix + "G", FOREGROUND_GREEN | FOREGROUND_INTENSITY                                   }, /* Зелёный         */

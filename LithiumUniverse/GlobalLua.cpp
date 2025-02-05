@@ -1,6 +1,7 @@
 ﻿#include "sol/sol.hpp";
 
 #include <unordered_map>
+#include <windows.h>
 #include <iostream>
 #include <utility>
 #include <string>
@@ -608,6 +609,26 @@ double LUA_RandomFast() {
 	return (static_cast<double>(rand()) / RAND_MAX);
 }
 
+class LUA_OS {
+public:
+	/* Получить текущий язык системы */
+	std::string GetSystemLanguage(sol::this_state s) {
+		lua_State* L = s;
+
+		LANGID LangID = GetUserDefaultUILanguage();
+		char LangName[LOCALE_NAME_MAX_LENGTH];
+		if (GetLocaleInfoA(LangID, LOCALE_SENGLISHLANGUAGENAME, LangName, LOCALE_NAME_MAX_LENGTH) > 0) {
+			return LangName;
+		}
+		else {
+			LuaError("Failed to get system language! " + LuaComplexFunction("OS:GetSystemLanguage", {}), L);
+			return ErrorString;
+		}
+	}
+};
+
+LUA_OS LUA_OS_Instance;
+
 class LUA_Game {
 public:
 	/* Ивент: выполняется каждый кадр */
@@ -668,30 +689,36 @@ LUA_Game LUA_Game_Instance;
 
 class LUA_Table {
 public:
-	/* Удаление элемента из массива */
-	void Remove(sol::object Table, const sol::object& Key, const sol::object& RemoveFromKeys, sol::this_state s) {
+	/* Удаление ключа из таблицы */
+	void RemoveKey(sol::object Table, const sol::object& Key, const sol::object& RemoveFromKeys, sol::this_state s) {
 		lua_State* L = s;
+
+		if (Key == sol::nil) {
+			LuaError("The key cannot be nil! " + LuaComplexFunction("Table:RemoveKey", { Table, Key, RemoveFromKeys }), L);
+			return;
+		}
+
 		bool RFK = false;
 		if (RemoveFromKeys != sol::nil) {
-			if (LuaCheckType(RemoveFromKeys, L_Bool, "Table:Remove", { Table, Key, RemoveFromKeys }, L)) {
+			if (LuaCheckType(RemoveFromKeys, L_Bool, "Table:RemoveKey", { Table, Key, RemoveFromKeys }, L)) {
 				RFK = ObjectToBool(RemoveFromKeys);
 			}
 		}
-		if (LuaCheckType(Table, L_Table, "Table:Remove", { Table, Key, RemoveFromKeys }, L)) {
+		if (LuaCheckType(Table, L_Table, "Table:RemoveKey", { Table, Key, RemoveFromKeys }, L)) {
 			sol::table T = ObjectToTable(Table);
 			if (RFK) {
 				if (T[Key] != sol::nil) {
 					T[Key] = sol::nil;
 				}
 				else {
-					LuaError("It is not possible to delete an element from the table by key [" + ObjectToString(Key) + " (" + LUA_TypeOf(Key) + ")] because it was not found!" + LuaComplexFunction("Table:Remove", { Table, Key, RemoveFromKeys }), L);
+					LuaError("It is not possible to delete an element from the table by key [" + ObjectToString(Key) + " (" + LUA_TypeOf(Key) + ")] because it was not found!" + LuaComplexFunction("Table:RemoveKey", { Table, Key, RemoveFromKeys }), L);
 				}
 			}
 			else {
-				if (LuaCheckType(Key, L_Int, "Table:Remove", { Table, Key, RemoveFromKeys }, L)) {
+				if (LuaCheckType(Key, L_Int, "Table:RemoveKey", { Table, Key, RemoveFromKeys }, L)) {
 					int K = ObjectToInt(Key);
 					if (K < 1 || K > T.size()) {
-						LuaError("Unable to delete element from table because index [" + std::to_string(K) + "] is outside table bounds [1," + std::to_string(T.size()) + "]! " + LuaComplexFunction("Table:Remove", { Table, Key, RemoveFromKeys }), L);
+						LuaError("Unable to delete element from table because index [" + std::to_string(K) + "] is outside table bounds [1-" + std::to_string(T.size()) + "]! " + LuaComplexFunction("Table:RemoveKey", { Table, Key, RemoveFromKeys }), L);
 					}
 					else {
 						for (size_t i = K; i < T.size(); i++) {
@@ -701,6 +728,51 @@ public:
 					}
 				}
 			}
+		}
+	}
+
+	/* Удаление элемента из таблицы */
+	void Remove(sol::object Table, const sol::object& Value, sol::this_state s) {
+		lua_State* L = s;
+
+		if (Value == sol::nil) {
+			LuaError("The variable cannot be nil! " + LuaComplexFunction("Table:Remove", { Table, Value }), L);
+			return;
+		}
+
+		if (LuaCheckType(Table, L_Table, "Table:Remove", { Table, Value }, L)) {
+			sol::table T = ObjectToTable(Table);
+			bool Found = false;
+			size_t size = T.size();
+
+			for (size_t i = 1; i <= size; i++) {
+				if (T[i] == Value && !Found) {
+					Found = true;
+				}
+
+				if (Found && i < size) {
+					T[i] = T[i + 1];
+				}
+			}
+
+			if (Found) {
+				T[size] = sol::nil;
+			}
+		}
+	}
+
+	/* Добавить элемент в таблицу */
+	void Add(sol::object Table, const sol::object& Value, sol::this_state s) {
+		lua_State* L = s;
+
+		if (Value == sol::nil) {
+			LuaError("The variable cannot be nil! " + LuaComplexFunction("Table:Add", {Table, Value}), L);
+			return;
+		}
+
+		if (LuaCheckType(Table, L_Table, "Table:Add", { Table, Value }, L)) {
+			sol::table T = ObjectToTable(Table);
+			T[T.size() + 1] = Value;
 		}
 	}
 
@@ -722,11 +794,54 @@ public:
 				sol::table T = ObjectToTable(Table);
 				sol::function F = ObjectToFunc(Func);
 				int i = 1;
-				for (auto p : T) {
+				for (auto& p : T) {
 					F(i, p.first, p.second);
 					i++;
 				}
-			}		
+			}
+		}
+	}
+
+	/* Разобрать массив (в обратную сторону) */
+	void PairsInvert(const sol::object& Table, const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Table, L_Table, "Talbe:PairsInvert", { Table, Func }, s)) {
+			if (LuaCheckType(Func, L_Func, "Table:PairsInvert", { Table, Func }, s)) {
+				sol::table T = ObjectToTable(Table);
+				sol::function F = ObjectToFunc(Func);
+				std::vector<std::tuple<int, sol::object, sol::object>> T_ = {};
+				int i = 1;
+				for (auto& p : T) {
+					T_.push_back({i, p.first, p.second});
+					i++;
+				}
+				std::reverse(T_.begin(), T_.end());
+				for (auto& t : T_) {
+					F(std::get<0>(t), std::get<1>(t), std::get<2>(t));
+				}
+			}
+		}
+	}
+
+	/* Получить последний элемент */
+	void GetLast(const sol::object& Table, const sol::object& Func, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckType(Table, L_Table, "Talbe:GetLast", { Table, Func }, s)) {
+			if (LuaCheckType(Func, L_Func, "Table:GetLast", { Table, Func }, s)) {
+				sol::table T = ObjectToTable(Table);
+				sol::function F = ObjectToFunc(Func);
+				sol::object K;
+				sol::object V;
+				bool HasAnything = false;
+				for (auto& p : T) {
+					K = p.first;
+					V = p.second;
+					HasAnything = true;
+				}
+				if (HasAnything) {
+					F(T.size() + 1, K, V);
+				}
+			}
 		}
 	}
 };
@@ -1098,6 +1213,16 @@ public:
 		}
 	}
 
+	/* Изменить слой объекта */
+	void SetLayer(const sol::object& ID, const sol::object& NewLayer, sol::this_state s) {
+		lua_State* L = s;
+		if (LuaCheckGameObject(ID, "GameObject:SetLayer", { ID, NewLayer }, L)) {
+			if (LuaCheckNumber(NewLayer, "GameObject:SetLayer", { ID, NewLayer }, L)) {
+				SetGameObjectLayer(ObjectToInt(ID), ObjectToDouble(NewLayer));
+			}
+		}
+	}
+
 	/* Изменить текстуру игровому объекту */
 	void SetTexture(const sol::object& ID, const sol::object& Path, sol::this_state s) {
 		lua_State* L = s;
@@ -1343,6 +1468,12 @@ void GameLua(sol::state& LUA) {
 	});
 
 	/* Функции*/
+	LUA["OS"] = &LUA_OS_Instance;
+	LUA.new_usertype<LUA_OS>(
+		"LUA_OS",
+		"GetSystemLanguage", &LUA_OS::GetSystemLanguage
+	);
+
 	LUA["Game"] = &LUA_Game_Instance;
 	LUA.new_usertype<LUA_Game>(
 		"LUA_Game",
@@ -1389,9 +1520,13 @@ void GameLua(sol::state& LUA) {
 	LUA["Table"] = &LUA_Table_Instance;
 	LUA.new_usertype<LUA_Table>(
 		"LUA_Table",
+		"Add", &LUA_Table::Add,
 		"Pairs", &LUA_Table::Pairs,
 		"Remove", &LUA_Table::Remove,
-		"ToString", &LUA_Table::ToString
+		"GetLast", &LUA_Table::GetLast,
+		"ToString", &LUA_Table::ToString,
+		"RemoveKey", &LUA_Table::RemoveKey,
+		"PairsInvert", &LUA_Table::PairsInvert
 	);
 
 	LUA["Resources"] = &LUA_Resources_Instance;
@@ -1413,6 +1548,7 @@ void GameLua(sol::state& LUA) {
 		"SetSize", &LUA_GameObject::SetSize,
 		"GetName", &LUA_GameObject::GetName,
 		"SetColor", &LUA_GameObject::SetColor,
+		"SetLayer", &LUA_GameObject::SetLayer,
 		"SetShader", &LUA_GameObject::SetShader,
 		"SetCenter", &LUA_GameObject::SetCenter,
 		"SetResize", &LUA_GameObject::SetResize,

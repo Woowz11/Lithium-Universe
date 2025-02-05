@@ -35,6 +35,8 @@ Resources:SaveGameObject(Circle, "Circle")
 local Planet = Resources:CloneGameObject("Vanilla:Circle")
 GameObject:SetTexture(Planet, "Vanilla:Planet.png")
 GameObject:SetSizeFromTexture(Planet, "Vanilla:Planet.png", 50)
+GameObject:SetStatic(Planet, true)
+GameObject:SetLayer(Planet, -10)
 Resources:SaveGameObject(Planet, "Planet")
 
 Print("Vanilla loaded!")

@@ -1,10 +1,10 @@
 UIOpened = false
 
 function CreateHelp()
-	local Help = {
+	local HelpEN = {
 		"Remember that the game is in development!",
 		"Version: "..Game:GetFullVersion(),
-		"=== HELP ===",
+		"=== CONTROLS ===",
 		"1 - Select '1M x 1M box'",
 		"2 - Select 'Human Size'",
 		"3 - Select 'Omg, what is at?'",
@@ -14,6 +14,7 @@ function CreateHelp()
 		"7 - Select 'Planet'",
 		"E - Spawn selected",
 		"Q - Spawn 100 selected",
+		"Z - Delete last spawned",
 		"W,S,A,D - Camera movement",
 		"L. Shift - Faster movement",
 		"L. Contr. - Slower movement",
@@ -24,8 +25,40 @@ function CreateHelp()
 		"Space - Stop time",
 		"G - Slow time",
 		"K7,K8,K9 - Set FPS limits",
+		"F3 - Switch debug ui",
 		"F4 - Reload resources"
 	}
+	
+	local HelpRU = {
+		"Помните, что игра находится в разработке!",
+		"Версия: "..Game:GetFullVersion(),
+		"=== УПРАВЛЕНИЕ ===",
+		"1 - Выбрать '1M x 1M box'",
+		"2 - Выбрать 'Human Size'",
+		"3 - Выбрать 'Omg, what is at?'",
+		"4 - Выбрать 'Salt'",
+		"5 - Выбрать 'Static box'",
+		"6 - Выбрать 'Circle'",
+		"7 - Выбрать 'Planet'",
+		"E - Заспавнить выбранное",
+		"Q - Заспавнить 100 раз выбранное",
+		"Z - Удалить последний заспавненный объект",
+		"W,S,A,D - Двигать камеру",
+		"L. Shift - Двигать быстрее",
+		"L. Contr. - Двигать медленее",
+		"Home - Вернуть камеру в начальную позицию",
+		"Esc - Выйти в меню",
+		"Left, Right - Вращать камеру",
+		"+,- - Масштабировать камеру",
+		"Space - Остановить время",
+		"G - Замедлить время",
+		"K7,K8,K9 - Установить FPS лимиты",
+		"F3 - Переключить отладочный интерфейс",
+		"F4 - Обновить ресурсы"
+	}
+	
+	local Help = IfThen(OS:GetSystemLanguage()=="Russian", HelpRU,HelpEN)
+	
 	local HelpResult = ""
 	for i = 1, #Help do
 		local String = Help[i]

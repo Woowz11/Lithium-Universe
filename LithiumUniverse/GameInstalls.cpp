@@ -89,6 +89,9 @@ private:
 	/* Размер окна был изменён */
 	static void WindowSizeChanged(GLFWwindow* window, int width, int height)
 	{
+		if (width  <= 0) { width  = 1; }
+		if (height <= 0) { height = 1; }
+
 		CURRENT_WINDOW_WIDTH = width;
 		CURRENT_WINDOW_HEIGHT = height;
 		glViewport(0, 0, width, height);
