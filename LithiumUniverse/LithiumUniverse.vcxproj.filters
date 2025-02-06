@@ -101,6 +101,9 @@
     <ClCompile Include="GlobalSettings.cpp">
       <Filter>Scripts\Global</Filter>
     </ClCompile>
+    <ClCompile Include="OSActions.cpp">
+      <Filter>Scripts\Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LithiumUniverse.h">
@@ -171,6 +174,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="OSActions.h">
+      <Filter>Scripts\Foundation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

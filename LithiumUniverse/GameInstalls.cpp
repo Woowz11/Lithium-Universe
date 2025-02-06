@@ -1,4 +1,6 @@
-﻿#include <glad/glad.h>
+﻿#include "OSActions.h";
+
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
@@ -19,6 +21,10 @@
 #include <chrono>
 #include <array>
 #include <set>
+
+#include <stdlib.h>
+#include <signal.h>
+#include <stdlib.h>
 
 #include "LithiumUniverse.h";
 #include "GlobalResources.h";
@@ -377,9 +383,28 @@ public:
 	}
 };
 
+void SignalHandler(int signal)
+{
+	Fatal("LU CRASH/SIGNAL", "Crash signal handler [" + std::to_string(signal) + "]!");
+	throw "!Access Violation!";
+}
+
+/* Информация о краше */
+int CrashHandler(std::string CrashType, std::string CrashInfo) {
+	Fatal("LU CRASH/" + CrashType, CrashInfo);
+	CrashMessageBox(StringToWString(CrashInfo + "\nMore info: ...\\AppData\\Local\\CrashDumps\\LithiumUniverse.exe.???.dmp"));
+	Fatal("LU CRASH/" + CrashType, "$$rThe game was terminated with an error!$$_");
+	return EXIT_FAILURE;
+}
+
 /* Запуск игры */
 GameInstalls Game;
 int Run() {
+
+	typedef void (*SignalHandlerPointer)(int);
+
+	SignalHandlerPointer previousHandler;
+	previousHandler = signal(SIGSEGV, SignalHandler);
 	try {
 #ifdef NDEBUG
 		DeveloperVersion = false;
@@ -398,10 +423,13 @@ int Run() {
 		End();
 	}
 	catch (const std::exception& e) {
-		std::string Error = e.what();
-		Fatal("LU CRASH", Error);
-		Fatal("LU CRASH", "$$rThe game was terminated with an error!$$_");
-		return EXIT_FAILURE;
+		return CrashHandler("EXCEPTION", e.what());
+	}
+	catch (char *e) {
+		return CrashHandler("CUSTOM", e);
+	}
+	catch (...) {
+		return CrashHandler("UNKNOWN", "Unknown crash error!\nMaybe Access violation");
 	}
 	return EXIT_SUCCESS;
 }

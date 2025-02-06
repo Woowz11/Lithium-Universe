@@ -88,7 +88,7 @@ Font CreateFont(std::string r ,json FontInfo) {
 	int MaxX = -1;
 	int MaxY = -1;
 	for (auto [CharID, CharPos] : CharsIDs) {
-		if (CharPos[0] >= 0 && CharPos[1] >= 0 && CharPos[2] > 0 && CharPos[2] <= 1) {
+		if (CharPos[0] >= 0 && CharPos[1] >= 0 && CharPos[2] > 0) {
 			FontChar Char = FontChar(CharID);
 			Char.X = CharPos[0];
 			Char.Y = CharPos[1];

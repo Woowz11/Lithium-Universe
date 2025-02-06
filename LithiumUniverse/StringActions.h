@@ -19,6 +19,9 @@ std::string RemoveFirstSymbol(const std::string& Target);
 std::vector<int> StringToNumbers(const std::string Target);
 int ConvertStringSymbolToNumber(const std::string Symbol);
 std::vector<uint32_t> DecodeUTF8(const std::string& str);
+bool OnlyASCIIChars(const std::string& str);
+
+std::wstring StringToWString(std::string str);
 
 std::string ToStringBool(const bool target);
 std::string ToStringVec2(const glm::vec2 target);

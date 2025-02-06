@@ -114,6 +114,7 @@
       <AdditionalIncludeDirectories>F:\Lithium-Universe\LithiumUniverse\Libs\Scripts;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,6 +134,7 @@
       <AdditionalIncludeDirectories>F:\Lithium-Universe\LithiumUniverse\Libs\Scripts;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -163,6 +165,7 @@
     <ClCompile Include="GlobalUI.cpp" />
     <ClCompile Include="LithiumUniverse.cpp" />
     <ClCompile Include="GameObject.h" />
+    <ClCompile Include="OSActions.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shader.h" />
     <ClCompile Include="Start.cpp" />
@@ -190,6 +193,7 @@
     <ClInclude Include="GlobalSettings.h" />
     <ClInclude Include="GlobalUI.h" />
     <ClInclude Include="LithiumUniverse.h" />
+    <ClInclude Include="OSActions.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="StringActions.h" />
     <ClInclude Include="Texture.h" />

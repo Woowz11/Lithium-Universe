@@ -1,5 +1,6 @@
 ﻿#include <GLM/glm.hpp>
 
+#include <Windows.h>
 #include <algorithm>
 #include <iostream>
 #include <sstream>
@@ -248,6 +249,29 @@ std::vector<uint32_t> DecodeUTF8(const std::string& str) {
 	}
 
 	return codePoints;
+}
+
+/* В строке только ASCII символы */
+bool OnlyASCIIChars(const std::string& str) {
+	for (wchar_t ch : str) {
+		if (ch > 127) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/* ==== Конвертирование строк ==== */
+
+std::wstring StringToWString(std::string str) {
+	std::vector<uint32_t> codePoints = DecodeUTF8(str);
+
+	std::wstring wideStr;
+	for (uint32_t codePoint : codePoints) {
+		wideStr += static_cast<wchar_t>(codePoint);
+	}
+
+	return wideStr;
 }
 
 /* ==== Конвертация в строки ==== */
