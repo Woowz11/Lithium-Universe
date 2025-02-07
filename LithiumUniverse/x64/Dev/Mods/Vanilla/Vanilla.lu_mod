@@ -4,6 +4,6 @@
 	"Author"      : "Woowz11",
 	"Description" : "Regular Lithium Universe game objects",
 	"MainScript"  : "Vanilla:Base.lua",
-	"Requires"    : ["VanillaPhysic"],
+	"Requires"    : ["VanillaLib","VanillaPhysic"],
 	"Conflict"    : []
 }

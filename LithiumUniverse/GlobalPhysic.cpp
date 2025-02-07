@@ -159,9 +159,7 @@ std::vector<GameObject>& UpdatePhysic() {
 
 	if (callLuaEvents) {
 		for (const sol::function& F : LUA_Events_UpdateEveryGameObject) {
-			if (F.valid()) {
-				F(LuaEventGameObjects);
-			}
+			RunFunction(F, LuaEventGameObjects);
 		}
 		timer = 0;
 	}

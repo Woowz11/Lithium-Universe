@@ -60,6 +60,7 @@ private:
 	 
 	/* Создание окна */
 	void CreateGameWindow() {
+		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 		Window = glfwCreateWindow(START_WINDOW_WIDTH, START_WINDOW_HEIGHT, GetGameTitle().c_str(), NULL, NULL);
 		glfwSetWindowUserPointer(Window, this);
 		if (!Window) {
@@ -222,6 +223,7 @@ private:
 		InstallDebug();
 		UpdateResources();
 		InstallRenderAfterResources();
+		glfwShowWindow(Window);
 
 		Print("LU", "All started, and start Loop()!");
 		Print("LU", "=============== [$$YRUNTIME$$_] ===============");
@@ -425,7 +427,7 @@ int Run() {
 	catch (const std::exception& e) {
 		return CrashHandler("EXCEPTION", e.what());
 	}
-	catch (char *e) {
+	catch (char* e) {
 		return CrashHandler("CUSTOM", e);
 	}
 	catch (...) {

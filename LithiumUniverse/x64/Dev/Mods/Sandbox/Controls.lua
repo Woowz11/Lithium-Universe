@@ -57,7 +57,10 @@ Controls:KeyPressed(function(Key)
 
 	if (not ShiftPressed) then
 		if (Key == KEY_E) then
-			SpawnGameObject(SelectedSpawningGameObject,true,MouseWorldPosition())
+			local Pos = MouseWorldPosition()
+			Storage:RunFunction("VanillaLib:Test",Serialize({Vector2(2,1)}))
+			--Storage:RunFunction("VanillaLib:Sandbox:Spawn",{1,{Vector2(),false}})
+			--SpawnGameObject(SelectedSpawningGameObject,true,MouseWorldPosition())
 		end
 			if (Key == KEY_Z) then
 			DeleteLastSpawnedGameObject()

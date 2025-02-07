@@ -4,6 +4,6 @@
 	"Author"      : "Woowz11",
 	"Description" : "Regular Lithium Universe Camera",
 	"MainScript"  : "VanillaCamera:Camera.lua",
-	"Requires"    : [],
+	"Requires"    : ["VanillaLib"],
 	"Conflict"    : []
 }

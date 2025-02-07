@@ -1,0 +1,9 @@
+{
+	"Name"        : "Vanilla Libbary",
+	"Version"     : "0.0",
+	"Author"      : "Woowz11",
+	"Description" : "Hello)",
+	"MainScript"  : "VanillaLib:Base.lua",
+	"Requires"    : [],
+	"Conflict"    : []
+}

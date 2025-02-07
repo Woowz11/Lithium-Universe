@@ -1,5 +1,3 @@
-Resources:LoadScript("Vanilla:LoadGameObjects.lua")
-
 --Game:GameObjectLoading(LoadVanillaGameObject)
 
 local HumanSize = GameObject:Create("HumanSize", GO_Physical)
@@ -38,5 +36,20 @@ GameObject:SetSizeFromTexture(Planet, "Vanilla:Planet.png", 50)
 GameObject:SetStatic(Planet, true)
 GameObject:SetLayer(Planet, -10)
 Resources:SaveGameObject(Planet, "Planet")
+
+Storage:RunFunction("VanillaLib:Sandbox:AddToSpawn",{
+	["Name"] = "Test",
+	["Description"] = "OMAAGAAD",
+	["Mod"] = "Vanilla",
+	["Icon"] = nil,
+	["ExtraDescription"] = "",
+	["Category"] = "Test",
+	
+	["SpawningEvent"] = function(Position, Flipped)
+		local NewObj = Resources:CloneGameObject("Vanilla:1Mx1M")
+		GameObject:SetPosition(NewObj,Position)
+		return NewObj
+	end
+})
 
 Print("Vanilla loaded!")

@@ -4,6 +4,6 @@
 	"Author"      : "Woowz11",
 	"Description" : "",
 	"MainScript"  : "VanillaPhysic:Base.lua",
-	"Requires"    : [],
+	"Requires"    : ["VanillaLib"],
 	"Conflict"    : []
 }

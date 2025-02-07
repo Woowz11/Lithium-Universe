@@ -57,6 +57,11 @@ extern std::vector<LUA_Class_KeyPressEvent> LUA_Events_KeysReleased;
 
 double ObjectToDouble(const sol::object& Obj);
 
+sol::object SerializeObject(sol::object o, sol::state_view& L);
+sol::table SerializeTable(sol::table T, sol::state_view& L);
+sol::object DeserializeObject(sol::object o, sol::state_view& L);
+sol::table DeserializeTable(sol::table T, sol::state_view& L);
+
 void LuaErrorOperator(const std::string& Obj, const std::string Operator, const sol::object& ObjB);
 bool LuaCheckNumber(const sol::object& Obj, const std::string Function, const std::vector<sol::object>& Params, lua_State* L);
 
@@ -64,7 +69,12 @@ std::string TableToString(const sol::table& Table, int Hierarchy);
 LUA_OBJ_Type TypeOf(const sol::object& Obj);
 
 std::string LUA_TypeOf(const sol::object& Obj);
+std::string LUA_ToString(const sol::object& Obj);
 
+void RunFunction(const sol::function& F, const auto& V1, const auto& V2, const auto& V3);
+void RunFunction(const sol::function& F, const auto& V1, const auto& V2);
+void RunFunction(const sol::function& F, const auto& V1);
+void RunFunction(const sol::function& F);
 void RunScript(const std::string& ScriptPath);
 void LoadLua(GameMod Mod);
 void UnloadLua();
@@ -76,6 +86,20 @@ class LUA_Color {
 public:
 	double r, g, b, a;
 	LUA_Color(double r, double g, double b, double a) : r(r), g(g), b(b), a(a) {}
+
+	sol::table Serialize(sol::state_view& L) {
+		sol::table T = L.create_table();
+		T["__type"] = "c";
+		T["r"] = r;
+		T["g"] = g;
+		T["b"] = b;
+		T["a"] = a;
+		return T;
+	}
+
+	static LUA_Color Deserialize(sol::table T) {
+		return LUA_Color(T["r"], T["g"], T["b"], T["a"]);
+	}
 
 	std::string ToString() const {
 		if (a == 1) {
@@ -190,6 +214,18 @@ public:
 
 	LUA_Vector2 operator~() const {
 		return LUA_Vector2(-x, -y);
+	}
+
+	sol::table Serialize(sol::state_view& L) {
+		sol::table T = L.create_table();
+		T["__type"] = "v2";
+		T["x"] = x;
+		T["y"] = y;
+		return T;
+	}
+
+	static LUA_Vector2 Deserialize(sol::table T) {
+		return LUA_Vector2(T["x"], T["y"]);
 	}
 
 	double Length() const {
